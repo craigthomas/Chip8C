@@ -145,7 +145,7 @@ void cpu_process_sdl_events (void)
  * process continues until the `cpu.state` flag is set to `CPU_STOP`. It also
  * will decrement timers when the `decrement_timers` flag is set to `TRUE`.
  */
-void cpu_execute( void )
+void cpu_execute (void)
 {
     byte x;             /* Stores what is usually the x reg nibble */
     byte y;             /* Stores what is usually the y reg nibble */
@@ -161,16 +161,16 @@ void cpu_execute( void )
     int xcor;           /* The x coordinate to draw a pixel at */
     int ycor;           /* The y coordinate to draw a pixel at */
 
-    while( cpu.state != CPU_STOP )
+    while (cpu.state != CPU_STOP) 
     {
         cpu.oldpc = cpu.pc;
         
-        cpu.operand.BYTE.high = memory_read( cpu.pc.WORD );
-        cpu.pc.WORD += 1;
-        cpu.operand.BYTE.low = memory_read( cpu.pc.WORD );
-        cpu.pc.WORD += 1;
+        cpu.operand.BYTE.high = memory_read (cpu.pc.WORD);
+        cpu.pc.WORD++;
+        cpu.operand.BYTE.low = memory_read (cpu.pc.WORD);
+        cpu.pc.WORD++;
 
-        switch( cpu.operand.BYTE.high & 0xF0 )
+        switch (cpu.operand.BYTE.high & 0xF0)
         {
             /* Misc subroutines */
             case 0x00:
@@ -186,9 +186,9 @@ void cpu_execute( void )
                     /* 00EE - RTS */
                     /* Return from subroutine */
                     case 0xEE:
-                        cpu.sp.WORD -= 1;
+                        cpu.sp.WORD--;
                         cpu.pc.BYTE.high = memory_read (cpu.sp.WORD);
-                        cpu.sp.WORD -= 1;
+                        cpu.sp.WORD--;
                         cpu.pc.BYTE.low = memory_read (cpu.sp.WORD);
                         sprintf (cpu.opdesc, "RTS");
                         break;
@@ -403,7 +403,7 @@ void cpu_execute( void )
             case 0x90:
                 src = cpu.operand.BYTE.high & 0xF;
                 tgt = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                if( cpu.v[src] != cpu.v[tgt] )
+                if (cpu.v[src] != cpu.v[tgt])
                 {
                     cpu.pc.WORD += 2;
                 }
@@ -504,7 +504,7 @@ void cpu_execute( void )
 
             /* Keyboard routines */
             case 0xE0:
-                switch( cpu.operand.BYTE.low )
+                switch (cpu.operand.BYTE.low)
                 {
                     /* Es9E - SKPR Vs */
                     /* Check to see if the key specified in the source        */
