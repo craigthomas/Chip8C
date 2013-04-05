@@ -597,11 +597,11 @@ cpu_execute(void)
                         i = cpu.v[src] / 100;
                         memory_write(tword, i);
 
-                        tword.WORD = tword.WORD + 1;
+                        tword.WORD++;
                         i = (cpu.v[src] % 100) / 10;
                         memory_write(tword, i);
 
-                        tword.WORD = tword.WORD + 1;
+                        tword.WORD++;
                         i = (cpu.v[src] % 100) % 10;
                         memory_write(tword, i);
                         sprintf(cpu.opdesc, "BCD V%X (%03d)", src, cpu.v[src]);
@@ -657,8 +657,8 @@ cpu_execute(void)
         }
 
         if (decrement_timers) {
-            cpu.dt = (cpu.dt > 0) ? cpu.dt - 1 : 0;
-            cpu.st = (cpu.st > 0) ? cpu.st - 1 : 0;
+            cpu.dt -= (cpu.dt > 0) ? 1 : 0;
+            cpu.st -= (cpu.st > 0) ? 1 : 0;
             decrement_timers = FALSE;
         }
 
