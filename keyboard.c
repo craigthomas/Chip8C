@@ -61,20 +61,18 @@ KEYSPEC keyboard_def[] =
  * @param keycode the keycode to check for
  * @return the SDLKey that is associated with the keycode
  */
-
-SDLKey keyboard_keycodetosymbol (int keycode)
+SDLKey 
+keyboard_keycodetosymbol(int keycode)
 {
     int i;
     SDLKey result = SDLK_END;
 
-    for (i = 0; i < KEY_NUMBEROFKEYS; i++)
-    {
-        if (keyboard_def[i].keycode == keycode) 
-        {
+    for (i = 0; i < KEY_NUMBEROFKEYS; i++) {
+        if (keyboard_def[i].keycode == keycode) {
             result = keyboard_def[i].symbol;
         }
     }
-    return (result);
+    return result;
 }
 
 /******************************************************************************/
@@ -86,19 +84,18 @@ SDLKey keyboard_keycodetosymbol (int keycode)
  * @param symbol the SDLKey to check
  * @return the associated keycode, or KEY_NOKEY if no key mapping exists
  */
-int keyboard_symboltokeycode (SDLKey symbol)
+int 
+keyboard_symboltokeycode(SDLKey symbol)
 {
     int i;
     int result = KEY_NOKEY;
 
-    for (i = 0; i < KEY_NUMBEROFKEYS; i++)
-    {
-        if (keyboard_def[i].symbol == symbol)
-        {
+    for (i = 0; i < KEY_NUMBEROFKEYS; i++) {
+        if (keyboard_def[i].symbol == symbol) {
             result = keyboard_def[i].keycode;
         }
     }
-    return (result);
+    return result;
 }
 
 /******************************************************************************/
@@ -110,15 +107,15 @@ int keyboard_symboltokeycode (SDLKey symbol)
  * @param keycode the keycode to check
  * @return TRUE if the key was pressed, FALSE otherwise
  */
-int keyboard_checkforkeypress (int keycode)
+int 
+keyboard_checkforkeypress(int keycode)
 {
     int result = FALSE;
-    Uint8 *keystates = SDL_GetKeyState (NULL);
-    if (keystates[keyboard_keycodetosymbol (keycode)])
-    {
+    Uint8 *keystates = SDL_GetKeyState(NULL);
+    if (keystates[keyboard_keycodetosymbol(keycode)]) {
         result = TRUE;
     }
-    return (result);
+    return result;
 }
 
 /******************************************************************************/
@@ -129,26 +126,24 @@ int keyboard_checkforkeypress (int keycode)
  *
  * @return the keycode value of the key pressed
  */
-int keyboard_waitgetkeypress (void)
+int 
+keyboard_waitgetkeypress(void)
 {
     int keycode = KEY_NOKEY;
-    while (keycode == KEY_NOKEY)
-    {
-        if (SDL_PollEvent (&event))
-        {
-            switch (event.type)
-            {
+    while (keycode == KEY_NOKEY) {
+        if (SDL_PollEvent(&event)) {
+            switch (event.type) {
                 case SDL_KEYDOWN:
-                    keycode = keyboard_symboltokeycode (event.key.keysym.sym);
+                    keycode = keyboard_symboltokeycode(event.key.keysym.sym);
                     break;
 
                 default:
                     break;
             }
         }
-        SDL_Delay (20);
+        SDL_Delay(20);
     }
-    return (keycode);
+    return keycode;
 }
 
 /* E N D   O F   F I L E ******************************************************/

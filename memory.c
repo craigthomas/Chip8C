@@ -29,17 +29,17 @@
  *
  * @param memorysize the size of memory to allocate for the emulator
  */
-int memory_init (int memorysize) 
+int 
+memory_init(int memorysize) 
 {
    int result = TRUE;
 
-   memory = (byte *) malloc (sizeof (byte) * memorysize);
-   if (!memory) 
-   {
+   memory = (byte *)malloc(sizeof (byte) * memorysize);
+   if (!memory) {
       result = FALSE;
    }
 
-   return (result);
+   return result;
 }
 
 /*****************************************************************************/
@@ -51,9 +51,10 @@ int memory_init (int memorysize)
  * @param address the address in memory to read from
  * @return the value read from the specified memory location
  */
-inline byte memory_read (register int address) 
+inline byte 
+memory_read(register int address) 
 {
-   return (memory[address]);
+   return memory[address];
 }
 
 /*****************************************************************************/
@@ -64,7 +65,8 @@ inline byte memory_read (register int address)
  * @param address the address in memory to write to
  * @param value the value to write to the memory location
  */
-inline void memory_write (register word address, register byte value) 
+inline void 
+memory_write(register word address, register byte value) 
 {
    memory[address.WORD] = value;
 }
@@ -74,9 +76,10 @@ inline void memory_write (register word address, register byte value)
 /**
  * Frees the emulator memory.
  */
-void memory_destroy (void) 
+void 
+memory_destroy(void) 
 {
-   free (memory);
+   free(memory);
 }
 
 /* E N D   O F   F I L E *****************************************************/

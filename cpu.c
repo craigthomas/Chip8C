@@ -9,6 +9,7 @@
 
 /* I N C L U D E S ************************************************************/
 
+#include <time.h>
 #include "globals.h"
 
 /* F U N C T I O N S **********************************************************/
@@ -22,10 +23,11 @@
  * @param parameters additional parameters to the interrupt routine
  * @returns the new interval at which to fire the timer
  */
-Uint32 cpu_timerinterrupt (Uint32 interval, void *parameters)
+Uint32 
+cpu_timerinterrupt(Uint32 interval, void *parameters)
 {
     decrement_timers = TRUE;
-    return (interval);
+    return interval;
 }
 
 /******************************************************************************/
@@ -36,19 +38,19 @@ Uint32 cpu_timerinterrupt (Uint32 interval, void *parameters)
  *
  * @returns the newly created SDL timer
  */
-int cpu_timerinit (void)
+int 
+cpu_timerinit(void)
 {
     int result = TRUE;
-    SDL_InitSubSystem (SDL_INIT_TIMER);
-    cpu_timer = SDL_AddTimer (17, cpu_timerinterrupt, NULL);
+    SDL_InitSubSystem(SDL_INIT_TIMER);
+    cpu_timer = SDL_AddTimer(17, cpu_timerinterrupt, NULL);
 
-    if (cpu_timer == NULL)
-    {
-        printf ("Error: could not create timer: %s\n", SDL_GetError ());
+    if (cpu_timer == NULL) {
+        printf("Error: could not create timer: %s\n", SDL_GetError());
         result = FALSE;
     }
 
-    return (result);
+    return result;
 }
 
 /******************************************************************************/
@@ -56,7 +58,8 @@ int cpu_timerinit (void)
 /**
  * Resets the CPU registers.
  */
-void cpu_reset (void)
+void 
+cpu_reset(void)
 {
     /* Reset all general purpose registers */
     cpu.v[0x0] = 0;
@@ -85,10 +88,10 @@ void cpu_reset (void)
     cpu.oldpc.WORD = CPU_PC_START;
     cpu.operand.WORD = 0;
  
-    srand (time (0));
+    srand(time(0));
     cpu.state = CPU_PAUSED;
 
-    cpu.opdesc = (char *) malloc (MAXSTRSIZE);
+    cpu.opdesc = (char *)malloc(MAXSTRSIZE);
 }
 
 /******************************************************************************/
@@ -97,35 +100,29 @@ void cpu_reset (void)
  * Process any events inside the SDL event queue. Will not block waiting for
  * events. Any event not processed by the emulator will be discarded.
  */
-void cpu_process_sdl_events (void)
+void 
+cpu_process_sdl_events(void)
 {
-    if (SDL_PollEvent (&event))
-    {
-        switch (event.type)
-        {
+    if (SDL_PollEvent(&event)) {
+        switch (event.type) {
             case SDL_QUIT:
                 cpu.state = CPU_STOP;
                 break;
 
             case SDL_KEYDOWN:
-                if (event.key.keysym.sym == QUIT_KEY) 
-                {
+                if (event.key.keysym.sym == QUIT_KEY) {
                     cpu.state = CPU_STOP;
-                }
-                else if (event.key.keysym.sym == DEBUG_KEY) 
-                {
+                } 
+                else if (event.key.keysym.sym == DEBUG_KEY) {
                     cpu.state = CPU_DEBUG;
-                }
-                else if (event.key.keysym.sym == TRACE_KEY) 
-                {
+                } 
+                else if (event.key.keysym.sym == TRACE_KEY) {
                     cpu.state = CPU_TRACE;
-                }
-                else if (event.key.keysym.sym == NORMAL_KEY) 
-                {
+                } 
+                else if (event.key.keysym.sym == NORMAL_KEY) {
                     cpu.state = CPU_RUNNING;
-                }
-                else if (event.key.keysym.sym == STEP_KEY) 
-                {
+                } 
+                else if (event.key.keysym.sym == STEP_KEY) {
                     cpu.state = CPU_STEP;
                 }
                 break;
@@ -145,7 +142,8 @@ void cpu_process_sdl_events (void)
  * process continues until the `cpu.state` flag is set to `CPU_STOP`. It also
  * will decrement timers when the `decrement_timers` flag is set to `TRUE`.
  */
-void cpu_execute (void)
+void 
+cpu_execute(void)
 {
     byte x;             /* Stores what is usually the x reg nibble */
     byte y;             /* Stores what is usually the y reg nibble */
@@ -161,36 +159,33 @@ void cpu_execute (void)
     int xcor;           /* The x coordinate to draw a pixel at */
     int ycor;           /* The y coordinate to draw a pixel at */
 
-    while (cpu.state != CPU_STOP) 
-    {
+    while (cpu.state != CPU_STOP) {
         cpu.oldpc = cpu.pc;
         
-        cpu.operand.BYTE.high = memory_read (cpu.pc.WORD);
+        cpu.operand.BYTE.high = memory_read(cpu.pc.WORD);
         cpu.pc.WORD++;
-        cpu.operand.BYTE.low = memory_read (cpu.pc.WORD);
+        cpu.operand.BYTE.low = memory_read(cpu.pc.WORD);
         cpu.pc.WORD++;
 
-        switch (cpu.operand.BYTE.high & 0xF0)
-        {
+        switch (cpu.operand.BYTE.high & 0xF0) {
             /* Misc subroutines */
             case 0x00:
-                switch (cpu.operand.BYTE.low)
-                {
+                switch (cpu.operand.BYTE.low) {
                     /* 00E0 - CLS */
                     /* Clear screen */
                     case 0xE0:
-                        screen_blank ();
-                        sprintf (cpu.opdesc, "CLS");
+                        screen_blank();
+                        sprintf(cpu.opdesc, "CLS");
                         break;
 
                     /* 00EE - RTS */
                     /* Return from subroutine */
                     case 0xEE:
                         cpu.sp.WORD--;
-                        cpu.pc.BYTE.high = memory_read (cpu.sp.WORD);
+                        cpu.pc.BYTE.high = memory_read(cpu.sp.WORD);
                         cpu.sp.WORD--;
-                        cpu.pc.BYTE.low = memory_read (cpu.sp.WORD);
-                        sprintf (cpu.opdesc, "RTS");
+                        cpu.pc.BYTE.low = memory_read(cpu.sp.WORD);
+                        sprintf(cpu.opdesc, "RTS");
                         break;
 
                     default:
@@ -202,29 +197,28 @@ void cpu_execute (void)
             /* Jump to address */
             case 0x10:
                 cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
-                sprintf (cpu.opdesc, "JUMP %03X", cpu.pc.WORD);
+                sprintf(cpu.opdesc, "JUMP %03X", cpu.pc.WORD);
                 break;
 
             /* 2nnn - CALL nnn */
             /* Jump to subroutine */
             case 0x20:
-                memory_write (cpu.sp, cpu.pc.BYTE.low);
-                cpu.sp.WORD += 1;
-                memory_write (cpu.sp, cpu.pc.BYTE.high);
-                cpu.sp.WORD += 1;
+                memory_write(cpu.sp, cpu.pc.BYTE.low);
+                cpu.sp.WORD++;
+                memory_write(cpu.sp, cpu.pc.BYTE.high);
+                cpu.sp.WORD++;
                 cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
-                sprintf (cpu.opdesc, "CALL %03X", cpu.pc.WORD);
+                sprintf(cpu.opdesc, "CALL %03X", cpu.pc.WORD);
                 break;
 
             /* 3snn - SKE Vs, nn */
             /* Skip if source register equal value */
             case 0x30:
                 src = cpu.operand.BYTE.high & 0xF;
-                if (cpu.v[src] == cpu.operand.BYTE.low)
-                {
+                if (cpu.v[src] == cpu.operand.BYTE.low) {
                     cpu.pc.WORD += 2;
                 }
-                sprintf (cpu.opdesc, "SKE V%X, %02X", src, 
+                sprintf(cpu.opdesc, "SKE V%X, %02X", src, 
                         cpu.operand.BYTE.low);
                 break;
 
@@ -232,11 +226,10 @@ void cpu_execute (void)
             /* Skip if source register contents not equal constant value */
             case 0x40:
                 src = cpu.operand.BYTE.high & 0xF;
-                if (cpu.v[src] != cpu.operand.BYTE.low)
-                {
+                if (cpu.v[src] != cpu.operand.BYTE.low) {
                     cpu.pc.WORD += 2;
                 }
-                sprintf (cpu.opdesc, "SKNE V%X, %02X", src, 
+                sprintf(cpu.opdesc, "SKNE V%X, %02X", src, 
                         cpu.operand.BYTE.low);
                 break;
 
@@ -245,11 +238,10 @@ void cpu_execute (void)
             case 0x50:
                 src = cpu.operand.BYTE.high & 0xF;
                 tgt = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                if (cpu.v[src] == cpu.v[tgt])
-                {
+                if (cpu.v[src] == cpu.v[tgt]) {
                     cpu.pc.WORD += 2;
                 }
-                sprintf (cpu.opdesc, "SKE V%X, V%X", src, tgt);
+                sprintf(cpu.opdesc, "SKE V%X, V%X", src, tgt);
                 break;
 
             /* 6snn - LOAD Vs, nn */
@@ -257,7 +249,7 @@ void cpu_execute (void)
             case 0x60:
                 src = cpu.operand.BYTE.high & 0xF;
                 cpu.v[src] = cpu.operand.BYTE.low;
-                sprintf (cpu.opdesc, "LOAD V%X, %02X", src, 
+                sprintf(cpu.opdesc, "LOAD V%X, %02X", src, 
                         cpu.operand.BYTE.low);
                 break;
 
@@ -267,21 +259,20 @@ void cpu_execute (void)
                 src = cpu.operand.BYTE.high & 0xF;
                 temp = cpu.v[src] + cpu.operand.BYTE.low;
                 cpu.v[src] = (temp > 255) ? temp - 256 : temp;
-                sprintf (cpu.opdesc, "ADD V%X, %02X", src, 
+                sprintf(cpu.opdesc, "ADD V%X, %02X", src, 
                         cpu.operand.BYTE.low);
                 break;
 
             /* Logical operations */ 
             case 0x80:
-                switch (cpu.operand.BYTE.low & 0x0F)
-                {
+                switch (cpu.operand.BYTE.low & 0x0F) {
                     /* 8ts0 - LOAD Vs, Vt */
                     /* Move the value of the source register into the target */
                     case 0x0: 
                         tgt = cpu.operand.BYTE.high & 0xF;
                         src = (cpu.operand.BYTE.low & 0xF0) >> 4;
                         cpu.v[tgt] = cpu.v[src];
-                        sprintf (cpu.opdesc, "LOAD V%X, V%X", tgt, src);
+                        sprintf(cpu.opdesc, "LOAD V%X, V%X", tgt, src);
                         break;
 
                     /* 8ts1 - OR Vs, Vt */
@@ -292,7 +283,7 @@ void cpu_execute (void)
                         tgt = cpu.operand.BYTE.high & 0xF;
                         src = (cpu.operand.BYTE.low & 0xF0) >> 4;
                         cpu.v[tgt] = cpu.v[tgt] | cpu.v[src];
-                        sprintf (cpu.opdesc, "OR V%X, V%X", tgt, src);
+                        sprintf(cpu.opdesc, "OR V%X, V%X", tgt, src);
                         break;
 
                     /* 8ts2 - AND Vs, Vt */
@@ -303,7 +294,7 @@ void cpu_execute (void)
                         tgt = cpu.operand.BYTE.high & 0xF;
                         src = (cpu.operand.BYTE.low & 0xF0) >> 4;
                         cpu.v[tgt] = cpu.v[tgt] & cpu.v[src];
-                        sprintf (cpu.opdesc, "AND V%X, V%X", tgt, src);
+                        sprintf(cpu.opdesc, "AND V%X, V%X", tgt, src);
                         break;
 
                     /* 8ts3 - XOR  Vs, Vt */
@@ -314,7 +305,7 @@ void cpu_execute (void)
                         tgt = cpu.operand.BYTE.high & 0xF;
                         src = (cpu.operand.BYTE.low & 0xF0) >> 4;
                         cpu.v[tgt] = cpu.v[tgt] ^ cpu.v[src];
-                        sprintf (cpu.opdesc, "XOR V%X, V%X", tgt, src);
+                        sprintf(cpu.opdesc, "XOR V%X, V%X", tgt, src);
                         break;
                  
                     /* 8ts4 - ADD  Vt, Vs */ 
@@ -328,7 +319,7 @@ void cpu_execute (void)
                         temp = cpu.v[src] + cpu.v[tgt];
                         cpu.v[0xF] = (temp > 255) ? 1 : 0;
                         cpu.v[tgt] = (temp > 255) ? temp - 256 : temp;
-                        sprintf (cpu.opdesc, "ADD V%X, V%X", tgt, src);
+                        sprintf(cpu.opdesc, "ADD V%X, V%X", tgt, src);
                         break;
 
                     /* 8ts5 - SUB  Vt, Vs */
@@ -339,17 +330,15 @@ void cpu_execute (void)
                     case 0x5:
                         tgt = cpu.operand.BYTE.high & 0xF;
                         src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                        if (cpu.v[tgt] > cpu.v[src])
-                        {
+                        if (cpu.v[tgt] > cpu.v[src]) {
                             cpu.v[0xF] = 1;
                             cpu.v[tgt] -= cpu.v[src];
-                        }
-                        else
-                        {
+                        } 
+                        else {
                             cpu.v[0xF] = 0;
                             cpu.v[tgt] = 256 + cpu.v[tgt] - cpu.v[src];
                         }
-                        sprintf (cpu.opdesc, "SUB V%X, V%X", tgt, src);
+                        sprintf(cpu.opdesc, "SUB V%X, V%X", tgt, src);
                         break;
 
                     /* 8s06 - SHR  Vs */
@@ -359,7 +348,7 @@ void cpu_execute (void)
                         src = cpu.operand.BYTE.high & 0xF;
                         cpu.v[0xF] = (cpu.v[src] & 1) ? 1 : 0;
                         cpu.v[src] = cpu.v[src] >> 1;
-                        sprintf (cpu.opdesc, "SHR V%X", src);
+                        sprintf(cpu.opdesc, "SHR V%X", src);
                         break;
 
                     /* 8ts7 - SUBN Vt, Vs */
@@ -370,17 +359,15 @@ void cpu_execute (void)
                     case 0x7:
                         tgt = cpu.operand.BYTE.high & 0xF;
                         src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                        if (cpu.v[src] < cpu.v[tgt])
-                        {
+                        if (cpu.v[src] < cpu.v[tgt]) {
                             cpu.v[0xF] = 1;
                             cpu.v[tgt] = cpu.v[src] - cpu.v[tgt];
-                        }
-                        else
-                        {
+                        } 
+                        else {
                             cpu.v[0xF] = 0;
                             cpu.v[tgt] = 256 + cpu.v[src] - cpu.v[tgt];
                         }
-                        sprintf (cpu.opdesc, "SUBN V%X, V%X", tgt, src);
+                        sprintf(cpu.opdesc, "SUBN V%X, V%X", tgt, src);
                         break;
 
                     /* 8s0E - SHL  Vs */
@@ -390,7 +377,7 @@ void cpu_execute (void)
                         src = cpu.operand.BYTE.high & 0xF;
                         cpu.v[0xF] = (cpu.v[src] & 0x80) ? 1 : 0;
                         cpu.v[src] = cpu.v[src] << 1;
-                        sprintf (cpu.opdesc, "SHL V%X", src);
+                        sprintf(cpu.opdesc, "SHL V%X", src);
                         break;
 
                     default:
@@ -403,18 +390,17 @@ void cpu_execute (void)
             case 0x90:
                 src = cpu.operand.BYTE.high & 0xF;
                 tgt = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                if (cpu.v[src] != cpu.v[tgt])
-                {
+                if (cpu.v[src] != cpu.v[tgt]) {
                     cpu.pc.WORD += 2;
                 }
-                sprintf (cpu.opdesc, "SKNE V%X, V%X", src, tgt);
+                sprintf(cpu.opdesc, "SKNE V%X, V%X", src, tgt);
                 break;
 
             /* Annn - LOAD I, nnn */
             /* Load index register with constant value */
             case 0xA0:
                 cpu.i.WORD = (cpu.operand.WORD & 0x0FFF);
-                sprintf (cpu.opdesc, "LOAD I, %03X", (cpu.operand.WORD 
+                sprintf(cpu.opdesc, "LOAD I, %03X", (cpu.operand.WORD 
                         & 0x0FFF));
                 break;
 
@@ -423,7 +409,7 @@ void cpu_execute (void)
             /* specified operand plus the value of the index register         */
             case 0xB0:
                 cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF) + cpu.i.WORD;
-                sprintf (cpu.opdesc, "JUMP I + %03X", (cpu.operand.WORD 
+                sprintf(cpu.opdesc, "JUMP I + %03X", (cpu.operand.WORD 
                         & 0x0FFF));
                 break;
 
@@ -433,8 +419,8 @@ void cpu_execute (void)
             /* operand. The result is stored in the target register           */
             case 0xC0:
                 tgt = cpu.operand.BYTE.high & 0xF;
-                cpu.v[tgt] = (rand () % 255) & cpu.operand.BYTE.low;
-                sprintf (cpu.opdesc, "RAND V%X, %02X", tgt, 
+                cpu.v[tgt] = (rand() % 255) & cpu.operand.BYTE.low;
+                sprintf(cpu.opdesc, "RAND V%X, %02X", tgt, 
                         (cpu.operand.BYTE.low));
                 break;
         
@@ -473,50 +459,45 @@ void cpu_execute (void)
                 tword.WORD = cpu.i.WORD;
                 cpu.v[0xF] = 0;
 
-                for (i = 0; i < (cpu.operand.BYTE.low & 0xF); i++)
-                {
+                for (i = 0; i < (cpu.operand.BYTE.low & 0xF); i++) {
                     tbyte = memory_read (cpu.i.WORD + i);
                     ycor = cpu.v[y] + i;
                     ycor = ycor % SCREEN_HEIGHT;
 
-                    for (j = 0; j < 8; j++)
-                    {
+                    for (j = 0; j < 8; j++) {
                         xcor = cpu.v[x] + j;
                         xcor = xcor % SCREEN_WIDTH;
 
                         color = (tbyte & 0x80) ? 1 : 0;
-                        currentcolor = screen_getpixel (xcor, ycor);
+                        currentcolor = screen_getpixel(xcor, ycor);
 
                         cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
                         color = color ^ currentcolor;
 
-                        screen_draw (xcor, ycor, color);
+                        screen_draw(xcor, ycor, color);
 		        tbyte = tbyte << 1;
                     } 
                 }
-                sprintf (cpu.opdesc, "DRAW V%X, V%X, %X", x, y, 
-                        (cpu.operand.BYTE.low & 0xF));
-                if ((cpu.state != CPU_DEBUG) && (cpu.state != CPU_TRACE))
-                {
-                    screen_refresh (FALSE);
+                sprintf(cpu.opdesc, "DRAW V%X, V%X, %X", x, y, 
+                       (cpu.operand.BYTE.low & 0xF));
+                if ((cpu.state != CPU_DEBUG) && (cpu.state != CPU_TRACE)) {
+                    screen_refresh(FALSE);
                 }
                 break;
 
             /* Keyboard routines */
             case 0xE0:
-                switch (cpu.operand.BYTE.low)
-                {
+                switch (cpu.operand.BYTE.low) {
                     /* Es9E - SKPR Vs */
                     /* Check to see if the key specified in the source        */
                     /* register is pressed, and if it is, skips the next      */
                     /* instruction                                            */
                     case 0x9E:
                         src = cpu.operand.BYTE.high & 0xF;
-                        if (keyboard_checkforkeypress (cpu.v[src])) 
-                        {
+                        if (keyboard_checkforkeypress (cpu.v[src])) {
                             cpu.pc.WORD += 2;
                         }
-                        sprintf (cpu.opdesc, "SKPR V%X", src);
+                        sprintf(cpu.opdesc, "SKPR V%X", src);
                         break;
 
                     /* EsA1 - SKUP Vs */
@@ -525,11 +506,10 @@ void cpu_execute (void)
                     /* instruction                                            */
                     case 0xA1:
                         src = cpu.operand.BYTE.high & 0xF;
-                        if (!keyboard_checkforkeypress (cpu.v[src])) 
-                        {
+                        if (!keyboard_checkforkeypress (cpu.v[src])) {
                             cpu.pc.WORD += 2;
                         }
-                        sprintf (cpu.opdesc, "SKUP V%X", src);
+                        sprintf(cpu.opdesc, "SKUP V%X", src);
                         break;
 
                     default:
@@ -539,15 +519,14 @@ void cpu_execute (void)
 
             /* Other I/O Routines */
             case 0xF0:
-                switch (cpu.operand.BYTE.low)
-                {
+                switch (cpu.operand.BYTE.low) {
                     /* Ft07 - LOAD Vt, DELAY */
                     /* Move the value of the delay timer into the target      */
                     /* register.                                              */
                     case 0x07:
                         tgt = cpu.operand.BYTE.high & 0xF;
                         cpu.v[tgt] = cpu.dt; 
-                        sprintf (cpu.opdesc, "LOAD V%X, DELAY", tgt);
+                        sprintf(cpu.opdesc, "LOAD V%X, DELAY", tgt);
                         break;
 
                     /* Ft0A - KEYD Vt */
@@ -556,7 +535,7 @@ void cpu_execute (void)
                     case 0x0A:
                         tgt = cpu.operand.BYTE.high & 0xF;
                         cpu.v[tgt] = keyboard_waitgetkeypress ();
-                        sprintf (cpu.opdesc, "KEYD V%X", tgt);
+                        sprintf(cpu.opdesc, "KEYD V%X", tgt);
                         break;     
  
                     /* Fs15 - LOAD DELAY, Vs */
@@ -565,7 +544,7 @@ void cpu_execute (void)
                     case 0x15:
                         src = cpu.operand.BYTE.high & 0xF;
                         cpu.dt = cpu.v[src];
-                        sprintf (cpu.opdesc, "LOAD DELAY, V%X", src);
+                        sprintf(cpu.opdesc, "LOAD DELAY, V%X", src);
                         break;             
 
                     /* Fs18 - LOAD SOUND, Vs */
@@ -574,7 +553,7 @@ void cpu_execute (void)
                     case 0x18:
                         src = cpu.operand.BYTE.high & 0xF;
                         cpu.st = cpu.v[src];
-                        sprintf (cpu.opdesc, "LOAD SOUND, V%X", src);
+                        sprintf(cpu.opdesc, "LOAD SOUND, V%X", src);
                         break;
 
                     /* Fs1E - ADD  I, Vs */
@@ -583,7 +562,7 @@ void cpu_execute (void)
                     case 0x1E:
                         src = cpu.operand.BYTE.high & 0xF; 
                         cpu.i.WORD += cpu.v[src];
-                        sprintf (cpu.opdesc, "ADD I, V%X", src);
+                        sprintf(cpu.opdesc, "ADD I, V%X", src);
                         break;
 
                     /* Fs29 - LOAD I, Vs */
@@ -594,7 +573,7 @@ void cpu_execute (void)
                     case 0x29:
                         src = cpu.operand.BYTE.high & 0xF;
                         cpu.i.WORD = cpu.v[src] * 5;
-                        sprintf (cpu.opdesc, "LOAD I, V%X", src);
+                        sprintf(cpu.opdesc, "LOAD I, V%X", src);
                         break;
 
                     /* Fs33 - BCD */
@@ -616,16 +595,16 @@ void cpu_execute (void)
 
                         tword.WORD = cpu.i.WORD;
                         i = cpu.v[src] / 100;
-                        memory_write (tword, i);
+                        memory_write(tword, i);
 
                         tword.WORD = tword.WORD + 1;
                         i = (cpu.v[src] % 100) / 10;
-                        memory_write (tword, i);
+                        memory_write(tword, i);
 
                         tword.WORD = tword.WORD + 1;
                         i = (cpu.v[src] % 100) % 10;
-                        memory_write (tword, i);
-                        sprintf (cpu.opdesc, "BCD V%X (%03d)", src, cpu.v[src]);
+                        memory_write(tword, i);
+                        sprintf(cpu.opdesc, "BCD V%X (%03d)", src, cpu.v[src]);
                         break;
 
                     /* Fn55 - STOR [I], Vn */
@@ -634,12 +613,11 @@ void cpu_execute (void)
                     /* the V registers, n would be the value 'F'              */
                     case 0x55:
                         tword.WORD = cpu.i.WORD;
-                        for (i = 0; i <= (cpu.operand.BYTE.high & 0xF); i++)
-                        {
-                            memory_write (tword, cpu.v[i]);
-                            tword.WORD += 1;
+                        for (i = 0; i <= (cpu.operand.BYTE.high & 0xF); i++) {
+                            memory_write(tword, cpu.v[i]);
+                            tword.WORD++;
                         }
-                        sprintf (cpu.opdesc, "STOR %X", (cpu.operand.BYTE.high 
+                        sprintf(cpu.opdesc, "STOR %X", (cpu.operand.BYTE.high 
                                 & 0xF));
                         break;
 
@@ -649,12 +627,11 @@ void cpu_execute (void)
                     /* V registers, n would be 'F'                            */
                     case 0x65:
                         temp = cpu.i.WORD;
-                        for (i = 0; i <= (cpu.operand.BYTE.high & 0xF); i++)
-                        {
-                            cpu.v[i] = memory_read (temp);
-                            temp += 1;
+                        for (i = 0; i <= (cpu.operand.BYTE.high & 0xF); i++) {
+                            cpu.v[i] = memory_read(temp);
+                            temp++;
                         }
-                        sprintf (cpu.opdesc, "LOAD %X", (cpu.operand.BYTE.high 
+                        sprintf(cpu.opdesc, "LOAD %X", (cpu.operand.BYTE.high 
                                 & 0xF));
                         break;
                   
@@ -667,29 +644,25 @@ void cpu_execute (void)
                 break; 
         }
 
-        if ((cpu.state == CPU_DEBUG) || (cpu.state == CPU_TRACE))
-        {
-            screen_refresh (TRUE);
-            while (cpu.state == CPU_DEBUG)
-            {
-                cpu_process_sdl_events ();
-                SDL_Delay (20);
+        if ((cpu.state == CPU_DEBUG) || (cpu.state == CPU_TRACE)) {
+            screen_refresh(TRUE);
+            while (cpu.state == CPU_DEBUG) {
+                cpu_process_sdl_events();
+                SDL_Delay(20);
             } 
             cpu.state = (cpu.state == CPU_STEP) ? CPU_DEBUG : cpu.state;
-        }
-        else 
-        {
-            SDL_Delay (op_delay);
+        } 
+        else {
+            SDL_Delay(op_delay);
         }
 
-        if (decrement_timers)
-        {
+        if (decrement_timers) {
             cpu.dt = (cpu.dt > 0) ? cpu.dt - 1 : 0;
             cpu.st = (cpu.st > 0) ? cpu.st - 1 : 0;
             decrement_timers = FALSE;
         }
 
-        cpu_process_sdl_events ();
+        cpu_process_sdl_events();
     }
 }
 

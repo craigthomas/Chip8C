@@ -5,7 +5,7 @@ NAME = yac8e
 SRCS = $(wildcard *.c)
 OBJS = ${SRCS:.c=.o}
 
-CFLAGS += -g $(shell sdl-config --cflags)
+CFLAGS += -Wall -g $(shell sdl-config --cflags)
 LDFLAGS += -lSDL_ttf $(shell sdl-config --libs)
 
 .PHONY: all doc clean

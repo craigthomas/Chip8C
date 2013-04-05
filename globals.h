@@ -138,27 +138,27 @@ SDL_Event event;               /**< Stores SDL events                         */
 /* P R O T O T Y P E S ********************************************************/
 
 /* cpu.c */
-void cpu_reset (void);
-int cpu_timerinit (void);
-void cpu_execute (void);
+void cpu_reset(void);
+int cpu_timerinit(void);
+void cpu_execute(void);
 
 /* keyboard.c */
-int keyboard_waitgetkeypress (void);
-int keyboard_checkforkeypress (int keycode);
+int keyboard_waitgetkeypress(void);
+int keyboard_checkforkeypress(int keycode);
 
 /* memory.c */
-int memory_init (int memorysize);
-void memory_destroy (void);
-inline void memory_write (register word address, register byte value);
-inline byte memory_read (register int address);
+int memory_init(int memorysize);
+void memory_destroy(void);
+inline void memory_write(register word address, register byte value);
+inline byte memory_read(register int address);
 
 /* screen.c */
-int screen_init (void);
-void screen_clear (SDL_Surface *surface, Uint32 color); 
-void screen_blank (void);
-int screen_getpixel (int x, int y);
-void screen_draw (int x, int y, int color);
-void screen_refresh (int overlay_on);
+int screen_init(void);
+void screen_clear(SDL_Surface *surface, Uint32 color); 
+void screen_blank(void);
+int screen_getpixel(int x, int y);
+void screen_draw(int x, int y, int color);
+void screen_refresh(int overlay_on);
 
 #endif
 
