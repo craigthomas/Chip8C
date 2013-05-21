@@ -1,4 +1,6 @@
 /**
+ * Copyright (C) 2012 Craig Thomas
+ *
  * @file      screen.c
  * @brief     Routines for addressing emulator screen
  * @author    Craig Thomas

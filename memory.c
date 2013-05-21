@@ -1,4 +1,6 @@
 /**
+ * Copyright (C) 2012 Craig Thomas
+ *
  * @file      memory.c
  * @brief     Routines for addressing emulator memory
  * @author    Craig Thomas

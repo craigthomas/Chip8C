@@ -1,4 +1,6 @@
 /**
+ * Copyright (C) 2012 Craig Thomas
+ *
  * @file      cpu.c
  * @brief     An emulated Chip 8 CPU
  * @author    Craig Thomas

@@ -1,4 +1,6 @@
 /**
+ * Copyright (C) 2012 Craig Thomas
+ * 
  * @file      yac8e.c
  * @brief     Yet Another Chip 8 Emulator
  * @author    Craig Thomas

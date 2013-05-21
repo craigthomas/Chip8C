@@ -1,4 +1,6 @@
 /**
+ * Copyright (C) 2012 Craig Thomas
+ *
  * @file      globals.h
  * @brief     Global parameters and variables for the emulator
  * @author    Craig Thomas
