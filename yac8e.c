@@ -1,14 +1,12 @@
 /**
  * Copyright (C) 2012 Craig Thomas
+ * This project uses an MIT style license - see the LICENSE file for details.
  * 
  * @file      yac8e.c
  * @brief     Yet Another Chip 8 Emulator
  * @author    Craig Thomas
- * @copyright MIT style license - see the LICENSE file for details
- * @copyright @verbinclude LICENSE
  *
  * This project is represents a Chip 8 emulator.
- *
  * In addition to the emulator keys, there are several special keys: 
  *
  *     ESC       Immediately exits the emulator

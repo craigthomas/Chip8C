@@ -1,11 +1,10 @@
 /**
  * Copyright (C) 2012 Craig Thomas
+ * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      keyboard.c
  * @brief     Routines for addressing emulator keyboard
  * @author    Craig Thomas
- * @copyright MIT style license - see the LICENSE file for details
- * @copyright @verbinclude LICENSE
  *
  * The emulator needs to define keys from 0-9 and a-f. The emulator CPU expects
  * these values from the keyboard to be returned as their associated hex value.

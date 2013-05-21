@@ -1,12 +1,10 @@
 /**
  * Copyright (C) 2012 Craig Thomas
+ * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      cpu.c
  * @brief     An emulated Chip 8 CPU
  * @author    Craig Thomas
- * @copyright MIT style license - see the LICENSE file for details
- * @copyright @verbinclude LICENSE
- *
  */
 
 /* I N C L U D E S ************************************************************/

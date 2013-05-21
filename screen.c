@@ -1,11 +1,10 @@
 /**
  * Copyright (C) 2012 Craig Thomas
+ * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      screen.c
  * @brief     Routines for addressing emulator screen
  * @author    Craig Thomas
- * @copyright MIT style license - see the LICENSE file for details
- * @copyright @verbinclude LICENSE
  *
  * The emulator defines a primary SDL surface called `screen`. The surface is
  * used to draw pixels on. By default, it attempts to create a double-buffered
