@@ -34,11 +34,7 @@ int
 memory_init(int memorysize) 
 {
    memory = (byte *)malloc(sizeof (byte) * memorysize);
-   if (!memory) {
-      return FALSE;
-   }
-
-   return TRUE;
+   return memory != NULL;
 }
 
 /*****************************************************************************/
