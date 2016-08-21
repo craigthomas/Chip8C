@@ -40,35 +40,6 @@ memory_init(int memorysize)
 /*****************************************************************************/
 
 /**
- * Attempts to read one byte of memory at the requested address. Returns the 
- * byte read from memory.
- *
- * @param address the address in memory to read from
- * @return the value read from the specified memory location
- */
-inline byte 
-memory_read(register int address) 
-{
-   return memory[address];
-}
-
-/*****************************************************************************/
-
-/**
- * Attempts to write one byte of information to the requested address.
- *
- * @param address the address in memory to write to
- * @param value the value to write to the memory location
- */
-inline void 
-memory_write(register word address, register byte value) 
-{
-   memory[address.WORD] = value;
-}
-
-/*****************************************************************************/
-
-/**
  * Frees the emulator memory.
  */
 void 

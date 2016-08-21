@@ -150,8 +150,35 @@ int keyboard_checkforkeypress(int keycode);
 /* memory.c */
 int memory_init(int memorysize);
 void memory_destroy(void);
-inline void memory_write(register word address, register byte value);
-inline byte memory_read(register int address);
+
+/**
+ * Attempts to read one byte of memory at the requested address. Returns the 
+ * byte read from memory.
+ *
+ * @param address the address in memory to read from
+ * @return the value read from the specified memory location
+ */
+static inline byte 
+memory_read(register int address) 
+{
+   return memory[address];
+}
+
+/*****************************************************************************/
+
+/**
+ * Attempts to write one byte of information to the requested address.
+ *
+ * @param address the address in memory to write to
+ * @param value the value to write to the memory location
+ */
+static inline void 
+memory_write(register word address, register byte value) 
+{
+   memory[address.WORD] = value;
+}
+
+/*****************************************************************************/
 
 /* screen.c */
 int screen_init(void);
