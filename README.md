@@ -1,5 +1,20 @@
 # Yet Another Chip 8 Emulator
 
+## Table of Contents
+
+1. [What is it?](#what-is-it)
+2. [License](#license)
+3. [Compiling](#compiling)
+    1. [Big-endian Architectures](#big-endian-architectures)
+4. [Running](#running)
+    1. [Screen Scaling](#screen-scaling)
+    2. [Execution Delay](#execution-delay)
+    3. [Debug Mode](#debug-mode)
+5. [Customization](#customization)
+6. [Troubleshooting](#troubleshooting)
+7. [Further Documentation](#further-documentation)
+8. [Third Party Copyrights](#third-party-copyrights)
+
 ## What is it?
 
 This project is a Chip 8 emulator written in C. The original purpose
@@ -43,6 +58,13 @@ in the source directory called:
 
 The binary stands for "Yet Another Chip 8 Emulator".
 
+### Big-endian Architectures
+
+If you plan to run the Chip 8 emulator on a big-endian architecture, you will 
+need to compile with the following flag:
+
+    make CFLAGS=-DWORDS_BIGENDIAN
+
 
 ## Running
 
@@ -52,13 +74,21 @@ path to a Chip 8 ROM:
     yac8e /path/to/rom/filename
 
 This will start the emulator with the specified ROM. The emulator also
-takes optional parameters. The `-s` switch will scale the size of the
-window (the original size at 1x scale is 64 x 32):
+takes optional parameters. 
+
+### Screen Scaling
+
+The `-s` switch will scale the size of the window (the original size at 
+1x scale is 64 x 32):
 
     yac8e /path/to/rom/filename -s 10
 
 The command above will scale the window so that it is 10 times the normal
-size. You may also wish to experiment with the `-d` switch, which instructs
+size. 
+
+### Execution Delay
+
+You may also wish to experiment with the `-d` switch, which instructs
 the emulator to add a delay to every operation that is executed. For example,
 
     yac8e /path/to/rom/filename -d 10
@@ -69,7 +99,9 @@ information regarding opcode execution times, as such, I have not attempted
 any fancy timing mechanisms to ensure that instructions are executed in a
 set amount of time).
 
-Finally, you can also ask the emulator to start in debug mode, where each
+### Debug Mode 
+
+You can also ask the emulator to start in debug mode, where each
 instruction is disassembled and displayed in the bottom right hand corner
 of the screen on a semi-transparent overlay. To do this:
 
