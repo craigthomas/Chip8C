@@ -1,6 +1,7 @@
 # Yet Another Chip 8 Emulator
 
 [![Build Status](https://travis-ci.org/craigthomas/Chip8C.svg?branch=master&style=flat)](https://travis-ci.org/craigthomas/Chip8C) 
+[![codecov](https://codecov.io/gh/craigthomas/Chip8C/branch/master/graph/badge.svg)](https://codecov.io/gh/craigthomas/Chip8C) 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/befe98f4b3a044a9a0df49aa0fcaf35a)](https://www.codacy.com/app/craig-thomas/Chip8C?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8C&amp;utm_campaign=Badge_Grade)
 
 ## Table of Contents

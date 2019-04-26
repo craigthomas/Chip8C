@@ -30,4 +30,11 @@ before_install:
   - cd ..
 
 script:
-  - make test
+  - CFLAGS="-coverage -O0 -Wall -fprofile-arcs -ftest-coverage" make test
+  - gcov cpu.c
+  - gcov screen.c
+  - gcov keyboard.c
+  - gcov memory.c
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
