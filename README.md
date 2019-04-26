@@ -1,11 +1,15 @@
 # Yet Another Chip 8 Emulator
 
+[![Build Status](https://travis-ci.org/craigthomas/Chip8C.svg?branch=master&style=flat)](https://travis-ci.org/craigthomas/Chip8C) 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/befe98f4b3a044a9a0df49aa0fcaf35a)](https://www.codacy.com/app/craig-thomas/Chip8C?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8C&amp;utm_campaign=Badge_Grade)
+
 ## Table of Contents
 
 1. [What is it?](#what-is-it)
 2. [License](#license)
 3. [Compiling](#compiling)
     1. [Big-endian Architectures](#big-endian-architectures)
+    2. [Unit Tests](#unit-tests)
 4. [Running](#running)
     1. [Screen Scaling](#screen-scaling)
     2. [Execution Delay](#execution-delay)
@@ -64,6 +68,12 @@ If you plan to run the Chip 8 emulator on a big-endian architecture, you will
 need to compile with the following flag:
 
     make CFLAGS=-DWORDS_BIGENDIAN
+
+### Unit Tests
+
+To run the unit test suite, use the make target of `test`:
+
+    make test
 
 
 ## Running

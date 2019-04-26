@@ -142,6 +142,7 @@ SDL_Event event;               /**< Stores SDL events                         */
 void cpu_reset(void);
 int cpu_timerinit(void);
 void cpu_execute(void);
+void cpu_execute_single(void);
 
 /* keyboard.c */
 int keyboard_waitgetkeypress(void);
@@ -180,6 +181,21 @@ memory_write(register word address, register byte value)
 
 /*****************************************************************************/
 
+/**
+ * Attempts to write one word of information to the requested address.
+ *
+ * @param address the address in memory to write to
+ * @param value the value to write to the memory locations
+ */
+static inline void 
+memory_write_word(register word address, register word value) 
+{
+   memory[address.WORD] = value.BYTE.high;
+   memory[address.WORD + 1] = value.BYTE.low;
+}
+
+/*****************************************************************************/
+
 /* screen.c */
 int screen_init(void);
 void screen_clear(SDL_Surface *surface, Uint32 color); 
@@ -187,6 +203,15 @@ void screen_blank(void);
 int screen_getpixel(int x, int y);
 void screen_draw(int x, int y, int color);
 void screen_refresh(int overlay_on);
+
+/* cpu_test.c */
+void test_jump_to_address(void);
+void test_jump_to_subroutine(void);
+void test_skip_if_register_equal_value(void);
+void test_skip_if_register_not_equal_value(void);
+void test_skip_if_register_equal_register(void);
+void test_skip_if_register_not_equal_register(void);
+void test_move_value_to_register(void);
 
 #endif
 
