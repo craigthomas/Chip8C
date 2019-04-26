@@ -1,0 +1,33 @@
+language: c
+addons:
+  apt:
+    packages:
+      - libsdl-image1.2-dev
+      - libsdl-mixer1.2-dev
+      - libsdl-ttf2.0-dev
+      - libsdl1.2-dev
+      - libportmidi-dev
+      - libswscale-dev
+      - libavformat-dev
+      - libavcodec-dev
+      - libjpeg-dev
+      - libtiff4-dev
+      - libx11-6
+      - libx11-dev
+      - xfonts-base
+      - xfonts-100dpi
+      - xfonts-75dpi
+before_install:
+  - wget http://downloads.sourceforge.net/project/cunit/CUnit/2.1-2/CUnit-2.1-2-src.tar.bz2
+  - tar -xvjpf CUnit-2.1-2-src.tar.bz2
+  - cd CUnit-2.1-2
+  - ./configure --prefix=$TRAVIS_BUILD_DIR
+  - make
+  - make install
+  - export C_INCLUDE_PATH=$TRAVIS_BUILD_DIR/include:$C_INCLUDE_PATH
+  - export LIBRARY_PATH=$TRAVIS_BUILD_DIR/lib:$LIBRARY_PATH
+  - export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/lib:$LD_LIBRARY_PATH
+  - cd ..
+
+script:
+  - make test
