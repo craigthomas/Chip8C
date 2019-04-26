@@ -25,5 +25,8 @@ doc:
 
 clean:
 	@- $(RM) $(wildcard *.o)
+	@- $(RM) $(wildcard *.gcda)
+	@- $(RM) $(wildcard *.gcno)
+	@- $(RM) $(wildcard *.gcov)
 	@- $(RM) $(NAME)
 	@- $(RM) $(TESTNAME)
