@@ -203,6 +203,7 @@ void screen_blank(void);
 int screen_getpixel(int x, int y);
 void screen_draw(int x, int y, int color);
 void screen_refresh(int overlay_on);
+void screen_destroy(void);
 
 /* cpu_test.c */
 void test_jump_to_address(void);
@@ -212,6 +213,31 @@ void test_skip_if_register_not_equal_value(void);
 void test_skip_if_register_equal_register(void);
 void test_skip_if_register_not_equal_register(void);
 void test_move_value_to_register(void);
+void test_add_value_to_register(void);
+void test_load_register_to_register(void);
+void test_logical_or(void);
+void test_logical_and(void);
+void test_logical_xor(void);
+void test_add_register_to_register(void);
+void test_sub_register_from_register(void);
+void test_shift_register_right(void);
+void test_sub_register_from_register_source_from_target(void);
+void test_shift_register_left(void);
+void test_load_index(void);
+void test_jump_index_plus_value(void);
+void test_generate_random(void);
+void test_load_delay_into_target(void);
+void test_load_source_into_delay(void);
+void test_load_source_into_sound(void);
+void test_add_index(void);
+void test_load_sprite_index(void);
+void test_bcd(void);
+void test_store_registers(void);
+void test_load_registers(void);
+
+void test_set_get_pixel(void);
+void test_set_pixel_color_zero_turns_pixel_off(void);
+void test_screen_blank(void);
 
 #endif
 

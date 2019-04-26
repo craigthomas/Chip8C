@@ -214,6 +214,7 @@ main(int argc, char **argv)
     cpu_execute();
 
     memory_destroy();
+    screen_destroy();
     SDL_Quit();
     return 0;
 }

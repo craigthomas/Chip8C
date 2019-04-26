@@ -530,7 +530,7 @@ cpu_execute_single(void)
                 /* of the key pressed into the specified register         */
                 case 0x0A:
                     tgt = cpu.operand.BYTE.high & 0xF;
-                    cpu.v[tgt] = keyboard_waitgetkeypress ();
+                    cpu.v[tgt] = keyboard_waitgetkeypress();
                     sprintf(cpu.opdesc, "KEYD V%X", tgt);
                     break;     
 

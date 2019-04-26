@@ -1,4 +1,6 @@
 language: c
+env:
+  - DISPLAY=:99.0
 addons:
   apt:
     packages:
@@ -28,6 +30,9 @@ before_install:
   - export LIBRARY_PATH=$TRAVIS_BUILD_DIR/lib:$LIBRARY_PATH
   - export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/lib:$LD_LIBRARY_PATH
   - cd ..
+  - sudo apt-get update -qq
+  - sudo apt-get install libsmpeg-dev xfonts-cyrillic
+  - sh -e /etc/init.d/xvfb start
 
 script:
   - CFLAGS="-coverage -O0 -Wall -fprofile-arcs -ftest-coverage" make test
