@@ -4,7 +4,7 @@
 NAME = yac8e
 TESTNAME = test
 MAINOBJS = cpu.o keyboard.o memory.o screen.o yac8e.o
-TESTOBJS = cpu.o keyboard.o memory.o screen.o test.o cpu_test.o
+TESTOBJS = cpu.o keyboard.o memory.o screen.o cpu_test.o screen_test.o test.o 
 
 override CFLAGS += -Wall -g $(shell sdl-config --cflags)
 LDFLAGS += -lSDL_ttf $(shell sdl-config --libs) -lcunit

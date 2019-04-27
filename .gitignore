@@ -1,0 +1,7 @@
+*.o
+*.gcda
+*.gcno
+*.gcov
+.vscode
+test
+yac8e

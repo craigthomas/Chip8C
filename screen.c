@@ -331,4 +331,17 @@ screen_init(void)
     return ((virtscreen != NULL) && (overlay != NULL) && result);
 }
 
+/******************************************************************************/
+
+/**
+ * Destroys all the surfaces used by the screen.
+ */
+void
+screen_destroy(void)
+{
+    SDL_FreeSurface(virtscreen);
+    SDL_FreeSurface(overlay);
+    SDL_FreeSurface(screen);
+}
+
 /* E N D   O F   F I L E ******************************************************/

@@ -2,7 +2,8 @@
 
 [![Build Status](https://travis-ci.org/craigthomas/Chip8C.svg?branch=master&style=flat)](https://travis-ci.org/craigthomas/Chip8C) 
 [![codecov](https://codecov.io/gh/craigthomas/Chip8C/branch/master/graph/badge.svg)](https://codecov.io/gh/craigthomas/Chip8C) 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/befe98f4b3a044a9a0df49aa0fcaf35a)](https://www.codacy.com/app/craig-thomas/Chip8C?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8C&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/befe98f4b3a044a9a0df49aa0fcaf35a)](https://www.codacy.com/app/craig-thomas/Chip8C?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8C&amp;utm_campaign=Badge_Grade) 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## Table of Contents
 
@@ -25,7 +26,7 @@
 This project is a Chip 8 emulator written in C. The original purpose
 of the project was to learn how to write an emulator in a compiled language
 so that I could write a Color Computer 3 emulator. Since then, I have written
-the emulator in Python 3 (see [Chip8Python](https://github.com/craigthomas/Chip8Python)
+the emulator in Python 3 (see [Chip8Python](https://github.com/craigthomas/Chip8Python))
 as a means of exploring other programming languages. 
 
 
@@ -43,6 +44,7 @@ the source, you will need the following required software packages:
 * [GNU Make](http://www.gnu.org/software/make/) 3.81 or later
 * [SDL](http://www.libsdl.org/) 1.2.14 or later
 * [SDL TTF Extension](http://www.libsdl.org/projects/SDL_ttf/) 2.0.11 or later
+* [CUnit](http://cunit.sourceforge.net/doc/index.html) 2.1-3 or later
 
 Note that other C compilers make work as well. To compile the project, open a
 command prompt, switch to the source directory, and type:

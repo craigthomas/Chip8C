@@ -1,0 +1,4 @@
+ignore:
+  - "cpu_test.c"
+  - "screen_test.c"
+  - "test.c"
