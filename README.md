@@ -1,9 +1,9 @@
 # Yet Another Chip 8 Emulator
 
-[![Build Status](https://travis-ci.org/craigthomas/Chip8C.svg?branch=master&style=flat)](https://travis-ci.org/craigthomas/Chip8C) 
-[![codecov](https://codecov.io/gh/craigthomas/Chip8C/branch/master/graph/badge.svg)](https://codecov.io/gh/craigthomas/Chip8C) 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/befe98f4b3a044a9a0df49aa0fcaf35a)](https://www.codacy.com/app/craig-thomas/Chip8C?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8C&amp;utm_campaign=Badge_Grade) 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/travis/craigthomas/Chip8C?style=flat-square)](https://travis-ci.org/craigthomas/Chip8C) 
+[![Codecov](https://img.shields.io/codecov/c/gh/craigthomas/Chip8C?style=flat-square)](https://codecov.io/gh/craigthomas/Chip8C) 
+[![Codacy Badge](https://img.shields.io/codacy/grade/befe98f4b3a044a9a0df49aa0fcaf35a?style=flat-square)](https://www.codacy.com/app/craig-thomas/Chip8C?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=craigthomas/Chip8C&amp;utm_campaign=Badge_Grade) 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 ## Table of Contents
 
