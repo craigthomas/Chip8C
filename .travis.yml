@@ -13,7 +13,7 @@ addons:
       - libavformat-dev
       - libavcodec-dev
       - libjpeg-dev
-      - libtiff4-dev
+      - libtiff5-dev
       - libx11-6
       - libx11-dev
       - xfonts-base
