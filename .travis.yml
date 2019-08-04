@@ -13,12 +13,14 @@ addons:
       - libavformat-dev
       - libavcodec-dev
       - libjpeg-dev
-      - libtiff4-dev
+      - libtiff5-dev
       - libx11-6
       - libx11-dev
       - xfonts-base
       - xfonts-100dpi
       - xfonts-75dpi
+services:
+  - xvfb
 before_install:
   - wget http://downloads.sourceforge.net/project/cunit/CUnit/2.1-2/CUnit-2.1-2-src.tar.bz2
   - tar -xvjpf CUnit-2.1-2-src.tar.bz2
@@ -32,7 +34,6 @@ before_install:
   - cd ..
   - sudo apt-get update -qq
   - sudo apt-get install libsmpeg-dev xfonts-cyrillic
-  - sh -e /etc/init.d/xvfb start
 
 script:
   - CFLAGS="-coverage -O0 -Wall -fprofile-arcs -ftest-coverage" make test
