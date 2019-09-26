@@ -3,8 +3,8 @@
 
 NAME = yac8e
 TESTNAME = test
-MAINOBJS = cpu.o keyboard.o memory.o screen.o yac8e.o
-TESTOBJS = cpu.o keyboard.o memory.o screen.o cpu_test.o screen_test.o test.o 
+MAINOBJS = src/cpu.o src/keyboard.o src/memory.o src/screen.o src/yac8e.o
+TESTOBJS = src/cpu.o src/keyboard.o src/memory.o src/screen.o src/cpu_test.o src/screen_test.o src/test.o 
 
 override CFLAGS += -Wall -g $(shell sdl-config --cflags)
 LDFLAGS += -lSDL_ttf $(shell sdl-config --libs) -lcunit
@@ -24,9 +24,9 @@ doc:
 	doxygen doxygen.conf
 
 clean:
-	@- $(RM) $(wildcard *.o)
-	@- $(RM) $(wildcard *.gcda)
-	@- $(RM) $(wildcard *.gcno)
+	@- $(RM) $(wildcard src/*.o)
+	@- $(RM) $(wildcard src/*.gcda)
+	@- $(RM) $(wildcard src/*.gcno)
 	@- $(RM) $(wildcard *.gcov)
 	@- $(RM) $(NAME)
 	@- $(RM) $(TESTNAME)
