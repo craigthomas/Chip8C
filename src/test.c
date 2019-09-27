@@ -23,8 +23,9 @@ main() {
 
     CU_pSuite cpu_suite = CU_add_suite("cpu_test_suite", 0, 0);
     CU_pSuite screen_suite = CU_add_suite("screen_test_suite", 0, 0);
+    CU_pSuite keyboard_suite = CU_add_suite("keyboard_test_suite", 0, 0);
 
-    if (cpu_suite == NULL || screen_suite == NULL) {
+    if (cpu_suite == NULL || screen_suite == NULL || keyboard_suite == NULL) {
         CU_cleanup_registry();
         return CU_get_error();
     }
@@ -70,6 +71,15 @@ main() {
         return CU_get_error();
     }
 
+    if (CU_add_test(keyboard_suite, "test_keycodetosymbol_returns_end_with_invalid_keycode", test_keycodetosymbol_returns_end_with_invalid_keycode) == NULL ||
+        CU_add_test(keyboard_suite, "test_keycodetosymbol_returns_correct_keycodes", test_keycodetosymbol_returns_correct_keycodes) == NULL ||
+        CU_add_test(keyboard_suite, "test_keyboard_symboltokeycode_returns_nokey_on_invalid_symbol", test_keyboard_symboltokeycode_returns_nokey_on_invalid_symbol) == NULL ||
+        CU_add_test(keyboard_suite, "test_keyboard_symboltokeycode_returns_correct_keycodes", test_keyboard_symboltokeycode_returns_correct_keycodes) == NULL ||
+        CU_add_test(keyboard_suite, "test_keyboard_checkforkeypress_returns_false_on_no_keypress", test_keyboard_checkforkeypress_returns_false_on_no_keypress) == NULL)
+    {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
     CU_basic_set_mode(CU_BRM_VERBOSE);
 
     CU_basic_run_tests();
