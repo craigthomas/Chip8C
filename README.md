@@ -16,23 +16,29 @@
     1. [Screen Scaling](#screen-scaling)
     2. [Execution Delay](#execution-delay)
     3. [Debug Mode](#debug-mode)
-5. [Customization](#customization)
-6. [Troubleshooting](#troubleshooting)
-7. [Further Documentation](#further-documentation)
-8. [Third Party Copyrights](#third-party-copyrights)
+5. [Keys](#keys)
+    1. [Regular Keys](#regular-keys)
+    2. [Debug Keys](#debug-keys)
+6. [ROM Compatibility](#rom-compatibility)
+7. [Troubleshooting](#troubleshooting)
+8. [Further Documentation](#further-documentation)
+9. [Third Party Copyrights](#third-party-copyrights)
 
 ## What is it?
 
-This project is a Chip 8 emulator written in C. The original purpose
-of the project was to learn how to write an emulator in a compiled language
-so that I could write a Color Computer 3 emulator. Since then, I have written
-the emulator in Python 3 (see [Chip8Python](https://github.com/craigthomas/Chip8Python))
-as a means of exploring other programming languages. 
+This project is a Chip 8 emulator written in C. There are two other versions
+of the emulator written in different languages:
+
+* [Chip8Python](https://github.com/craigthomas/Chip8Python)
+* [Chip8Java](https://github.com/craigthomas/Chip8Java)
+
+The original goal of these projects was to learn how to code a simple emulator.
 
 
 ## License
 
-Please see the file called LICENSE.
+This project makes use of an MIT style license. Please see the file called LICENSE
+for more information.
 
 
 ## Compiling
@@ -130,11 +136,60 @@ activated at any time by pressing their respective keys (you do not have
 to specify the `-t` switch at startup to enable these modes).
 
 
-## Customization
+## Keys
 
 The file `keyboard.c` contains the key mapping between the PC keyboard keys
 and the Chip 8 emulator keys. Updating the second column of the `keyboard_def`
 array will effectively change the key mapping. 
+
+There are two sets of keys that the emulator uses: debug keys and regular
+keys.
+
+### Regular Keys
+
+The original Chip 8 had a keypad with the numbered keys 0 - 9 and A - F (16
+keys in total). Without any modifications to the emulator, the keys are mapped
+as follows:
+
+| Chip 8 Key | Keyboard Key |
+| :--------: | :----------: |
+| `1`        | `4`          |
+| `2`        | `5`          |
+| `3`        | `6`          |
+| `4`        | `7`          |
+| `5`        | `R`          |
+| `6`        | `T`          |
+| `7`        | `Y`          |
+| `8`        | `U`          |
+| `9`        | `F`          |
+| `0`        | `G`          |
+| `A`        | `H`          |
+| `B`        | `J`          |
+| `C`        | `V`          |
+| `D`        | `B`          |
+| `E`        | `N`          |
+| `F`        | `M`          |
+
+### Debug Keys
+
+Pressing a debug key at any time will cause the emulator to enter into a
+different mode of operation. The debug keys are:
+
+| Keyboard Key | Effect |
+| :----------: | ------ |
+| `ESC`        | Quits the emulator             |
+| `F2`         | Enters CPU trace mode          |
+| `F1`         | Enters CPU trace and step mode |
+| `->`         | Next key while in step mode    |
+| `F12`        | Exits CPU trace or step mode   |
+
+## ROM Compatibility
+
+Here are the list of public domain ROMs and their current status with the emulator.
+
+| ROM Name          | Works Correctly    | Notes |
+| :---------------: | :----------------: | :---: |
+| MAZE              | :heavy_check_mark: |       |
 
 
 ## Troubleshooting
