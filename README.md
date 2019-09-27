@@ -23,6 +23,7 @@
 7. [Troubleshooting](#troubleshooting)
 8. [Further Documentation](#further-documentation)
 9. [Third Party Copyrights](#third-party-copyrights)
+    1. [Vera Mono Font](#vera-mono-font)
 
 ## What is it?
 
@@ -231,6 +232,8 @@ Under `html`, open the `index.html` file in a web browser for more information.
 
 
 ## Third Party Copyrights
+
+### Vera Mono Font
 
 This project makes use of an unmodified "Vera Mono" font under the 
 following license agreement:
