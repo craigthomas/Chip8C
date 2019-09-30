@@ -72,4 +72,79 @@ test_screen_blank(void)
     teardown_screen_test();
 }
 
+void
+test_screen_get_width_normal(void)
+{
+    setup_screen_test();
+    screen_extended_mode = FALSE;
+    CU_ASSERT_EQUAL(SCREEN_WIDTH, screen_get_width());
+    teardown_screen_test();
+}
+
+void
+test_screen_get_width_extended(void)
+{
+    setup_screen_test();
+    screen_extended_mode = TRUE;
+    CU_ASSERT_EQUAL(SCREEN_EXT_WIDTH, screen_get_width());
+    teardown_screen_test();
+}
+
+void
+test_screen_get_height_normal(void)
+{
+    setup_screen_test();
+    screen_extended_mode = FALSE;
+    CU_ASSERT_EQUAL(SCREEN_HEIGHT, screen_get_height());
+    teardown_screen_test();
+}
+
+void
+test_screen_get_height_extended(void)
+{
+    setup_screen_test();
+    screen_extended_mode = TRUE;
+    CU_ASSERT_EQUAL(SCREEN_EXT_HEIGHT, screen_get_height());
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_right(void)
+{
+    setup_screen_test();
+    screen_set_extended();
+    screen_draw(1, 1, 1);
+    CU_ASSERT_TRUE(screen_getpixel(1, 1));
+    screen_scroll_right();
+    CU_ASSERT_FALSE(screen_getpixel(1, 1));
+    CU_ASSERT_TRUE(screen_getpixel(5, 1));
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_left(void)
+{
+    setup_screen_test();
+    screen_set_extended();
+    screen_draw(5, 1, 1);
+    CU_ASSERT_TRUE(screen_getpixel(5, 1));
+    screen_scroll_left();
+    CU_ASSERT_FALSE(screen_getpixel(5, 1));
+    CU_ASSERT_TRUE(screen_getpixel(1, 1));
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_down(void)
+{
+    setup_screen_test();
+    screen_set_extended();
+    screen_draw(1, 5, 1);
+    CU_ASSERT_TRUE(screen_getpixel(1, 5));
+    screen_scroll_down(4);
+    CU_ASSERT_FALSE(screen_getpixel(1, 5));
+    CU_ASSERT_TRUE(screen_getpixel(1, 9));
+    teardown_screen_test();
+}
+
 /* E N D   O F   F I L E *****************************************************/

@@ -33,6 +33,19 @@ teardown(void)
 }
 
 void 
+setup_cpu_screen_test(void) 
+{
+    scale_factor = 1;
+    CU_TEST_FATAL(screen_init());
+}
+
+void 
+teardown_cpu_screen_test(void)
+{
+    screen_destroy();
+}
+
+void 
 test_jump_to_address(void) 
 {
     setup();
@@ -541,6 +554,251 @@ test_load_registers(void)
     CU_ASSERT_EQUAL(cpu.v[0x00], 0xAA);
     CU_ASSERT_EQUAL(cpu.v[0x01], 0xBB);
     teardown();  
+}
+
+void
+test_store_registers_in_rpl(void)
+{
+    setup();
+    tword.WORD = 0xFF75;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.v[0] = 1;
+    cpu.v[1] = 2;
+    cpu.v[2] = 3;
+    cpu.v[3] = 4;
+    cpu.v[4] = 5;
+    cpu.v[5] = 6;
+    cpu.v[6] = 7;
+    cpu.v[7] = 8;
+    cpu.v[8] = 9;
+    cpu.v[9] = 10;
+    cpu.v[10] = 11;
+    cpu.v[11] = 12;
+    cpu.v[12] = 13;
+    cpu.v[13] = 14;
+    cpu.v[14] = 15;
+    cpu.v[15] = 16;
+    cpu.pc.WORD = 0x0000;
+    cpu_execute_single();
+    CU_ASSERT_EQUAL(cpu.rpl[0], 1);
+    CU_ASSERT_EQUAL(cpu.rpl[1], 2);
+    CU_ASSERT_EQUAL(cpu.rpl[2], 3);
+    CU_ASSERT_EQUAL(cpu.rpl[3], 4);
+    CU_ASSERT_EQUAL(cpu.rpl[4], 5);
+    CU_ASSERT_EQUAL(cpu.rpl[5], 6);
+    CU_ASSERT_EQUAL(cpu.rpl[6], 7);
+    CU_ASSERT_EQUAL(cpu.rpl[7], 8);
+    CU_ASSERT_EQUAL(cpu.rpl[8], 9);
+    CU_ASSERT_EQUAL(cpu.rpl[9], 10);
+    CU_ASSERT_EQUAL(cpu.rpl[10], 11);
+    CU_ASSERT_EQUAL(cpu.rpl[11], 12);
+    CU_ASSERT_EQUAL(cpu.rpl[12], 13);
+    CU_ASSERT_EQUAL(cpu.rpl[13], 14);
+    CU_ASSERT_EQUAL(cpu.rpl[14], 15);
+    CU_ASSERT_EQUAL(cpu.rpl[15], 16);
+    teardown();
+}
+
+void
+test_read_registers_from_rpl(void)
+{
+    setup();
+    tword.WORD = 0xFF85;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.rpl[0] = 1;
+    cpu.rpl[1] = 2;
+    cpu.rpl[2] = 3;
+    cpu.rpl[3] = 4;
+    cpu.rpl[4] = 5;
+    cpu.rpl[5] = 6;
+    cpu.rpl[6] = 7;
+    cpu.rpl[7] = 8;
+    cpu.rpl[8] = 9;
+    cpu.rpl[9] = 10;
+    cpu.rpl[10] = 11;
+    cpu.rpl[11] = 12;
+    cpu.rpl[12] = 13;
+    cpu.rpl[13] = 14;
+    cpu.rpl[14] = 15;
+    cpu.rpl[15] = 16;
+    cpu.pc.WORD = 0x0000;
+    cpu_execute_single();
+    CU_ASSERT_EQUAL(cpu.v[0], 1);
+    CU_ASSERT_EQUAL(cpu.v[1], 2);
+    CU_ASSERT_EQUAL(cpu.v[2], 3);
+    CU_ASSERT_EQUAL(cpu.v[3], 4);
+    CU_ASSERT_EQUAL(cpu.v[4], 5);
+    CU_ASSERT_EQUAL(cpu.v[5], 6);
+    CU_ASSERT_EQUAL(cpu.v[6], 7);
+    CU_ASSERT_EQUAL(cpu.v[7], 8);
+    CU_ASSERT_EQUAL(cpu.v[8], 9);
+    CU_ASSERT_EQUAL(cpu.v[9], 10);
+    CU_ASSERT_EQUAL(cpu.v[10], 11);
+    CU_ASSERT_EQUAL(cpu.v[11], 12);
+    CU_ASSERT_EQUAL(cpu.v[12], 13);
+    CU_ASSERT_EQUAL(cpu.v[13], 14);
+    CU_ASSERT_EQUAL(cpu.v[14], 15);
+    CU_ASSERT_EQUAL(cpu.v[15], 16);
+    teardown();
+}
+
+void
+test_return_from_subroutine(void) 
+{
+    setup();
+    tword.WORD = 0x00EE;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.pc.WORD = 0x0000;
+    cpu.sp.WORD = 0x000E;
+    tword.WORD = 0xB2A1;
+    memory_write_word(cpu.sp, tword);
+    cpu.sp.WORD = 0x0010;
+    cpu_execute_single();
+    CU_ASSERT_EQUAL(cpu.pc.WORD, 0xA1B2);
+    teardown();
+}
+
+void
+test_exit_interpreter(void) 
+{
+    setup();
+    tword.WORD = 0x00FD;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.pc.WORD = 0x0000;
+    cpu.state = CPU_RUNNING;
+    cpu_execute_single();
+    CU_ASSERT_EQUAL(cpu.state, CPU_STOP);
+    teardown();
+}
+
+void
+test_cpu_scroll_left(void)
+{
+    setup();
+    setup_cpu_screen_test();
+    screen_draw(5, 1, 1);
+    CU_ASSERT_TRUE(screen_getpixel(5, 1));
+    tword.WORD = 0x00FC;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.pc.WORD = 0x0000;
+    cpu_execute_single();
+    CU_ASSERT_FALSE(screen_getpixel(5, 1));
+    CU_ASSERT_TRUE(screen_getpixel(1, 1));
+    teardown();
+    teardown_cpu_screen_test();
+}
+
+void
+test_cpu_scroll_right(void)
+{
+    setup();
+    setup_cpu_screen_test();
+    screen_draw(1, 1, 1);
+    CU_ASSERT_TRUE(screen_getpixel(1, 1));
+    tword.WORD = 0x00FB;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.pc.WORD = 0x0000;
+    cpu_execute_single();
+    CU_ASSERT_FALSE(screen_getpixel(1, 1));
+    CU_ASSERT_TRUE(screen_getpixel(5, 1));
+    teardown();
+    teardown_cpu_screen_test();
+}
+
+void
+test_cpu_scroll_down(void)
+{
+    setup();
+    setup_cpu_screen_test();
+    screen_draw(1, 5, 1);
+    CU_ASSERT_TRUE(screen_getpixel(1, 5));
+    tword.WORD = 0x00C4;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.pc.WORD = 0x0000;
+    cpu_execute_single();
+    CU_ASSERT_FALSE(screen_getpixel(1, 5));
+    CU_ASSERT_TRUE(screen_getpixel(1, 9));
+    teardown();
+    teardown_cpu_screen_test();
+}
+
+void
+test_cpu_screen_blank(void) 
+{
+    setup();
+    setup_cpu_screen_test();
+    for (int x = 0; x < screen_get_width(); x++) {
+        for (int y = 0; y < screen_get_height(); y++) {
+            screen_draw(x, y, 1);
+        }
+    }
+
+    for (int x = 0; x < screen_get_width(); x++) {
+        for (int y = 0; y < screen_get_height(); y++) {
+            CU_ASSERT_TRUE(screen_getpixel(x, y));
+        }
+    }
+
+    tword.WORD = 0x00E0;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.pc.WORD = 0x0000;
+    cpu_execute_single();
+
+    for (int x = 0; x < screen_get_width(); x++) {
+        for (int y = 0; y < screen_get_height(); y++) {
+            CU_ASSERT_FALSE(screen_getpixel(x, y));
+        }
+    }
+
+    teardown();
+    teardown_cpu_screen_test();
+}
+
+void
+test_cpu_enable_extended_mode(void) 
+{
+    setup();
+    setup_cpu_screen_test();
+
+    CU_ASSERT_FALSE(screen_extended_mode);
+
+    tword.WORD = 0x00FF;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.pc.WORD = 0x0000;
+    cpu_execute_single();
+
+    CU_ASSERT_TRUE(screen_extended_mode);
+
+    teardown();
+    teardown_cpu_screen_test();
+}
+
+void
+test_cpu_disable_extended_mode(void) 
+{
+    setup();
+    setup_cpu_screen_test();
+
+    screen_extended_mode = TRUE;
+    tword.WORD = 0x00FE;
+    address.WORD = 0x0000;
+    memory_write_word(address, tword);
+    cpu.pc.WORD = 0x0000;
+    cpu_execute_single();
+
+    CU_ASSERT_FALSE(screen_extended_mode);
+
+    teardown();
+    teardown_cpu_screen_test();
 }
 
 /* E N D   O F   F I L E ******************************************************/

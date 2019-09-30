@@ -21,9 +21,9 @@ main() {
         return CU_get_error();
     }
 
-    CU_pSuite cpu_suite = CU_add_suite("cpu_test_suite", 0, 0);
-    CU_pSuite screen_suite = CU_add_suite("screen_test_suite", 0, 0);
-    CU_pSuite keyboard_suite = CU_add_suite("keyboard_test_suite", 0, 0);
+    CU_pSuite cpu_suite = CU_add_suite("CPU TESTS", 0, 0);
+    CU_pSuite screen_suite = CU_add_suite("SCREEN TESTS", 0, 0);
+    CU_pSuite keyboard_suite = CU_add_suite("KEYBOARD TESTS", 0, 0);
 
     if (cpu_suite == NULL || screen_suite == NULL || keyboard_suite == NULL) {
         CU_cleanup_registry();
@@ -57,7 +57,17 @@ main() {
         CU_add_test(cpu_suite, "test_load_sprite_index", test_load_sprite_index) == NULL ||
         CU_add_test(cpu_suite, "test_bcd", test_bcd) == NULL ||
         CU_add_test(cpu_suite, "test_store_registers", test_store_registers) == NULL ||
-        CU_add_test(cpu_suite, "test_load_registers", test_load_registers) == NULL)
+        CU_add_test(cpu_suite, "test_load_registers", test_load_registers) == NULL ||
+        CU_add_test(cpu_suite, "test_store_registers_in_rpl", test_store_registers_in_rpl) == NULL ||
+        CU_add_test(cpu_suite, "test_read_registers_from_rpl", test_read_registers_from_rpl) == NULL ||
+        CU_add_test(cpu_suite, "test_return_from_subroutine", test_return_from_subroutine) == NULL ||
+        CU_add_test(cpu_suite, "test_exit_interpreter", test_exit_interpreter) == NULL ||
+        CU_add_test(cpu_suite, "test_cpu_scroll_left", test_cpu_scroll_left) == NULL ||
+        CU_add_test(cpu_suite, "test_cpu_scroll_right", test_cpu_scroll_right) == NULL ||
+        CU_add_test(cpu_suite, "test_cpu_scroll_down", test_cpu_scroll_down) == NULL ||
+        CU_add_test(cpu_suite, "test_cpu_screen_blank", test_cpu_screen_blank) == NULL ||
+        CU_add_test(cpu_suite, "test_cpu_enable_extended_mode", test_cpu_enable_extended_mode) == NULL ||
+        CU_add_test(cpu_suite, "test_cpu_disable_extended_mode", test_cpu_disable_extended_mode) == NULL)
     {
         CU_cleanup_registry();
         return CU_get_error();
@@ -65,7 +75,14 @@ main() {
 
     if (CU_add_test(screen_suite, "test_set_get_pixel", test_set_get_pixel) == NULL ||
         CU_add_test(screen_suite, "test_set_pixel_color_zero_turns_pixel_off", test_set_pixel_color_zero_turns_pixel_off) == NULL ||
-        CU_add_test(screen_suite, "test_screen_blank", test_screen_blank) == NULL)
+        CU_add_test(screen_suite, "test_screen_blank", test_screen_blank) == NULL ||
+        CU_add_test(screen_suite, "test_screen_get_width_normal", test_screen_get_width_normal) == NULL ||
+        CU_add_test(screen_suite, "test_screen_get_width_extended", test_screen_get_width_extended) == NULL ||
+        CU_add_test(screen_suite, "test_screen_get_height_normal", test_screen_get_height_normal) == NULL ||
+        CU_add_test(screen_suite, "test_screen_get_height_extended", test_screen_get_height_extended) == NULL ||
+        CU_add_test(screen_suite, "test_screen_scroll_right", test_screen_scroll_right) == NULL ||
+        CU_add_test(screen_suite, "test_screen_scroll_left", test_screen_scroll_left) == NULL ||
+        CU_add_test(screen_suite, "test_screen_scroll_down", test_screen_scroll_down) == NULL)
     {
         CU_cleanup_registry();
         return CU_get_error();

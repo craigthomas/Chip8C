@@ -78,6 +78,24 @@ cpu_reset(void)
     cpu.v[0xD] = 0;
     cpu.v[0xE] = 0;
     cpu.v[0xF] = 0;
+
+    /* Reset all RPL storage values */
+    cpu.rpl[0x0] = 0;
+    cpu.rpl[0x1] = 0;
+    cpu.rpl[0x2] = 0;
+    cpu.rpl[0x3] = 0;
+    cpu.rpl[0x4] = 0;
+    cpu.rpl[0x5] = 0;
+    cpu.rpl[0x6] = 0;
+    cpu.rpl[0x7] = 0;
+    cpu.rpl[0x8] = 0;
+    cpu.rpl[0x9] = 0;
+    cpu.rpl[0xA] = 0;
+    cpu.rpl[0xB] = 0;
+    cpu.rpl[0xC] = 0;
+    cpu.rpl[0xD] = 0;
+    cpu.rpl[0xE] = 0;
+    cpu.rpl[0xF] = 0;
  
     /* Reset special registers */
     cpu.i.WORD = 0;
@@ -144,12 +162,13 @@ cpu_execute_single(void)
 {
     byte x;             /* Stores what is usually the x reg nibble */
     byte y;             /* Stores what is usually the y reg nibble */
-    byte src;
-    byte tgt;
+    byte src;           /* Source register */
+    byte tgt;           /* Target register */
     byte tbyte;         /* A temporary byte */
     int temp;           /* A general purpose temporary integer */
     int i;              /* Used for FOR loop control */
     int j;              /* Used for FOR loop control */
+    int k;              /* Used for FOR loop control */
     int color;          /* Stores whether to turn a pixel on or off */
     int currentcolor;   /* Stores the background pixel value */
     word tword;         /* A temporary word */
@@ -167,6 +186,29 @@ cpu_execute_single(void)
         /* Misc subroutines */
         case 0x00:
             switch (cpu.operand.BYTE.low) {
+                /* 00Cn - SCRD */
+                /* Scroll Down */
+                case 0xC0:
+                case 0xC1:
+                case 0xC2:
+                case 0xC3:
+                case 0xC4:
+                case 0xC5:
+                case 0xC6:
+                case 0xC7:
+                case 0xC8:
+                case 0xC9:
+                case 0xCA:
+                case 0xCB:
+                case 0xCC:
+                case 0xCD:
+                case 0xCE:
+                case 0xCF:
+                    temp = cpu.operand.BYTE.low & 0x0F;
+                    screen_scroll_down(temp);
+                    sprintf(cpu.opdesc, "SCRD %d", temp);
+                    break;
+
                 /* 00E0 - CLS */
                 /* Clear screen */
                 case 0xE0:
@@ -182,6 +224,41 @@ cpu_execute_single(void)
                     cpu.sp.WORD--;
                     cpu.pc.BYTE.low = memory_read(cpu.sp.WORD);
                     sprintf(cpu.opdesc, "RTS");
+                    break;
+
+                /* 00FB - SCRR */
+                /* Scroll right */
+                case 0xFB:
+                    screen_scroll_right();
+                    sprintf(cpu.opdesc, "SCRR");
+                    break;
+
+                /* 00FC - SCRL */
+                /* Scroll left */
+                case 0xFC:
+                    screen_scroll_left();
+                    sprintf(cpu.opdesc, "SCRL");
+                    break;
+
+                /* 00FD - EXIT */
+                /* Exit interpreter */
+                case 0xFD:
+                    cpu.state = CPU_STOP;
+                    sprintf(cpu.opdesc, "EXIT");
+                    break;
+
+                /* 00FE - EXTD */
+                /* Disable extended mode */
+                case 0xFE:
+                    screen_disable_extended();
+                    sprintf(cpu.opdesc, "EXTD");
+                    break;
+
+                /* 00FF - EXTE */
+                /* Enable extended mode */
+                case 0xFF:
+                    screen_set_extended();
+                    sprintf(cpu.opdesc, "EXTE");
                     break;
 
                 default:
@@ -453,29 +530,57 @@ cpu_execute_single(void)
             x = cpu.operand.BYTE.high & 0xF;
             y = (cpu.operand.BYTE.low & 0xF0) >> 4;
             tword.WORD = cpu.i.WORD;
+            tbyte = cpu.operand.BYTE.low & 0xF;
             cpu.v[0xF] = 0;
 
-            for (i = 0; i < (cpu.operand.BYTE.low & 0xF); i++) {
-                tbyte = memory_read (cpu.i.WORD + i);
-                ycor = cpu.v[y] + i;
-                ycor = ycor % SCREEN_HEIGHT;
+            if (screen_extended_mode && tbyte == 0) {
+                for (i = 0; i < 16; i++) {
+                    for (k = 0; k < 2; k++) {
+                        tbyte = memory_read(cpu.i.WORD + (i * 2) + k);
+                        ycor = cpu.v[y] + i;
+                        ycor = ycor % screen_get_height();
 
-                for (j = 0; j < 8; j++) {
-                    xcor = cpu.v[x] + j;
-                    xcor = xcor % SCREEN_WIDTH;
+                        for (j = 0; j < 8; j++) {
+                            xcor = cpu.v[x] + j + (k * 8);
+                            xcor = xcor % screen_get_width();
 
-                    color = (tbyte & 0x80) ? 1 : 0;
-                    currentcolor = screen_getpixel(xcor, ycor);
+                            color = (tbyte & 0x80) ? 1 : 0;
+                            currentcolor = screen_getpixel(xcor, ycor);
 
-                    cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
-                    color = color ^ currentcolor;
+                            cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
+                            color = color ^ currentcolor;
 
-                    screen_draw(xcor, ycor, color);
-            tbyte = tbyte << 1;
-                } 
+                            screen_draw(xcor, ycor, color);
+                            tbyte = tbyte << 1;
+                        } 
+                    }
+                }
+                sprintf(cpu.opdesc, "DRAWEX V%X, V%X, %X", x, y, 
+                        (cpu.operand.BYTE.low & 0xF));
+            } else {
+                for (i = 0; i < (cpu.operand.BYTE.low & 0xF); i++) {
+                    tbyte = memory_read (cpu.i.WORD + i);
+                    ycor = cpu.v[y] + i;
+                    ycor = ycor % screen_get_height();
+
+                    for (j = 0; j < 8; j++) {
+                        xcor = cpu.v[x] + j;
+                        xcor = xcor % screen_get_width();
+
+                        color = (tbyte & 0x80) ? 1 : 0;
+                        currentcolor = screen_getpixel(xcor, ycor);
+
+                        cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
+                        color = color ^ currentcolor;
+
+                        screen_draw(xcor, ycor, color);
+                        tbyte = tbyte << 1;
+                    } 
+                }
+                sprintf(cpu.opdesc, "DRAW V%X, V%X, %X", x, y, 
+                        (cpu.operand.BYTE.low & 0xF));
             }
-            sprintf(cpu.opdesc, "DRAW V%X, V%X, %X", x, y, 
-                    (cpu.operand.BYTE.low & 0xF));
+
             if ((cpu.state != CPU_DEBUG) && (cpu.state != CPU_TRACE)) {
                 screen_refresh(FALSE);
             }
@@ -623,12 +728,34 @@ cpu_execute_single(void)
                 /* V registers, n would be 'F'                            */
                 case 0x65:
                     temp = cpu.i.WORD;
-                    for (i = 0; i <= (cpu.operand.BYTE.high & 0xF); i++) {
+                    tbyte = cpu.operand.BYTE.high & 0xF;
+                    for (i = 0; i <= tbyte; i++) {
                         cpu.v[i] = memory_read(temp);
                         temp++;
                     }
-                    sprintf(cpu.opdesc, "LOAD %X", (cpu.operand.BYTE.high 
-                            & 0xF));
+                    sprintf(cpu.opdesc, "LOAD %X", tbyte);
+                    break;
+
+                /* Fn75 - SRPL n */
+                /* Stores the values from n number of registers           */
+                /* (starting from 0) to the RPL store. */
+                case 0x75:
+                    tbyte = cpu.operand.BYTE.high & 0xF;
+                    for (i = 0; i <= tbyte; i++) {
+                        cpu.rpl[i] = cpu.v[i];
+                    }
+                    sprintf(cpu.opdesc, "SRPL %X", tbyte);
+                    break;
+
+                /* Fn85 - LRPL n */
+                /* Loads n number of registers from the RPL store to      */
+                /* their respective registers. */
+                case 0x85:
+                    tbyte = cpu.operand.BYTE.high & 0xF;
+                    for (i = 0; i <= tbyte; i++) {
+                        cpu.v[i] = cpu.rpl[i];
+                    }
+                    sprintf(cpu.opdesc, "LRPL %X", tbyte);
                     break;
                 
                 default:
