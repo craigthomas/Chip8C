@@ -235,9 +235,17 @@ void test_bcd(void);
 void test_store_registers(void);
 void test_load_registers(void);
 
+/* screen_test.c */
 void test_set_get_pixel(void);
 void test_set_pixel_color_zero_turns_pixel_off(void);
 void test_screen_blank(void);
+
+/* keyboard_test.c */
+void test_keycodetosymbol_returns_end_with_invalid_keycode(void);
+void test_keycodetosymbol_returns_correct_keycodes(void);
+void test_keyboard_symboltokeycode_returns_nokey_on_invalid_symbol(void);
+void test_keyboard_symboltokeycode_returns_correct_keycodes(void);
+void test_keyboard_checkforkeypress_returns_false_on_no_keypress(void);
 
 #endif
 

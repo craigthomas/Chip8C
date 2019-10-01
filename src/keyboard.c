@@ -66,14 +66,13 @@ SDLKey
 keyboard_keycodetosymbol(int keycode)
 {
     int i;
-    SDLKey result = SDLK_END;
 
     for (i = 0; i < KEY_NUMBEROFKEYS; i++) {
         if (keyboard_def[i].keycode == keycode) {
-            result = keyboard_def[i].symbol;
+            return keyboard_def[i].symbol;
         }
     }
-    return result;
+    return SDLK_END;
 }
 
 /******************************************************************************/
@@ -89,14 +88,13 @@ int
 keyboard_symboltokeycode(SDLKey symbol)
 {
     int i;
-    int result = KEY_NOKEY;
 
     for (i = 0; i < KEY_NUMBEROFKEYS; i++) {
         if (keyboard_def[i].symbol == symbol) {
-            result = keyboard_def[i].keycode;
+            return keyboard_def[i].keycode;
         }
     }
-    return result;
+    return KEY_NOKEY;
 }
 
 /******************************************************************************/
@@ -111,12 +109,8 @@ keyboard_symboltokeycode(SDLKey symbol)
 int 
 keyboard_checkforkeypress(int keycode)
 {
-    int result = FALSE;
     Uint8 *keystates = SDL_GetKeyState(NULL);
-    if (keystates[keyboard_keycodetosymbol(keycode)]) {
-        result = TRUE;
-    }
-    return result;
+    return keystates[keyboard_keycodetosymbol(keycode)];
 }
 
 /******************************************************************************/
@@ -130,12 +124,11 @@ keyboard_checkforkeypress(int keycode)
 int 
 keyboard_waitgetkeypress(void)
 {
-    int keycode = KEY_NOKEY;
-    while (keycode == KEY_NOKEY) {
+    while (TRUE) {
         if (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_KEYDOWN:
-                    keycode = keyboard_symboltokeycode(event.key.keysym.sym);
+                    return keyboard_symboltokeycode(event.key.keysym.sym);
                     break;
 
                 default:
@@ -144,7 +137,6 @@ keyboard_waitgetkeypress(void)
         }
         SDL_Delay(20);
     }
-    return keycode;
 }
 
 /* E N D   O F   F I L E ******************************************************/
