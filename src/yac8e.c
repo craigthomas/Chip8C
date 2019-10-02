@@ -69,7 +69,7 @@ print_help(void)
     printf("optional arguments:\n");
     printf("  -h           show this help message and exit\n");
     printf("  -s SCALE     the scale factor to apply to the display ");
-    printf("(default is 14)\n");
+    printf("(default is 5)\n");
     printf("  -d OP_DELAY  sets the CPU operation to take at least the ");
     printf("specified number of milliseconds to execute (default is 1)\n");
     printf("  -t           starts the CPU up in trace mode\n");

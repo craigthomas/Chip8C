@@ -1,4 +1,4 @@
-# Yet Another Chip 8 Emulator
+# Yet Another (Super) Chip 8 Emulator
 
 [![Build Status](https://img.shields.io/travis/craigthomas/Chip8C?style=flat-square)](https://travis-ci.org/craigthomas/Chip8C) 
 [![Codecov](https://img.shields.io/codecov/c/gh/craigthomas/Chip8C?style=flat-square)](https://codecov.io/gh/craigthomas/Chip8C) 
@@ -27,13 +27,17 @@
 
 ## What is it?
 
-This project is a Chip 8 emulator written in C. There are two other versions
+This project is a Super Chip 8 emulator written in C. There are two other versions
 of the emulator written in different languages:
 
 * [Chip8Python](https://github.com/craigthomas/Chip8Python)
 * [Chip8Java](https://github.com/craigthomas/Chip8Java)
 
 The original goal of these projects was to learn how to code a simple emulator.
+
+In addition to supporting Chip 8 ROMs, the emulator also supports the Super Chip 
+8 instruction set. Note that no additional configuration is needed to run a Super 
+Chip 8 ROM - simply run the ROM the same way you would run a normal Chip 8 ROM.
 
 
 ## License

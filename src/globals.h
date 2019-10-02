@@ -22,13 +22,15 @@
 /* Memory */
 #define MEM_4K         0x1000    /**< Defines a 4K memory size                */
 #define SP_START       0x52      /**< Defines the start of the system stack   */
-#define ROM_DEFAULT    0x200	 /**< Defines the default ROM load point      */
+#define ROM_DEFAULT    0x200	 /**< Defines the default ROM load point        */
 
 /* Screen */
 #define SCREEN_HEIGHT      32    /**< Default screen height                   */
 #define SCREEN_WIDTH       64    /**< Default screen width                    */
+#define SCREEN_EXT_HEIGHT  64    /**< Extended screen height                  */
+#define SCREEN_EXT_WIDTH   128   /**< Extended screen width                   */
 #define SCREEN_DEPTH       32    /**< Colour depth in BPP                     */
-#define SCALE_FACTOR       14    /**< Scaling for the window size             */
+#define SCALE_FACTOR       5     /**< Scaling for the window size             */
 #define PIXEL_COLOR        250   /**< Color to use for drawing pixels         */
 #define SCREEN_VERTREFRESH 60    /**< Sets the vertical refresh (in Hz)       */
 
@@ -104,6 +106,7 @@ typedef struct {
     word operand;      /**< The current operand                               */
     char *opdesc;      /**< A string representation of the current opcode     */
     int state;         /**< The current state of the CPU                      */
+    byte rpl[0x10];    /**< RPL register storage                              */
 } chip8regset;
 
 /* G L O B A L S **************************************************************/
@@ -118,6 +121,7 @@ SDL_Surface *virtscreen;       /**< Stores the Chip 8 virtual screen          */
 int screen_width;              /**< Stores the width of the screen in pixels  */
 int screen_height;             /**< Stores the height of the screen in pixels */
 int scale_factor;              /**< The scale factor applied to the screen    */
+int screen_extended_mode;      /**< Whether the screen is in extended mode    */
 
 /* Colors */
 Uint32 COLOR_BLACK;            /**< Black pixel color                         */
@@ -204,6 +208,17 @@ int screen_getpixel(int x, int y);
 void screen_draw(int x, int y, int color);
 void screen_refresh(int overlay_on);
 void screen_destroy(void);
+void screen_set_extended(void);
+void screen_disable_extended(void);
+void screen_scroll_left(void);
+void screen_scroll_right(void);
+void screen_scroll_down(int num_pixels);
+int screen_get_height(void);
+int screen_get_width(void);
+
+/* keyboard.c */
+SDLKey keyboard_keycodetosymbol(int keycode);
+int keyboard_symboltokeycode(SDLKey symbol);
 
 /* cpu_test.c */
 void test_jump_to_address(void);
@@ -234,11 +249,28 @@ void test_load_sprite_index(void);
 void test_bcd(void);
 void test_store_registers(void);
 void test_load_registers(void);
+void test_store_registers_in_rpl(void);
+void test_read_registers_from_rpl(void);
+void test_return_from_subroutine(void);
+void test_exit_interpreter(void);
+void test_cpu_scroll_left(void);
+void test_cpu_scroll_right(void);
+void test_cpu_scroll_down(void);
+void test_cpu_screen_blank(void);
+void test_cpu_enable_extended_mode(void);
+void test_cpu_disable_extended_mode(void);
 
 /* screen_test.c */
 void test_set_get_pixel(void);
 void test_set_pixel_color_zero_turns_pixel_off(void);
 void test_screen_blank(void);
+void test_screen_get_width_normal(void);
+void test_screen_get_width_extended(void);
+void test_screen_get_height_normal(void);
+void test_screen_get_height_extended(void);
+void test_screen_scroll_right(void);
+void test_screen_scroll_left(void);
+void test_screen_scroll_down(void);
 
 /* keyboard_test.c */
 void test_keycodetosymbol_returns_end_with_invalid_keycode(void);

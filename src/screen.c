@@ -307,8 +307,8 @@ screen_init(void)
     TTF_Init();
     message_font = TTF_OpenFont("VeraMono.ttf", 11);
 
-    screen_width = SCREEN_WIDTH * scale_factor;
-    screen_height = SCREEN_HEIGHT * scale_factor;
+    screen_width = (screen_extended_mode ? SCREEN_EXT_WIDTH : SCREEN_WIDTH) * scale_factor;
+    screen_height = (screen_extended_mode ? SCREEN_EXT_HEIGHT : SCREEN_HEIGHT) * scale_factor;
     screen = SDL_SetVideoMode(screen_width, 
                               screen_height, 
                               SCREEN_DEPTH,
@@ -342,6 +342,152 @@ screen_destroy(void)
     SDL_FreeSurface(virtscreen);
     SDL_FreeSurface(overlay);
     SDL_FreeSurface(screen);
+}
+
+/******************************************************************************/
+
+/**
+ * Sets extended mode for the screen.
+ */
+void
+screen_set_extended(void) 
+{
+    screen_destroy();
+    screen_extended_mode = TRUE;
+    screen_init();
+}
+
+/******************************************************************************/
+
+/**
+ * Disables extended mode for the screen.
+ */
+void
+screen_disable_extended(void)
+{
+    screen_destroy();
+    screen_extended_mode = FALSE;
+    screen_init();
+}
+
+/******************************************************************************/
+
+/**
+ * Scrolls the screen left by 4 pixels.
+ */
+void
+screen_scroll_left(void) 
+{
+    SDL_Rect source_rect, dest_rect;
+
+    int width = screen_get_width() * scale_factor;
+    int height = screen_get_height() * scale_factor;
+    
+    SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
+
+    source_rect.x = 0;
+    source_rect.y = 0;
+    source_rect.w = width;
+    source_rect.h = height;
+
+    dest_rect.x = (-4 * scale_factor);
+    dest_rect.y = 0;
+    dest_rect.w = 0;
+    dest_rect.h = 0;
+
+    SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
+    SDL_FreeSurface(virtscreen);
+    virtscreen = tempsurface;
+}
+
+/******************************************************************************/
+
+/**
+ * Scrolls the screen right by 4 pixels.
+ */
+void
+screen_scroll_right(void) 
+{
+    SDL_Rect source_rect, dest_rect;
+
+    int width = screen_get_width() * scale_factor;
+    int height = screen_get_height() * scale_factor;
+    
+    SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
+
+    source_rect.x = 0;
+    source_rect.y = 0;
+    source_rect.w = width - (4 * scale_factor);
+    source_rect.h = height;
+
+    dest_rect.x = (4 * scale_factor);
+    dest_rect.y = 0;
+    dest_rect.w = 0;
+    dest_rect.h = 0;
+
+    SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
+    SDL_FreeSurface(virtscreen);
+    virtscreen = tempsurface;
+}
+
+/******************************************************************************/
+
+/**
+ * Scrolls the screen down by the specified number of pixels.
+ * 
+ * @param num_pixels the number of pixels to scroll down by
+ */
+void
+screen_scroll_down(int num_pixels) 
+{
+    SDL_Rect source_rect, dest_rect;
+
+    int width = screen_get_width() * scale_factor;
+    int height = screen_get_height() * scale_factor;
+    
+    SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
+
+    source_rect.x = 0;
+    source_rect.y = 0;
+    source_rect.w = width;
+    source_rect.h = height;
+
+    dest_rect.x = 0;
+    dest_rect.y = (num_pixels * scale_factor);
+    dest_rect.w = 0;
+    dest_rect.h = 0;
+
+    SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
+    SDL_FreeSurface(virtscreen);
+    virtscreen = tempsurface;
+}
+
+/******************************************************************************/
+
+/**
+ * Returns the height of the screen in pixels. Note does not apply scaling 
+ * factor (i.e. returns the logical height of the screen).
+ * 
+ * @return the height of the screen in pixels
+ */
+int
+screen_get_height(void)
+{
+    return screen_extended_mode ? SCREEN_EXT_HEIGHT : SCREEN_HEIGHT;
+}
+
+/******************************************************************************/
+
+/**
+ * Returns the width of the screen in pixels. Note does not apply scaling 
+ * factor (i.e. returns the logical width of the screen).
+ * 
+ * @return the width of the screen in pixels
+ */
+int
+screen_get_width(void)
+{
+    return screen_extended_mode ? SCREEN_EXT_WIDTH : SCREEN_WIDTH;
 }
 
 /* E N D   O F   F I L E ******************************************************/
