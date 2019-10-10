@@ -53,10 +53,10 @@
 
 /* Keyboard special keys */
 #define QUIT_KEY   SDLK_ESCAPE /**< Quits the emulator                        */
-#define DEBUG_KEY  SDLK_F1     /**< Puts emulator into debug mode             */
-#define TRACE_KEY  SDLK_F2     /**< Puts emulator into trace mode             */
-#define NORMAL_KEY SDLK_F12    /**< Returns emulator to normal running mode   */
-#define STEP_KEY   SDLK_RIGHT  /**< Runs next instruction (in debug mode)     */
+#define DEBUG_KEY  SDLK_z      /**< Puts emulator into debug mode             */
+#define TRACE_KEY  SDLK_x      /**< Puts emulator into trace mode             */
+#define NORMAL_KEY SDLK_c      /**< Returns emulator to normal running mode   */
+#define STEP_KEY   SDLK_n      /**< Runs next instruction (in debug mode)     */
 
 /* Other generic definitions */
 #define TRUE          1
