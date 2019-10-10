@@ -183,10 +183,10 @@ different mode of operation. The debug keys are:
 | Keyboard Key | Effect |
 | :----------: | ------ |
 | `ESC`        | Quits the emulator             |
-| `F2`         | Enters CPU trace mode          |
-| `F1`         | Enters CPU trace and step mode |
-| `->`         | Next key while in step mode    |
-| `F12`        | Exits CPU trace or step mode   |
+| `X`          | Enters CPU trace mode          |
+| `Z`          | Enters CPU trace and step mode |
+| `N`          | Next key while in step mode    |
+| `C`          | Exits CPU trace or step mode   |
 
 ## ROM Compatibility
 
