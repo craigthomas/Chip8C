@@ -1,0 +1,23 @@
+name: Build Test Coverage
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DISPLAY: :0
+    steps:
+    - uses: actions/checkout@v2.3.4
+    - name: make test
+      run: |
+        sudo apt-get install xvfb libcunit1 libsdl-image1.2-dev libsdl-mixer1.2-dev
+        sudo apt-get install libsdl-ttf2.0-dev libsdl1.2-dev libportmidi-dev libswscale-dev
+        sudo apt-get install libavformat-dev libavcodec-dev libjpeg-dev libtiff5-dev libx11-6
+        sudo apt-get install libx11-dev xfonts-base xfonts-100dpi xfonts-75dpi
+        sudo apt-get install libsmpeg-dev xfonts-cyrillic
+        CFLAGS="-coverage -O0 -Wall -fprofile-arcs -ftest-coverage" xvfb-run --auto-servernum make test
+        gcov src/cpu.c
+        gcov src/screen.c
+        gcov src/keyboard.c
+        gcov src/memory.c
+    - name: Codecov
+      uses: codecov/codecov-action@v1.5.2
