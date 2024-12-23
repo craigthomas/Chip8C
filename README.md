@@ -1,8 +1,7 @@
 # Yet Another (Super) Chip 8 Emulator
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/craigthomas/Chip8C/Build%20Test%20Coverage?style=flat-square)](https://github.com/craigthomas/Chip8C/actions)
-[![Codecov](https://img.shields.io/codecov/c/gh/craigthomas/Chip8C?style=flat-square)](https://codecov.io/gh/craigthomas/Chip8C) 
-[![Dependencies](https://img.shields.io/librariesio/github/craigthomas/Chip8C?style=flat-square)](https://libraries.io/github/craigthomas/Chip8C)
+[![Coverage Status](https://img.shields.io/codecov/c/gh/craigthomas/Chip8C?style=flat-square)](https://codecov.io/gh/craigthomas/Chip8C)
 [![Releases](https://img.shields.io/github/release/craigthomas/Chip8C?style=flat-square)](https://github.com/craigthomas/Chip8C/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
