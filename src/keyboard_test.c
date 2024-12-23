@@ -12,11 +12,6 @@
 #include <CUnit/CUnit.h>
 #include "globals.h"
 
-/* L O C A L S ****************************************************************/
-
-word tword;
-word address;
-
 /* F U N C T I O N S **********************************************************/
 
 void
