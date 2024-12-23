@@ -1,6 +1,6 @@
 # Yet Another (Super) Chip 8 Emulator
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/craigthomas/Chip8C/gradle.yml?style=flat-square&branch=main)](https://github.com/craigthomas/Chip8C/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/craigthomas/Chip8C/Build%20Test%20Coverage?style=flat-square)](https://github.com/craigthomas/Chip8C/actions)
 [![Coverage Status](https://img.shields.io/codecov/c/gh/craigthomas/Chip8C?style=flat-square)](https://codecov.io/gh/craigthomas/Chip8C)
 [![Version](https://img.shields.io/github/release/craigthomas/Chip8C?style=flat-square)](https://github.com/craigthomas/Chip8C/releases)
 [![Releases](https://img.shields.io/github/release/craigthomas/Chip8C?style=flat-square)](https://github.com/craigthomas/Chip8C/releases)
