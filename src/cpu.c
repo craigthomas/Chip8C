@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Craig Thomas
+ * Copyright (C) 2012-2024 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      cpu.c
@@ -110,6 +110,7 @@ cpu_reset(void)
     cpu.state = CPU_PAUSED;
 
     cpu.opdesc = (char *)malloc(MAXSTRSIZE);
+    awaiting_keypress = FALSE;
 }
 
 /******************************************************************************/
@@ -121,6 +122,9 @@ cpu_reset(void)
 void 
 cpu_process_sdl_events(void)
 {
+    int emulatorkey;
+    SDLKey key;
+
     if (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_QUIT:
@@ -128,21 +132,23 @@ cpu_process_sdl_events(void)
                 break;
 
             case SDL_KEYDOWN:
-                if (event.key.keysym.sym == QUIT_KEY) {
+                key = event.key.keysym.sym;
+                if (key == QUIT_KEY) {
                     cpu.state = CPU_STOP;
                 } 
-                else if (event.key.keysym.sym == DEBUG_KEY) {
-                    cpu.state = CPU_DEBUG;
-                } 
-                else if (event.key.keysym.sym == TRACE_KEY) {
-                    cpu.state = CPU_TRACE;
-                } 
-                else if (event.key.keysym.sym == NORMAL_KEY) {
-                    cpu.state = CPU_RUNNING;
-                } 
-                else if (event.key.keysym.sym == STEP_KEY) {
-                    cpu.state = CPU_STEP;
+                keyboard_processkeydown(key);
+                if (awaiting_keypress) {
+                    emulatorkey = keyboard_isemulatorkey(key);
+                    if (emulatorkey != -1) {
+                        int x = cpu.operand.BYTE.high & 0xF;
+                        cpu.v[x] = emulatorkey;
+                        awaiting_keypress = FALSE;
+                    }
                 }
+                break;
+
+            case SDL_KEYUP:
+                keyboard_processkeyup(event.key.keysym.sym);
                 break;
 
             default:
@@ -634,8 +640,8 @@ cpu_execute_single(void)
                 /* Stop execution until a key is pressed. Move the value  */
                 /* of the key pressed into the specified register         */
                 case 0x0A:
+                    awaiting_keypress = TRUE;
                     tgt = cpu.operand.BYTE.high & 0xF;
-                    cpu.v[tgt] = keyboard_waitgetkeypress();
                     sprintf(cpu.opdesc, "KEYD V%X", tgt);
                     break;     
 
@@ -781,26 +787,14 @@ void
 cpu_execute(void)
 {
     while (cpu.state != CPU_STOP) {
-        cpu_execute_single();
-
-        if ((cpu.state == CPU_DEBUG) || (cpu.state == CPU_TRACE)) {
-            screen_refresh(TRUE);
-            while (cpu.state == CPU_DEBUG) {
-                cpu_process_sdl_events();
-                SDL_Delay(20);
-            } 
-            cpu.state = (cpu.state == CPU_STEP) ? CPU_DEBUG : cpu.state;
-        } 
-        else {
-            SDL_Delay(op_delay);
+        if (awaiting_keypress != 1) {
+            cpu_execute_single();
+            if (decrement_timers) {
+                cpu.dt -= (cpu.dt > 0) ? 1 : 0;
+                cpu.st -= (cpu.st > 0) ? 1 : 0;
+                decrement_timers = FALSE;
+            }
         }
-
-        if (decrement_timers) {
-            cpu.dt -= (cpu.dt > 0) ? 1 : 0;
-            cpu.st -= (cpu.st > 0) ? 1 : 0;
-            decrement_timers = FALSE;
-        }
-
         cpu_process_sdl_events();
     }
 }

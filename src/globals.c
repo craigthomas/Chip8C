@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Craig Thomas
+ * Copyright (C) 2012-2024 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      globals.h
@@ -41,6 +41,7 @@ SDL_TimerID cpu_timer;         /**< A CPU tick timer                          */
 unsigned long cpu_interrupt;   /**< The CPU interrupt routine                 */
 int decrement_timers;          /**< Flags CPU to decrement DELAY and SOUND    */
 int op_delay;                  /**< Millisecond delay on the CPU              */
+int awaiting_keypress;         /**< Whether to wait for a keypress event      */
 
 /* Event captures */
 SDL_Event event;               /**< Stores SDL events                         */

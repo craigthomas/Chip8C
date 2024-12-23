@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Craig Thomas
+ * Copyright (C) 2012-2024 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      keyboard.c
@@ -37,70 +37,49 @@
 /*!
  * Keyboard mapping from SDL keys to key values 
  */
-KEYSPEC keyboard_def[] = 
+SDLKey keyboard_def[] = 
 {
-   { 0x1, SDLK_4 },
-   { 0x2, SDLK_5 },
-   { 0x3, SDLK_6 },
-   { 0x4, SDLK_r },
-   { 0x5, SDLK_t },
-   { 0x6, SDLK_y },
-   { 0x7, SDLK_f },
-   { 0x8, SDLK_g },
-   { 0x9, SDLK_h },
-   { 0xA, SDLK_v },
-   { 0xB, SDLK_b },
-   { 0xC, SDLK_7 },
-   { 0xD, SDLK_u },
-   { 0xE, SDLK_j },
-   { 0xF, SDLK_n }
+    SDLK_x,
+    SDLK_1,
+    SDLK_2,
+    SDLK_3,
+    SDLK_q,
+    SDLK_w,
+    SDLK_e,
+    SDLK_a,
+    SDLK_s,
+    SDLK_d,
+    SDLK_z,
+    SDLK_c,
+    SDLK_4,
+    SDLK_r,
+    SDLK_f,
+    SDLK_v
+};
+
+/*!
+ * The state of the pressed keys on the keyboard
+ */
+int keyboard_state[] = {
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE, 
+    FALSE
 };
 
 /* F U N C T I O N S **********************************************************/
-
-/**
- * Takes a keycode and returns the associated SDLKey mapping. Returns SDLK_END 
- * on no match.
- *
- * @param keycode the keycode to check for
- * @return the SDLKey that is associated with the keycode
- */
-SDLKey 
-keyboard_keycodetosymbol(int keycode)
-{
-    int i;
-
-    for (i = 0; i < KEY_NUMBEROFKEYS; i++) {
-        if (keyboard_def[i].keycode == keycode) {
-            return keyboard_def[i].symbol;
-        }
-    }
-    return SDLK_END;
-}
-
-/******************************************************************************/
-
-/**
- * Takes the SDLKey symbol and checks to see if there is an associated keycode. 
- * Returns KEY_NOKEY on no match.
- *
- * @param symbol the SDLKey to check
- * @return the associated keycode, or KEY_NOKEY if no key mapping exists
- */
-int 
-keyboard_symboltokeycode(SDLKey symbol)
-{
-    int i;
-
-    for (i = 0; i < KEY_NUMBEROFKEYS; i++) {
-        if (keyboard_def[i].symbol == symbol) {
-            return keyboard_def[i].keycode;
-        }
-    }
-    return KEY_NOKEY;
-}
-
-/******************************************************************************/
 
 /**
  * Checks to see whether or not the specified keycode was pressed. Returns 
@@ -112,33 +91,65 @@ keyboard_symboltokeycode(SDLKey symbol)
 int 
 keyboard_checkforkeypress(int keycode)
 {
-    Uint8 *keystates = SDL_GetKeyState(NULL);
-    return keystates[keyboard_keycodetosymbol(keycode)];
+    if (keycode >= 0 && keycode < KEY_NUMBEROFKEYS) {
+        return keyboard_state[keycode];
+    }
+    return FALSE;
 }
 
 /******************************************************************************/
 
 /**
- * Wait and loop until a key is pressed. Returns the keycode of the key that 
- * was pressed, or 0 on failure.
- *
- * @return the keycode value of the key pressed
+ * If the key pressed is a valid emulator key, will return the key encoding 
+ * for that key pressed, or -1 if the key is not a valid emulator key
+ * 
+ * @param key the SDLKey to check
+ * @return the value of the key if it is an emulator key, -1 otherwise
  */
-int 
-keyboard_waitgetkeypress(void)
+int
+keyboard_isemulatorkey(SDLKey key)
 {
-    while (TRUE) {
-        if (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_KEYDOWN:
-                    return keyboard_symboltokeycode(event.key.keysym.sym);
-                    break;
-
-                default:
-                    break;
-            }
+    for (int x=0; x < KEY_NUMBEROFKEYS; x++) {
+        if (key == keyboard_def[x]) {
+            return x;
         }
-        SDL_Delay(20);
+    }
+    return -1;
+}
+
+/******************************************************************************/
+
+/**
+ * Processes a keypress. Will check to see what key was pressed, and sets the
+ * corresponding keypress state in the keyboard matrix to TRUE.
+ * 
+ * @param key the SDLKey to process
+ */
+void
+keyboard_processkeydown(SDLKey key) 
+{
+    for (int x=0; x < KEY_NUMBEROFKEYS; x++) {
+        if (key == keyboard_def[x]) {
+            keyboard_state[x] = TRUE;
+        }
+    }
+}
+
+/******************************************************************************/
+
+/**
+ * Processes a key release. Will check to see what key was released, and sets the
+ * corresponding keypress state in the keyboard matrix to FALSE.
+ * 
+ * @param key the SDLKey to process
+ */
+void
+keyboard_processkeyup(SDLKey key) 
+{
+    for (int x=0; x < KEY_NUMBEROFKEYS; x++) {
+        if (key == keyboard_def[x]) {
+            keyboard_state[x] = FALSE;
+        }
     }
 }
 

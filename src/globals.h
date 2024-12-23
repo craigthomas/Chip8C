@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Craig Thomas
+ * Copyright (C) 2012-2024 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      globals.h
@@ -48,7 +48,7 @@
 #define KEY_BUFFERSIZE   8    /**< Number of keys to store in the buffer      */
 #define KEY_DEBUG        1    /**< Only accept debug keystrokes               */
 #define KEY_NORMAL       0    /**< Accept normal keystrokes                   */
-#define KEY_NUMBEROFKEYS 15   /**< Defines the number of keys on the keyboard */
+#define KEY_NUMBEROFKEYS 16   /**< Defines the number of keys on the keyboard */
 #define KEY_NOKEY        -999 /**< Sets the no keypress value                 */
 
 /* Keyboard special keys */
@@ -81,14 +81,6 @@ typedef union {
       #endif
    } BYTE;
 } word;
-
-/**
- * Maps an SDLKey symbol to a keycode. 
- */
-typedef struct {
-   int keycode;        /**< The Chip 8 keycode value of the key               */
-   SDLKey symbol;      /**< The corresponding SDL symbol value of the key     */
-} KEYSPEC;
 
 /**
  * The chip8regset structure represents a Chip 8 cpu. Each of the major 
@@ -136,6 +128,7 @@ extern SDL_TimerID cpu_timer;         /**< A CPU tick timer                     
 extern unsigned long cpu_interrupt;   /**< The CPU interrupt routine                 */
 extern int decrement_timers;          /**< Flags CPU to decrement DELAY and SOUND    */
 extern int op_delay;                  /**< Millisecond delay on the CPU              */
+extern int awaiting_keypress;         /**< Whether to wait for a keypress event      */
 
 /* Event captures */
 extern SDL_Event event;               /**< Stores SDL events                         */
@@ -151,10 +144,6 @@ void cpu_reset(void);
 int cpu_timerinit(void);
 void cpu_execute(void);
 void cpu_execute_single(void);
-
-/* keyboard.c */
-int keyboard_waitgetkeypress(void);
-int keyboard_checkforkeypress(int keycode);
 
 /* memory.c */
 int memory_init(int memorysize);
@@ -221,8 +210,10 @@ int screen_get_height(void);
 int screen_get_width(void);
 
 /* keyboard.c */
-SDLKey keyboard_keycodetosymbol(int keycode);
-int keyboard_symboltokeycode(SDLKey symbol);
+int keyboard_isemulatorkey(SDLKey key);
+int keyboard_checkforkeypress(int keycode);
+void keyboard_processkeydown(SDLKey key);
+void keyboard_processkeyup(SDLKey key);
 
 /* cpu_test.c */
 void test_jump_to_address(void);
@@ -277,11 +268,10 @@ void test_screen_scroll_left(void);
 void test_screen_scroll_down(void);
 
 /* keyboard_test.c */
-void test_keycodetosymbol_returns_end_with_invalid_keycode(void);
-void test_keycodetosymbol_returns_correct_keycodes(void);
-void test_keyboard_symboltokeycode_returns_nokey_on_invalid_symbol(void);
-void test_keyboard_symboltokeycode_returns_correct_keycodes(void);
 void test_keyboard_checkforkeypress_returns_false_on_no_keypress(void);
+void test_keyboard_process_keydown(void);
+void test_keyboard_process_keyup(void);
+void test_keyboard_isemulatorkey(void);
 
 #endif
 
