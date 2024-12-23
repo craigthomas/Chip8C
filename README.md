@@ -2,7 +2,6 @@
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/craigthomas/Chip8C/Build%20Test%20Coverage?style=flat-square)](https://github.com/craigthomas/Chip8C/actions)
 [![Coverage Status](https://img.shields.io/codecov/c/gh/craigthomas/Chip8C?style=flat-square)](https://codecov.io/gh/craigthomas/Chip8C)
-[![Version](https://img.shields.io/github/release/craigthomas/Chip8C?style=flat-square)](https://github.com/craigthomas/Chip8C/releases)
 [![Releases](https://img.shields.io/github/release/craigthomas/Chip8C?style=flat-square)](https://github.com/craigthomas/Chip8C/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
