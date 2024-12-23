@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2019 Craig Thomas
+ * Copyright (C) 2019-2024 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      test.c
@@ -93,11 +93,10 @@ main() {
         return CU_get_error();
     }
 
-    if (CU_add_test(keyboard_suite, "test_keycodetosymbol_returns_end_with_invalid_keycode", test_keycodetosymbol_returns_end_with_invalid_keycode) == NULL ||
-        CU_add_test(keyboard_suite, "test_keycodetosymbol_returns_correct_keycodes", test_keycodetosymbol_returns_correct_keycodes) == NULL ||
-        CU_add_test(keyboard_suite, "test_keyboard_symboltokeycode_returns_nokey_on_invalid_symbol", test_keyboard_symboltokeycode_returns_nokey_on_invalid_symbol) == NULL ||
-        CU_add_test(keyboard_suite, "test_keyboard_symboltokeycode_returns_correct_keycodes", test_keyboard_symboltokeycode_returns_correct_keycodes) == NULL ||
-        CU_add_test(keyboard_suite, "test_keyboard_checkforkeypress_returns_false_on_no_keypress", test_keyboard_checkforkeypress_returns_false_on_no_keypress) == NULL)
+    if (CU_add_test(keyboard_suite, "test_keyboard_checkforkeypress_returns_false_on_no_keypress", test_keyboard_checkforkeypress_returns_false_on_no_keypress) == NULL ||
+        CU_add_test(keyboard_suite, "test_keyboard_process_keydown", test_keyboard_process_keydown) == NULL ||
+        CU_add_test(keyboard_suite, "test_keyboard_process_keyup", test_keyboard_process_keyup) == NULL ||
+        CU_add_test(keyboard_suite, "test_keyboard_isemulatorkey", test_keyboard_isemulatorkey) == NULL)
     {
         CU_cleanup_registry();
         return CU_get_error();
