@@ -20,8 +20,6 @@
 #include <stdlib.h>
 #include "globals.h"
 
-TTF_Font *message_font;
-
 /* F U N C T I O N S **********************************************************/
 
 /**
@@ -92,79 +90,6 @@ screen_blit_surface(SDL_Surface *src, SDL_Surface *dest, int x, int y)
 /******************************************************************************/
 
 /**
- * Helper routine to create an SDL surface that contains a text message.
- *
- * @param msg the message to blit
- * @param text_color the color of the text to draw
- * @return the SDL_Surface with the message text
- */
-SDL_Surface *
-screen_render_message(char *msg, SDL_Color text_color)
-{
-    SDL_Surface *message_surface; 
-
-    message_surface = TTF_RenderText_Solid(message_font, msg, text_color);
-    return message_surface;
-}
-
-/******************************************************************************/
-
-/**
- * Generates the current state of the CPU in an overlay on the main screen.
- * All of the CPU registers, along with the operand and a description of the
- * operand will be printed to the overlay. The overlay has an alpha channel
- * set such that it will not overwrite the Chip 8 screen - it will appear to 
- * be semi-transparent. 
- */
-void 
-screen_trace_message(void)
-{
-    SDL_Surface *msg_surface;
-    SDL_Rect box;
-
-    box.x = 5;
-    box.y = screen_height - 58;
-    box.w = 342;
-    box.h = 53;
-    SDL_FillRect(overlay, &box, COLOR_LGREEN);
-
-    box.x = 6;
-    box.y = screen_height - 57;
-    box.w = 340;
-    box.h = 51;
-    SDL_FillRect(overlay, &box, COLOR_DGREEN);
-
-    char *buffer = (char *)malloc(MAXSTRSIZE);
-    
-    sprintf(buffer, "I:%04X DT:%02X ST:%02X PC:%04X %04X %s", 
-             cpu.i.WORD, cpu.dt, cpu.st, cpu.oldpc.WORD, cpu.operand.WORD, 
-             cpu.opdesc);
-    msg_surface = screen_render_message(buffer, COLOR_TEXT);
-    screen_blit_surface(msg_surface, overlay, 10, screen_height - 53);
-    SDL_FreeSurface(msg_surface);
-
-    sprintf(buffer, 
-             "V0:%02X V1:%02X V2:%02X V3:%02X V4:%02X V5:%02X V6:%02X V7:%02X",
-             cpu.v[0], cpu.v[1], cpu.v[2], cpu.v[3], cpu.v[4], cpu.v[5],
-             cpu.v[6], cpu.v[7]);
-    msg_surface = screen_render_message(buffer, COLOR_TEXT);
-    screen_blit_surface(msg_surface, overlay, 10, screen_height - 38);
-    SDL_FreeSurface(msg_surface);
-
-    sprintf(buffer, 
-             "V8:%02X V9:%02X VA:%02X VB:%02X VC:%02X VD:%02X VE:%02X VF:%02X",
-             cpu.v[8], cpu.v[9], cpu.v[10], cpu.v[11], cpu.v[12], cpu.v[13],
-             cpu.v[14], cpu.v[15]);
-    msg_surface = screen_render_message(buffer, COLOR_TEXT);
-    screen_blit_surface(msg_surface, overlay, 10, screen_height - 23);
-    SDL_FreeSurface(msg_surface);
-  
-    free(buffer); 
-}
-
-/******************************************************************************/
-
-/**
  * Blanks out the virtual screen (needed for the CPU, since we want to keep the
  * CPU well separated from the SDL surfaces that are used in the screen
  * routines).
@@ -201,11 +126,6 @@ void
 screen_refresh(int overlay_on)
 {
     screen_blit_surface(virtscreen, screen, 0, 0);
-    if (overlay_on) {
-        screen_trace_message();
-        screen_blit_surface(overlay, screen, 0, 0);
-    }
-    screen_clear(overlay, COLOR_BLACK);
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
@@ -302,11 +222,6 @@ screen_create_surface(int width, int height, int alpha, Uint32 color_key)
 int 
 screen_init(void)
 {
-    int result = FALSE;
-
-    TTF_Init();
-    message_font = TTF_OpenFont("VeraMono.ttf", 11);
-
     screen_width = (screen_extended_mode ? SCREEN_EXT_WIDTH : SCREEN_WIDTH) * scale_factor;
     screen_height = (screen_extended_mode ? SCREEN_EXT_HEIGHT : SCREEN_HEIGHT) * scale_factor;
     screen = SDL_SetVideoMode(screen_width, 
@@ -316,19 +231,15 @@ screen_init(void)
 
     if (screen == NULL) {
         printf("Error: Unable to set video mode: %s\n", SDL_GetError());
+        return FALSE;
     } 
     else {
         SDL_SetAlpha(screen, SDL_SRCALPHA, 255);
         SDL_WM_SetCaption("YAC8 Emulator", NULL);
         init_colors(screen);
-        virtscreen = screen_create_surface(screen_width, screen_height, 
-                                            255, -1);
-        overlay = screen_create_surface(screen_width, screen_height, 
-                                         200, COLOR_BLACK);
-        result = TRUE;
+        virtscreen = screen_create_surface(screen_width, screen_height, 255, -1);
+        return (virtscreen != NULL);
     }
-
-    return ((virtscreen != NULL) && (overlay != NULL) && result);
 }
 
 /******************************************************************************/
@@ -340,7 +251,6 @@ void
 screen_destroy(void)
 {
     SDL_FreeSurface(virtscreen);
-    SDL_FreeSurface(overlay);
     SDL_FreeSurface(screen);
 }
 

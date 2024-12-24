@@ -37,26 +37,15 @@
 /* CPU */
 #define CPU_RUNNING    1         /**< Continues CPU execution                 */
 #define CPU_PAUSED     2         /**< Pauses the CPU                          */
-#define CPU_DEBUG      3         /**< Sets the debugging mode                 */
-#define CPU_TRACE      4         /**< Sets trace without debug                */
-#define CPU_STEP       5         /**< Steps to the next instruction (debug)   */
 #define CPU_STOP       0         /**< Halts the CPU and quits                 */
 #define CPU_OPTIME     1000      /**< CPU tick length (in nanoseconds)        */
 #define CPU_PC_START   0x200     /**< The start address of the PC             */
 
 /* Keyboard */
-#define KEY_BUFFERSIZE   8    /**< Number of keys to store in the buffer      */
-#define KEY_DEBUG        1    /**< Only accept debug keystrokes               */
-#define KEY_NORMAL       0    /**< Accept normal keystrokes                   */
 #define KEY_NUMBEROFKEYS 16   /**< Defines the number of keys on the keyboard */
-#define KEY_NOKEY        -999 /**< Sets the no keypress value                 */
 
 /* Keyboard special keys */
 #define QUIT_KEY   SDLK_ESCAPE /**< Quits the emulator                        */
-#define DEBUG_KEY  SDLK_z      /**< Puts emulator into debug mode             */
-#define TRACE_KEY  SDLK_x      /**< Puts emulator into trace mode             */
-#define NORMAL_KEY SDLK_c      /**< Returns emulator to normal running mode   */
-#define STEP_KEY   SDLK_n      /**< Runs next instruction (in debug mode)     */
 
 /* Other generic definitions */
 #define TRUE          1
@@ -108,7 +97,6 @@ extern byte *memory;                  /**< Pointer to emulator memory region    
 
 /* Screen */
 extern SDL_Surface *screen;           /**< Stores the main screen SDL structure      */
-extern SDL_Surface *overlay;          /**< Stores overlay data for the screen        */
 extern SDL_Surface *virtscreen;       /**< Stores the Chip 8 virtual screen          */
 extern int screen_width;              /**< Stores the width of the screen in pixels  */
 extern int screen_height;             /**< Stores the height of the screen in pixels */

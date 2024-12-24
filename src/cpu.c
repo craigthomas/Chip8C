@@ -587,9 +587,7 @@ cpu_execute_single(void)
                         (cpu.operand.BYTE.low & 0xF));
             }
 
-            if ((cpu.state != CPU_DEBUG) && (cpu.state != CPU_TRACE)) {
-                screen_refresh(FALSE);
-            }
+            screen_refresh(FALSE);
             break;
 
         /* Keyboard routines */
