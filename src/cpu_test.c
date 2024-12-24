@@ -17,7 +17,7 @@
 void 
 setup(void) 
 {
-    CU_TEST_FATAL(memory_init(MEM_4K));
+    CU_TEST_FATAL(memory_init(MEM_SIZE));
     cpu_reset();
 }
 
