@@ -52,7 +52,6 @@ the source, you will need the following required software packages:
 * [GNU C Compiler](http://gcc.gnu.org/) 4.6.3 or later
 * [GNU Make](http://www.gnu.org/software/make/) 3.81 or later
 * [SDL](http://www.libsdl.org/) 1.2.14 or later
-* [SDL TTF Extension](http://www.libsdl.org/projects/SDL_ttf/) 2.0.11 or later
 * [CUnit](http://cunit.sourceforge.net/doc/index.html) 2.1-3 or later
 
 Note that other C compilers make work as well. To compile the project, open a
@@ -120,24 +119,6 @@ This is useful for very fast computers (note that it is difficult to find
 information regarding opcode execution times, as such, I have not attempted
 any fancy timing mechanisms to ensure that instructions are executed in a
 set amount of time).
-
-### Debug Mode 
-
-You can also ask the emulator to start in debug mode, where each
-instruction is disassembled and displayed in the bottom right hand corner
-of the screen on a semi-transparent overlay. To do this:
-
-    yac8e /path/to/rom/filename -t
-
-This will start the emulator and pause it after executing the first 
-instruction. Pressing the right arrow key will step to the next instruction
-and again pause. The emulator will continue this way until you press the
-`F2` or `F12` keys (the former will run in trace mode where the overlay will
-still be active, while the latter will resume normal execution). Pressing
-`F1` will return to debug mode. Debug, trace and normal mode can be 
-activated at any time by pressing their respective keys (you do not have
-to specify the `-t` switch at startup to enable these modes).
-
 
 ## Keys
 
