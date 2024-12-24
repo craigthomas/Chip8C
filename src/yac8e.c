@@ -72,7 +72,6 @@ print_help(void)
     printf("(default is 5)\n");
     printf("  -d OP_DELAY  sets the CPU operation to take at least the ");
     printf("specified number of milliseconds to execute (default is 1)\n");
-    printf("  -t           starts the CPU up in trace mode\n");
 }
 
 /******************************************************************************/
@@ -120,10 +119,6 @@ parse_options(int argc, char **argv)
                     if (arg < argc) {
                         op_delay = atoi(argv[arg]);
                     }
-                    break;
-
-                case ('t'):
-                    cpu.state = CPU_DEBUG;
                     break;
 
                 default:

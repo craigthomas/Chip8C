@@ -21,7 +21,6 @@ byte *memory;                  /**< Pointer to emulator memory region         */
 
 /* Screen */
 SDL_Surface *screen;           /**< Stores the main screen SDL structure      */
-SDL_Surface *overlay;          /**< Stores overlay data for the screen        */
 SDL_Surface *virtscreen;       /**< Stores the Chip 8 virtual screen          */
 int screen_width;              /**< Stores the width of the screen in pixels  */
 int screen_height;             /**< Stores the height of the screen in pixels */
