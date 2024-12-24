@@ -172,7 +172,7 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    if (!memory_init(MEM_4K)) {
+    if (!memory_init(MEM_SIZE)) {
         printf ("Fatal: Unable to allocate emulator memory\n");
         SDL_Quit ();
         exit (1);

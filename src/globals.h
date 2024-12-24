@@ -20,9 +20,9 @@
 /* D E F I N E S **************************************************************/
 
 /* Memory */
-#define MEM_4K         0x1000    /**< Defines a 4K memory size                */
+#define MEM_SIZE       0x10000   /**< Defines a 64K memory size               */
 #define SP_START       0x52      /**< Defines the start of the system stack   */
-#define ROM_DEFAULT    0x200	 /**< Defines the default ROM load point        */
+#define ROM_DEFAULT    0x200	   /**< Defines the default ROM load point      */
 
 /* Screen */
 #define SCREEN_HEIGHT      32    /**< Default screen height                   */
