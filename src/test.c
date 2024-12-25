@@ -38,9 +38,12 @@ main() {
     if (CU_add_test(cpu_suite, "test_jump_to_address", test_jump_to_address) == NULL ||
         CU_add_test(cpu_suite, "test_jump_to_subroutine", test_jump_to_subroutine) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_value", test_skip_if_register_equal_value) == NULL ||
-        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_value", test_skip_if_register_not_equal_value) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_equal_value_integration", test_skip_if_register_equal_value_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_value_integration", test_skip_if_register_not_equal_value_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_equal_register_integration", test_skip_if_register_equal_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_register", test_skip_if_register_equal_register) == NULL ||
-        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_register", test_skip_if_register_not_equal_register) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_register_integration", test_skip_if_register_not_equal_register_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_move_value_to_register_integration", test_move_value_to_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_move_value_to_register", test_move_value_to_register) == NULL ||
         CU_add_test(cpu_suite, "test_add_value_to_register", test_add_value_to_register) == NULL ||
         CU_add_test(cpu_suite, "test_load_register_to_register", test_load_register_to_register) == NULL ||

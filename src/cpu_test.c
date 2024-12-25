@@ -68,7 +68,7 @@ test_jump_to_subroutine(void)
 }
 
 void
-test_skip_if_register_equal_value(void) 
+test_skip_if_register_equal_value_integration(void) 
 {
     setup();
     tword.WORD = 0x3152;
@@ -81,7 +81,29 @@ test_skip_if_register_equal_value(void)
 }
 
 void
-test_skip_if_register_not_equal_value(void) 
+test_skip_if_register_equal_value(void) 
+{
+    setup();
+    for (int r = 0; r < 0x10; r++) {
+        for (int value = 0; value < 0xFF; value += 10) {
+            for (int reg_value = 0; reg_value < 0xFF; reg_value++) {
+                cpu.operand.WORD = r << 8;
+                cpu.operand.WORD += value;
+                cpu.v[r] = reg_value;
+                cpu.pc.WORD = 0;
+                skip_if_register_equal_value();
+                if (value == reg_value) {
+                    CU_ASSERT_EQUAL(2, cpu.pc.WORD);
+                } else {
+                    CU_ASSERT_EQUAL(0, cpu.pc.WORD);
+                }
+            }
+        }
+    }
+}
+
+void
+test_skip_if_register_not_equal_value_integration(void) 
 {
     setup();
     tword.WORD = 0x4152;
@@ -102,7 +124,7 @@ test_skip_if_register_not_equal_value(void)
 }
 
 void
-test_skip_if_register_equal_register(void) 
+test_skip_if_register_equal_register_integration(void) 
 {
     setup();
     tword.WORD = 0x5120;
@@ -124,8 +146,32 @@ test_skip_if_register_equal_register(void)
     teardown();
 }
 
+void 
+test_skip_if_register_equal_register(void)
+{
+    for (int r = 0; r < 0x10; r++) {
+        cpu.v[r] = r;
+    }
+
+    for (int r1 = 0; r1 < 0x10; r1++) {
+        for (int r2 = 0; r2 < 0x10; r2++) {
+            cpu.operand.WORD = r1;
+            cpu.operand.WORD <<= 4;
+            cpu.operand.WORD += r2;
+            cpu.operand.WORD <<= 4;
+            cpu.pc.WORD = 0;
+            skip_if_register_equal_register();
+            if (r1 == r2) {
+                CU_ASSERT_EQUAL(2, cpu.pc.WORD);
+            } else {
+                CU_ASSERT_EQUAL(0, cpu.pc.WORD);
+            }
+        }
+    }
+}
+
 void
-test_move_value_to_register(void) 
+test_move_value_to_register_integration(void) 
 {
     setup();
     tword.WORD = 0x61AA;
@@ -136,6 +182,29 @@ test_move_value_to_register(void)
     CU_ASSERT_EQUAL(cpu.v[0x1], 0xAA);
     teardown();
 }
+
+void 
+test_move_value_to_register(void) 
+{
+    setup();
+    int value = 0x23;
+
+    for (int r = 0; r < 0x10; r++) {
+        cpu.operand.WORD = 0x60 + r;
+        cpu.operand.WORD <<= 8;
+        cpu.operand.WORD += value;
+        move_value_to_register();
+        for (int r_to_check = 0; r_to_check < 0x10; r_to_check++) {
+            if (r_to_check != r) {
+                CU_ASSERT_EQUAL(0, cpu.v[r_to_check]);
+            } else {
+                CU_ASSERT_EQUAL(value, cpu.v[r_to_check]);
+            }
+        }
+        cpu.v[r] = 0;
+    }
+}
+
 
 void
 test_add_value_to_register(void) 
@@ -365,7 +434,7 @@ test_shift_register_left(void)
 }
 
 void
-test_skip_if_register_not_equal_register(void) 
+test_skip_if_register_not_equal_register_integration(void) 
 {
     setup();
     tword.WORD = 0x9120;

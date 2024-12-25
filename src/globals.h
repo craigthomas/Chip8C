@@ -127,54 +127,14 @@ void cpu_reset(void);
 int cpu_timerinit(void);
 void cpu_execute(void);
 void cpu_execute_single(void);
+void skip_if_register_equal_value(void);
+void skip_if_register_not_equal_value(void);
+void skip_if_register_equal_register(void);
+void move_value_to_register(void);
 
 /* memory.c */
 int memory_init(int memorysize);
 void memory_destroy(void);
-
-/**
- * Attempts to read one byte of memory at the requested address. Returns the 
- * byte read from memory.
- *
- * @param address the address in memory to read from
- * @return the value read from the specified memory location
- */
-static inline byte 
-memory_read(register int address) 
-{
-   return memory[address];
-}
-
-/*****************************************************************************/
-
-/**
- * Attempts to write one byte of information to the requested address.
- *
- * @param address the address in memory to write to
- * @param value the value to write to the memory location
- */
-static inline void 
-memory_write(register word address, register byte value) 
-{
-   memory[address.WORD] = value;
-}
-
-/*****************************************************************************/
-
-/**
- * Attempts to write one word of information to the requested address.
- *
- * @param address the address in memory to write to
- * @param value the value to write to the memory locations
- */
-static inline void 
-memory_write_word(register word address, register word value) 
-{
-   memory[address.WORD] = value.BYTE.high;
-   memory[address.WORD + 1] = value.BYTE.low;
-}
-
-/*****************************************************************************/
 
 /* screen.c */
 int screen_init(void);
@@ -204,9 +164,12 @@ void keyboard_processkeyup(SDLKey key);
 void test_jump_to_address(void);
 void test_jump_to_subroutine(void);
 void test_skip_if_register_equal_value(void);
-void test_skip_if_register_not_equal_value(void);
+void test_skip_if_register_equal_value_integration(void);
+void test_skip_if_register_not_equal_value_integration(void);
+void test_skip_if_register_equal_register_integration(void);
 void test_skip_if_register_equal_register(void);
-void test_skip_if_register_not_equal_register(void);
+void test_skip_if_register_not_equal_register_integration(void);
+void test_move_value_to_register_integration(void);
 void test_move_value_to_register(void);
 void test_add_value_to_register(void);
 void test_load_register_to_register(void);
@@ -260,6 +223,48 @@ void test_keyboard_checkforkeypress_returns_false_on_no_keypress(void);
 void test_keyboard_process_keydown(void);
 void test_keyboard_process_keyup(void);
 void test_keyboard_isemulatorkey(void);
+
+/**
+ * Attempts to read one byte of memory at the requested address. Returns the 
+ * byte read from memory.
+ *
+ * @param address the address in memory to read from
+ * @return the value read from the specified memory location
+ */
+static inline byte 
+memory_read(register int address) 
+{
+   return memory[address];
+}
+
+/*****************************************************************************/
+
+/**
+ * Attempts to write one byte of information to the requested address.
+ *
+ * @param address the address in memory to write to
+ * @param value the value to write to the memory location
+ */
+static inline void 
+memory_write(register word address, register byte value) 
+{
+   memory[address.WORD] = value;
+}
+
+/*****************************************************************************/
+
+/**
+ * Attempts to write one word of information to the requested address.
+ *
+ * @param address the address in memory to write to
+ * @param value the value to write to the memory locations
+ */
+static inline void 
+memory_write_word(register word address, register word value) 
+{
+   memory[address.WORD] = value.BYTE.high;
+   memory[address.WORD + 1] = value.BYTE.low;
+}
 
 #endif
 

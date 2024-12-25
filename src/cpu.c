@@ -290,46 +290,22 @@ cpu_execute_single(void)
             sprintf(cpu.opdesc, "CALL %03X", cpu.pc.WORD);
             break;
 
-        /* 3snn - SKE Vs, nn */
-        /* Skip if source register equal value */
         case 0x30:
-            src = cpu.operand.BYTE.high & 0xF;
-            if (cpu.v[src] == cpu.operand.BYTE.low) {
-                cpu.pc.WORD += 2;
-            }
-            sprintf(cpu.opdesc, "SKE V%X, %02X", src, 
-                    cpu.operand.BYTE.low);
+            skip_if_register_equal_value();
             break;
 
-        /* 4snn - SKNE Vs, nn */
-        /* Skip if source register contents not equal constant value */
         case 0x40:
-            src = cpu.operand.BYTE.high & 0xF;
-            if (cpu.v[src] != cpu.operand.BYTE.low) {
-                cpu.pc.WORD += 2;
-            }
-            sprintf(cpu.opdesc, "SKNE V%X, %02X", src, 
-                    cpu.operand.BYTE.low);
+            skip_if_register_not_equal_value();
             break;
 
-        /* 5st0 - SKE Vs, Vt */
-        /* Skip if source register value is equal to target register */
         case 0x50:
-            src = cpu.operand.BYTE.high & 0xF;
-            tgt = (cpu.operand.BYTE.low & 0xF0) >> 4;
-            if (cpu.v[src] == cpu.v[tgt]) {
-                cpu.pc.WORD += 2;
-            }
-            sprintf(cpu.opdesc, "SKE V%X, V%X", src, tgt);
+            skip_if_register_equal_register();
             break;
 
         /* 6snn - LOAD Vs, nn */
         /* Move the constant value into the source register */
         case 0x60:
-            src = cpu.operand.BYTE.high & 0xF;
-            cpu.v[src] = cpu.operand.BYTE.low;
-            sprintf(cpu.opdesc, "LOAD V%X, %02X", src, 
-                    cpu.operand.BYTE.low);
+            move_value_to_register();
             break;
 
         /* 7snn - ADD Vs, nn */
@@ -772,6 +748,74 @@ cpu_execute_single(void)
     }
 }
 
+/******************************************************************************/
+
+/**
+ * 3xnn - SKE Vx, nn
+ * 
+ * Skip if source register equal constant value. The program counter
+ * is updated to skip the next instruction by advancing it by 2 bytes.
+ */ 
+void
+skip_if_register_equal_value(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    if (cpu.v[x] == (cpu.operand.WORD & 0x00FF)) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKE V%X, %02X", x, cpu.operand.BYTE.low);
+}
+
+/******************************************************************************/
+
+/**
+ * 4xnn - SKNE Vx, nn
+ * 
+ * Skip if source register contents not equal constant value. The program
+ * counter is updated to skip the next instruction by advancing it by 2 bytes.
+ */
+void
+skip_if_register_not_equal_value(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    if (cpu.v[x] != (cpu.operand.WORD & 0x00FF)) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKNE V%X, %02X", x, cpu.operand.BYTE.low);
+}
+
+/******************************************************************************/
+
+/**
+ * 5xy0 - SKE Vx, Vy
+ * 
+ * Skip if source register value is equal to target register. The program 
+ * counter is updated to skip the next instruction by advancing it by 2 bytes.
+ */
+void 
+skip_if_register_equal_register(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    if (cpu.v[x] == cpu.v[y]) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKE V%X, V%X", x, y);
+}
+
+/**
+ * 6xnn - LOAD Vx, nn
+ * 
+ * Move the constant value into the specified register.
+ */
+void
+move_value_to_register(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.v[x] = cpu.operand.WORD & 0x00FF;
+    sprintf(cpu.opdesc, "LOAD V%X, %02X", x, (cpu.operand.WORD & 0x00FF));
+}
+            
 /******************************************************************************/
 
 /**
