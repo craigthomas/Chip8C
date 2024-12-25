@@ -25,12 +25,12 @@
 #define ROM_DEFAULT    0x200	   /**< Defines the default ROM load point      */
 
 /* Screen */
-#define SCREEN_HEIGHT      32    /**< Default screen height                   */
-#define SCREEN_WIDTH       64    /**< Default screen width                    */
-#define SCREEN_EXT_HEIGHT  64    /**< Extended screen height                  */
-#define SCREEN_EXT_WIDTH   128   /**< Extended screen width                   */
+#define SCREEN_HEIGHT      64    /**< Default screen height                   */
+#define SCREEN_WIDTH       128   /**< Default screen width                    */
 #define SCREEN_DEPTH       32    /**< Colour depth in BPP                     */
 #define SCALE_FACTOR       5     /**< Scaling for the window size             */
+#define SCREEN_MODE_NORMAL   0   /**< The normal screen mode                  */
+#define SCREEN_MODE_EXTENDED 1   /**< The extended screen mode                */
 #define PIXEL_COLOR        250   /**< Color to use for drawing pixels         */
 #define SCREEN_VERTREFRESH 60    /**< Sets the vertical refresh (in Hz)       */
 
@@ -98,17 +98,12 @@ extern byte *memory;                  /**< Pointer to emulator memory region    
 /* Screen */
 extern SDL_Surface *screen;           /**< Stores the main screen SDL structure      */
 extern SDL_Surface *virtscreen;       /**< Stores the Chip 8 virtual screen          */
-extern int screen_width;              /**< Stores the width of the screen in pixels  */
-extern int screen_height;             /**< Stores the height of the screen in pixels */
 extern int scale_factor;              /**< The scale factor applied to the screen    */
-extern int screen_extended_mode;      /**< Whether the screen is in extended mode    */
+extern int screen_mode;               /**< Whether the screen is in extended mode    */
 
 /* Colors */
 extern Uint32 COLOR_BLACK;            /**< Black pixel color                         */
 extern Uint32 COLOR_WHITE;            /**< White pixel color                         */
-extern Uint32 COLOR_DGREEN;           /**< Dark green pixel color (for overlay)      */
-extern Uint32 COLOR_LGREEN;           /**< Light green pixel color (for overlay)     */
-extern SDL_Color COLOR_TEXT;          /**< Text color (white)                        */
 
 /* CPU */
 extern chip8regset cpu;               /**< The main emulator CPU                     */
@@ -183,19 +178,21 @@ memory_write_word(register word address, register word value)
 
 /* screen.c */
 int screen_init(void);
+int screen_is_extended_mode(void);
 void screen_clear(SDL_Surface *surface, Uint32 color); 
 void screen_blank(void);
-int screen_getpixel(int x, int y);
+int screen_get_pixel(int x, int y);
 void screen_draw(int x, int y, int color);
 void screen_refresh(int overlay_on);
 void screen_destroy(void);
-void screen_set_extended(void);
-void screen_disable_extended(void);
+void screen_set_extended_mode(void);
+void screen_set_normal_mode(void);
 void screen_scroll_left(void);
 void screen_scroll_right(void);
 void screen_scroll_down(int num_pixels);
 int screen_get_height(void);
 int screen_get_width(void);
+int screen_get_mode_scale(void);
 
 /* keyboard.c */
 int keyboard_isemulatorkey(SDLKey key);
@@ -254,6 +251,9 @@ void test_screen_get_height_extended(void);
 void test_screen_scroll_right(void);
 void test_screen_scroll_left(void);
 void test_screen_scroll_down(void);
+void test_screen_get_mode_scale_normal(void);
+void test_screen_get_mode_scale_extended(void);
+void test_screen_is_mode_extended_correct(void);
 
 /* keyboard_test.c */
 void test_keyboard_checkforkeypress_returns_false_on_no_keypress(void);

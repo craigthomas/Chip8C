@@ -10,7 +10,7 @@
  * used to draw pixels on. By default, it attempts to create a double-buffered
  * video memory based surface with 8 bits per pixel. Note that if you wish to
  * change the number of bits per pixel, you will need to update the 
- * `screen_getpixel` function accordingly. 
+ * `screen_get_pixel` function accordingly. 
  */
 
 /* I N C L U D E S ************************************************************/
@@ -27,15 +27,10 @@
  * values based upon the screen format. 
  */
 void 
-init_colors (SDL_Surface *surface) 
+init_colors(SDL_Surface *surface) 
 {
     COLOR_BLACK = SDL_MapRGB(surface->format, 0, 0, 0);
     COLOR_WHITE = SDL_MapRGB(surface->format, 250, 250, 250);
-    COLOR_DGREEN = SDL_MapRGB(surface->format, 0, 70, 0);
-    COLOR_LGREEN = SDL_MapRGB(surface->format, 0, 200, 0);
-    COLOR_TEXT.r = 255;
-    COLOR_TEXT.g = 255;
-    COLOR_TEXT.b = 255;
 }
 
 /******************************************************************************/
@@ -47,24 +42,36 @@ init_colors (SDL_Surface *surface)
  *
  * @param x the x coordinate of the pixel to check
  * @param y the y coordinate of the pixel to check
- * @returns 1 if the pixel is on, 0 otherwise
+ * @returns TRUE if the pixel is on, FALSE otherwise
  */
 int 
-screen_getpixel(int x, int y)
+screen_get_pixel(int x, int y)
 {
     Uint8 r, g, b;
     Uint32 color = 0;
-    int pixelcolor = 0;
-    x = x * scale_factor;
-    y = y * scale_factor;
+    int mode_scale = screen_mode == SCREEN_MODE_EXTENDED ? 1 : 2;
+
+    x = x * scale_factor * mode_scale;
+    y = y * scale_factor * mode_scale;
+
     Uint32 *pixels = (Uint32 *)virtscreen->pixels;
     Uint32 pixel = pixels[(virtscreen->w * y) + x];
     SDL_GetRGB(pixel, virtscreen->format, &r, &g, &b);
     color = SDL_MapRGB(virtscreen->format, r, g, b);
-    if (color == COLOR_WHITE) {
-        pixelcolor = 1;
-    }
-    return pixelcolor;
+    return color == COLOR_WHITE;
+}
+
+/******************************************************************************/
+
+/**
+ * Returns TRUE if the screen is in extended mode, FALSE otherwise.
+ * 
+ * @returns TRUE if the screen is in extended mode, FALSE otherwise
+ */
+int
+screen_is_extended_mode() 
+{
+    return screen_mode == SCREEN_MODE_EXTENDED ? TRUE : FALSE;
 }
 
 /******************************************************************************/
@@ -111,8 +118,8 @@ screen_clear(SDL_Surface *surface, Uint32 color)
     SDL_Rect rect;
     rect.x = 0;
     rect.y = 0;
-    rect.w = screen_width;
-    rect.h = screen_height;
+    rect.w = SCREEN_WIDTH * scale_factor;
+    rect.h = SCREEN_HEIGHT * scale_factor;
     SDL_FillRect(surface, &rect, color);
 }
 
@@ -146,10 +153,11 @@ screen_draw(int x, int y, int color)
     SDL_Rect pixel;
     Uint32 pixelcolor = COLOR_BLACK;
 
-    pixel.x = x * scale_factor;
-    pixel.y = y * scale_factor;
-    pixel.w = scale_factor;
-    pixel.h = scale_factor;
+    int mode_scale = screen_get_mode_scale();
+    pixel.x = x * scale_factor * mode_scale;
+    pixel.y = y * scale_factor * mode_scale;
+    pixel.w = scale_factor * mode_scale;
+    pixel.h = scale_factor * mode_scale;
     if (color) {
         pixelcolor = COLOR_WHITE;
     }
@@ -190,9 +198,16 @@ screen_create_surface(int width, int height, int alpha, Uint32 color_key)
         amask = 0xff000000;
     #endif
 
-    tempsurface = SDL_CreateRGBSurface(SDL_SWSURFACE | SDL_SRCALPHA, 
-                                    screen_width, screen_height, SCREEN_DEPTH,
-                                    rmask, gmask, bmask, amask);
+    tempsurface = SDL_CreateRGBSurface(
+        SDL_SWSURFACE | SDL_SRCALPHA, 
+        SCREEN_WIDTH * scale_factor, 
+        SCREEN_HEIGHT * scale_factor, 
+        SCREEN_DEPTH,
+        rmask, 
+        gmask, 
+        bmask, 
+        amask
+    );
     newsurface = SDL_DisplayFormat(tempsurface);
     SDL_FreeSurface(tempsurface);
 
@@ -222,24 +237,21 @@ screen_create_surface(int width, int height, int alpha, Uint32 color_key)
 int 
 screen_init(void)
 {
-    screen_width = (screen_extended_mode ? SCREEN_EXT_WIDTH : SCREEN_WIDTH) * scale_factor;
-    screen_height = (screen_extended_mode ? SCREEN_EXT_HEIGHT : SCREEN_HEIGHT) * scale_factor;
-    screen = SDL_SetVideoMode(screen_width, 
-                              screen_height, 
-                              SCREEN_DEPTH,
-                              SDL_SWSURFACE);
+    int width = SCREEN_WIDTH * scale_factor;
+    int height = SCREEN_HEIGHT * scale_factor;
+
+    screen = SDL_SetVideoMode(width, height, SCREEN_DEPTH, SDL_SWSURFACE);
 
     if (screen == NULL) {
         printf("Error: Unable to set video mode: %s\n", SDL_GetError());
         return FALSE;
     } 
-    else {
-        SDL_SetAlpha(screen, SDL_SRCALPHA, 255);
-        SDL_WM_SetCaption("YAC8 Emulator", NULL);
-        init_colors(screen);
-        virtscreen = screen_create_surface(screen_width, screen_height, 255, -1);
-        return (virtscreen != NULL);
-    }
+
+    SDL_SetAlpha(screen, SDL_SRCALPHA, 255);
+    SDL_WM_SetCaption("YAC8 Emulator", NULL);
+    init_colors(screen);
+    virtscreen = screen_create_surface(width, height, 255, -1);
+    return (virtscreen != NULL);
 }
 
 /******************************************************************************/
@@ -260,11 +272,9 @@ screen_destroy(void)
  * Sets extended mode for the screen.
  */
 void
-screen_set_extended(void) 
+screen_set_extended_mode(void) 
 {
-    screen_destroy();
-    screen_extended_mode = TRUE;
-    screen_init();
+    screen_mode = SCREEN_MODE_EXTENDED;
 }
 
 /******************************************************************************/
@@ -273,11 +283,9 @@ screen_set_extended(void)
  * Disables extended mode for the screen.
  */
 void
-screen_disable_extended(void)
+screen_set_normal_mode(void)
 {
-    screen_destroy();
-    screen_extended_mode = FALSE;
-    screen_init();
+    screen_mode = SCREEN_MODE_NORMAL;
 }
 
 /******************************************************************************/
@@ -290,8 +298,9 @@ screen_scroll_left(void)
 {
     SDL_Rect source_rect, dest_rect;
 
-    int width = screen_get_width() * scale_factor;
-    int height = screen_get_height() * scale_factor;
+    int mode_scale = screen_get_mode_scale();
+    int width = screen_get_width() * scale_factor * mode_scale;
+    int height = screen_get_height() * scale_factor * mode_scale;
     
     SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
 
@@ -300,7 +309,7 @@ screen_scroll_left(void)
     source_rect.w = width;
     source_rect.h = height;
 
-    dest_rect.x = (-4 * scale_factor);
+    dest_rect.x = (-4 * (scale_factor * mode_scale));
     dest_rect.y = 0;
     dest_rect.w = 0;
     dest_rect.h = 0;
@@ -320,17 +329,18 @@ screen_scroll_right(void)
 {
     SDL_Rect source_rect, dest_rect;
 
-    int width = screen_get_width() * scale_factor;
-    int height = screen_get_height() * scale_factor;
+    int mode_scale = screen_get_mode_scale();
+    int width = screen_get_width() * scale_factor * mode_scale;
+    int height = screen_get_height() * scale_factor * mode_scale;
     
     SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
 
     source_rect.x = 0;
     source_rect.y = 0;
-    source_rect.w = width - (4 * scale_factor);
+    source_rect.w = width - (4 * scale_factor * mode_scale);
     source_rect.h = height;
 
-    dest_rect.x = (4 * scale_factor);
+    dest_rect.x = (4 * scale_factor * mode_scale);
     dest_rect.y = 0;
     dest_rect.w = 0;
     dest_rect.h = 0;
@@ -354,6 +364,7 @@ screen_scroll_down(int num_pixels)
 
     int width = screen_get_width() * scale_factor;
     int height = screen_get_height() * scale_factor;
+    int mode_scale = screen_is_extended_mode() ? 1 : 2;
     
     SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
 
@@ -363,7 +374,7 @@ screen_scroll_down(int num_pixels)
     source_rect.h = height;
 
     dest_rect.x = 0;
-    dest_rect.y = (num_pixels * scale_factor);
+    dest_rect.y = (num_pixels * scale_factor * mode_scale);
     dest_rect.w = 0;
     dest_rect.h = 0;
 
@@ -383,7 +394,7 @@ screen_scroll_down(int num_pixels)
 int
 screen_get_height(void)
 {
-    return screen_extended_mode ? SCREEN_EXT_HEIGHT : SCREEN_HEIGHT;
+    return screen_is_extended_mode() ? 64 : 32;
 }
 
 /******************************************************************************/
@@ -397,7 +408,21 @@ screen_get_height(void)
 int
 screen_get_width(void)
 {
-    return screen_extended_mode ? SCREEN_EXT_WIDTH : SCREEN_WIDTH;
+    return screen_is_extended_mode() ? 128 : 64;
+}
+
+/******************************************************************************/
+
+/**
+ * Returns the scaling factor that should be applied to the pixel size,
+ * depending on the current video mode (normal or extended).
+ * 
+ * @returns the scale amount to apply to pixel drawing operations
+ */
+int
+screen_get_mode_scale(void)
+{
+    return screen_is_extended_mode() ? 1 : 2;
 }
 
 /* E N D   O F   F I L E ******************************************************/

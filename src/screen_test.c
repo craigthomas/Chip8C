@@ -32,7 +32,7 @@ test_set_get_pixel(void)
 {
     setup_screen_test();
     screen_draw(10, 10, 1);
-    CU_ASSERT_TRUE(screen_getpixel(10, 10));
+    CU_ASSERT_TRUE(screen_get_pixel(10, 10));
     teardown_screen_test();
 }
 
@@ -42,7 +42,7 @@ test_set_pixel_color_zero_turns_pixel_off(void)
     setup_screen_test();
     screen_draw(10, 10, 1);
     screen_draw(10, 10, 0);
-    CU_ASSERT_FALSE(screen_getpixel(10, 10));
+    CU_ASSERT_FALSE(screen_get_pixel(10, 10));
     teardown_screen_test();
 }
 
@@ -61,7 +61,7 @@ test_screen_blank(void)
     screen_blank();
     for (x = 0; x < SCREEN_WIDTH; x++) {
         for (y = 0; y < SCREEN_HEIGHT; y++) {
-            CU_ASSERT_FALSE(screen_getpixel(x, y));
+            CU_ASSERT_FALSE(screen_get_pixel(x, y));
         }
     }
     teardown_screen_test();
@@ -71,8 +71,7 @@ void
 test_screen_get_width_normal(void)
 {
     setup_screen_test();
-    screen_extended_mode = FALSE;
-    CU_ASSERT_EQUAL(SCREEN_WIDTH, screen_get_width());
+    CU_ASSERT_EQUAL(64, screen_get_width());
     teardown_screen_test();
 }
 
@@ -80,8 +79,8 @@ void
 test_screen_get_width_extended(void)
 {
     setup_screen_test();
-    screen_extended_mode = TRUE;
-    CU_ASSERT_EQUAL(SCREEN_EXT_WIDTH, screen_get_width());
+    screen_set_extended_mode();
+    CU_ASSERT_EQUAL(128, screen_get_width());
     teardown_screen_test();
 }
 
@@ -89,8 +88,8 @@ void
 test_screen_get_height_normal(void)
 {
     setup_screen_test();
-    screen_extended_mode = FALSE;
-    CU_ASSERT_EQUAL(SCREEN_HEIGHT, screen_get_height());
+    screen_set_normal_mode();
+    CU_ASSERT_EQUAL(32, screen_get_height());
     teardown_screen_test();
 }
 
@@ -98,8 +97,8 @@ void
 test_screen_get_height_extended(void)
 {
     setup_screen_test();
-    screen_extended_mode = TRUE;
-    CU_ASSERT_EQUAL(SCREEN_EXT_HEIGHT, screen_get_height());
+    screen_set_extended_mode();
+    CU_ASSERT_EQUAL(64, screen_get_height());
     teardown_screen_test();
 }
 
@@ -107,12 +106,12 @@ void
 test_screen_scroll_right(void)
 {
     setup_screen_test();
-    screen_set_extended();
+    screen_set_extended_mode();
     screen_draw(1, 1, 1);
-    CU_ASSERT_TRUE(screen_getpixel(1, 1));
+    CU_ASSERT_TRUE(screen_get_pixel(1, 1));
     screen_scroll_right();
-    CU_ASSERT_FALSE(screen_getpixel(1, 1));
-    CU_ASSERT_TRUE(screen_getpixel(5, 1));
+    CU_ASSERT_FALSE(screen_get_pixel(1, 1));
+    CU_ASSERT_TRUE(screen_get_pixel(5, 1));
     teardown_screen_test();
 }
 
@@ -120,12 +119,12 @@ void
 test_screen_scroll_left(void)
 {
     setup_screen_test();
-    screen_set_extended();
+    screen_set_extended_mode();
     screen_draw(5, 1, 1);
-    CU_ASSERT_TRUE(screen_getpixel(5, 1));
+    CU_ASSERT_TRUE(screen_get_pixel(5, 1));
     screen_scroll_left();
-    CU_ASSERT_FALSE(screen_getpixel(5, 1));
-    CU_ASSERT_TRUE(screen_getpixel(1, 1));
+    CU_ASSERT_FALSE(screen_get_pixel(5, 1));
+    CU_ASSERT_TRUE(screen_get_pixel(1, 1));
     teardown_screen_test();
 }
 
@@ -133,13 +132,40 @@ void
 test_screen_scroll_down(void)
 {
     setup_screen_test();
-    screen_set_extended();
+    screen_set_extended_mode();
     screen_draw(1, 5, 1);
-    CU_ASSERT_TRUE(screen_getpixel(1, 5));
+    CU_ASSERT_TRUE(screen_get_pixel(1, 5));
     screen_scroll_down(4);
-    CU_ASSERT_FALSE(screen_getpixel(1, 5));
-    CU_ASSERT_TRUE(screen_getpixel(1, 9));
+    CU_ASSERT_FALSE(screen_get_pixel(1, 5));
+    CU_ASSERT_TRUE(screen_get_pixel(1, 9));
     teardown_screen_test();
+}
+
+void 
+test_screen_get_mode_scale_normal(void)
+{
+    setup_screen_test();
+    screen_set_normal_mode();
+    CU_ASSERT_EQUAL(2, screen_get_mode_scale());
+}
+
+void 
+test_screen_get_mode_scale_extended(void)
+{
+    setup_screen_test();
+    screen_set_extended_mode();
+    CU_ASSERT_EQUAL(1, screen_get_mode_scale());
+}
+
+void
+test_screen_is_mode_extended_correct(void)
+{
+    setup_screen_test();
+    screen_set_extended_mode();
+    CU_ASSERT_TRUE(screen_is_extended_mode());
+
+    screen_set_normal_mode();
+    CU_ASSERT_FALSE(screen_is_extended_mode());
 }
 
 /* E N D   O F   F I L E *****************************************************/
