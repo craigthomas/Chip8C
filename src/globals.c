@@ -22,17 +22,13 @@ byte *memory;                  /**< Pointer to emulator memory region         */
 /* Screen */
 SDL_Surface *screen;           /**< Stores the main screen SDL structure      */
 SDL_Surface *virtscreen;       /**< Stores the Chip 8 virtual screen          */
-int screen_width;              /**< Stores the width of the screen in pixels  */
-int screen_height;             /**< Stores the height of the screen in pixels */
-int scale_factor;              /**< The scale factor applied to the screen    */
-int screen_extended_mode;      /**< Whether the screen is in extended mode    */
+int scale;                     /**< The scale factor applied to the screen    */
+int screen_mode;               /**< Whether the screen is in extended mode    */
+int scale_factor;              /**< Stores the current scale factor           */
 
 /* Colors */
 Uint32 COLOR_BLACK;            /**< Black pixel color                         */
 Uint32 COLOR_WHITE;            /**< White pixel color                         */
-Uint32 COLOR_DGREEN;           /**< Dark green pixel color (for overlay)      */
-Uint32 COLOR_LGREEN;           /**< Light green pixel color (for overlay)     */
-SDL_Color COLOR_TEXT;          /**< Text color (white)                        */
 
 /* CPU */
 chip8regset cpu;               /**< The main emulator CPU                     */

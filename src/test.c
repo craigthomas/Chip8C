@@ -87,7 +87,11 @@ main() {
         CU_add_test(screen_suite, "test_screen_get_height_extended", test_screen_get_height_extended) == NULL ||
         CU_add_test(screen_suite, "test_screen_scroll_right", test_screen_scroll_right) == NULL ||
         CU_add_test(screen_suite, "test_screen_scroll_left", test_screen_scroll_left) == NULL ||
-        CU_add_test(screen_suite, "test_screen_scroll_down", test_screen_scroll_down) == NULL)
+        CU_add_test(screen_suite, "test_screen_scroll_down", test_screen_scroll_down) == NULL ||
+        CU_add_test(screen_suite, "test_screen_get_mode_scale_normal", test_screen_get_mode_scale_normal) == NULL ||
+        CU_add_test(screen_suite, "test_screen_get_mode_scale_extended", test_screen_get_mode_scale_extended) == NULL ||
+        CU_add_test(screen_suite, "test_screen_is_mode_extended_correct", test_screen_is_mode_extended_correct) == NULL
+    )
     {
         CU_cleanup_registry();
         return CU_get_error();

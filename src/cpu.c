@@ -256,14 +256,14 @@ cpu_execute_single(void)
                 /* 00FE - EXTD */
                 /* Disable extended mode */
                 case 0xFE:
-                    screen_disable_extended();
+                    screen_set_normal_mode();
                     sprintf(cpu.opdesc, "EXTD");
                     break;
 
                 /* 00FF - EXTE */
                 /* Enable extended mode */
                 case 0xFF:
-                    screen_set_extended();
+                    screen_set_extended_mode();
                     sprintf(cpu.opdesc, "EXTE");
                     break;
 
@@ -539,7 +539,7 @@ cpu_execute_single(void)
             tbyte = cpu.operand.BYTE.low & 0xF;
             cpu.v[0xF] = 0;
 
-            if (screen_extended_mode && tbyte == 0) {
+            if (screen_is_extended_mode() && tbyte == 0) {
                 for (i = 0; i < 16; i++) {
                     for (k = 0; k < 2; k++) {
                         tbyte = memory_read(cpu.i.WORD + (i * 2) + k);
@@ -551,7 +551,7 @@ cpu_execute_single(void)
                             xcor = xcor % screen_get_width();
 
                             color = (tbyte & 0x80) ? 1 : 0;
-                            currentcolor = screen_getpixel(xcor, ycor);
+                            currentcolor = screen_get_pixel(xcor, ycor);
 
                             cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
                             color = color ^ currentcolor;
@@ -574,7 +574,7 @@ cpu_execute_single(void)
                         xcor = xcor % screen_get_width();
 
                         color = (tbyte & 0x80) ? 1 : 0;
-                        currentcolor = screen_getpixel(xcor, ycor);
+                        currentcolor = screen_get_pixel(xcor, ycor);
 
                         cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
                         color = color ^ currentcolor;
