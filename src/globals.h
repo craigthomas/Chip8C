@@ -127,10 +127,15 @@ void cpu_reset(void);
 int cpu_timerinit(void);
 void cpu_execute(void);
 void cpu_execute_single(void);
+void return_from_subroutine(void);
+void jump_to_address(void);
+void jump_to_subroutine(void);
 void skip_if_register_equal_value(void);
 void skip_if_register_not_equal_value(void);
 void skip_if_register_equal_register(void);
 void move_value_to_register(void);
+void add_value_to_register(void);
+void move_register_into_register(void);
 
 /* memory.c */
 int memory_init(int memorysize);
@@ -161,8 +166,12 @@ void keyboard_processkeydown(SDLKey key);
 void keyboard_processkeyup(SDLKey key);
 
 /* cpu_test.c */
+void test_return_from_subroutine(void);
+void test_return_from_subroutine_integration(void);
 void test_jump_to_address(void);
+void test_jump_to_address_integration(void);
 void test_jump_to_subroutine(void);
+void test_jump_to_subroutine_integration(void);
 void test_skip_if_register_equal_value(void);
 void test_skip_if_register_equal_value_integration(void);
 void test_skip_if_register_not_equal_value_integration(void);
@@ -172,7 +181,9 @@ void test_skip_if_register_not_equal_register_integration(void);
 void test_move_value_to_register_integration(void);
 void test_move_value_to_register(void);
 void test_add_value_to_register(void);
-void test_load_register_to_register(void);
+void test_add_value_to_register_integration(void);
+void test_move_register_to_register(void);
+void test_move_register_to_register_integration(void);
 void test_logical_or(void);
 void test_logical_and(void);
 void test_logical_xor(void);
@@ -194,7 +205,6 @@ void test_store_registers(void);
 void test_load_registers(void);
 void test_store_registers_in_rpl(void);
 void test_read_registers_from_rpl(void);
-void test_return_from_subroutine(void);
 void test_exit_interpreter(void);
 void test_cpu_scroll_left(void);
 void test_cpu_scroll_right(void);

@@ -109,6 +109,10 @@ cpu_reset(void)
     srand(time(0));
     cpu.state = CPU_PAUSED;
 
+    if (cpu.opdesc != NULL) {
+        free(cpu.opdesc);
+        cpu.opdesc = NULL;
+    }
     cpu.opdesc = (char *)malloc(MAXSTRSIZE);
     awaiting_keypress = FALSE;
 }
@@ -222,14 +226,8 @@ cpu_execute_single(void)
                     sprintf(cpu.opdesc, "CLS");
                     break;
 
-                /* 00EE - RTS */
-                /* Return from subroutine */
                 case 0xEE:
-                    cpu.sp.WORD--;
-                    cpu.pc.BYTE.high = memory_read(cpu.sp.WORD);
-                    cpu.sp.WORD--;
-                    cpu.pc.BYTE.low = memory_read(cpu.sp.WORD);
-                    sprintf(cpu.opdesc, "RTS");
+                    return_from_subroutine();
                     break;
 
                 /* 00FB - SCRR */
@@ -272,22 +270,12 @@ cpu_execute_single(void)
             } 
             break;
 
-        /* 1nnn - JUMP nnn */
-        /* Jump to address */
         case 0x10:
-            cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
-            sprintf(cpu.opdesc, "JUMP %03X", cpu.pc.WORD);
+            jump_to_address();
             break;
 
-        /* 2nnn - CALL nnn */
-        /* Jump to subroutine */
         case 0x20:
-            memory_write(cpu.sp, cpu.pc.BYTE.low);
-            cpu.sp.WORD++;
-            memory_write(cpu.sp, cpu.pc.BYTE.high);
-            cpu.sp.WORD++;
-            cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
-            sprintf(cpu.opdesc, "CALL %03X", cpu.pc.WORD);
+            jump_to_subroutine();
             break;
 
         case 0x30:
@@ -302,32 +290,19 @@ cpu_execute_single(void)
             skip_if_register_equal_register();
             break;
 
-        /* 6snn - LOAD Vs, nn */
-        /* Move the constant value into the source register */
         case 0x60:
             move_value_to_register();
             break;
 
-        /* 7snn - ADD Vs, nn */
-        /* Add the constant value to the source register */
         case 0x70:
-            src = cpu.operand.BYTE.high & 0xF;
-            temp = cpu.v[src] + cpu.operand.BYTE.low;
-            cpu.v[src] = (temp > 255) ? temp - 256 : temp;
-            sprintf(cpu.opdesc, "ADD V%X, %02X", src, 
-                    cpu.operand.BYTE.low);
+            add_value_to_register();
             break;
 
         /* Logical operations */ 
         case 0x80:
             switch (cpu.operand.BYTE.low & 0x0F) {
-                /* 8ts0 - LOAD Vs, Vt */
-                /* Move the value of the source register into the target */
                 case 0x0: 
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    cpu.v[tgt] = cpu.v[src];
-                    sprintf(cpu.opdesc, "LOAD V%X, V%X", tgt, src);
+                    move_register_into_register();
                     break;
 
                 /* 8ts1 - OR Vs, Vt */
@@ -751,6 +726,56 @@ cpu_execute_single(void)
 /******************************************************************************/
 
 /**
+ * 00EE - RTS
+ * 
+ * Return from subroutine. Pop the current value in the stack off of the 
+ * stack, and set the program counter to the value popped.
+ */
+void
+return_from_subroutine(void)
+{
+    cpu.sp.WORD--;
+    cpu.pc.BYTE.high = memory_read(cpu.sp.WORD);
+    cpu.sp.WORD--;
+    cpu.pc.BYTE.low = memory_read(cpu.sp.WORD);
+    sprintf(cpu.opdesc, "RTS");
+}
+
+/******************************************************************************/
+
+/**
+ * 1nnn - JUMP nnn 
+ * 
+ * Jump to address.
+ */
+void
+jump_to_address(void)
+{
+    cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
+    sprintf(cpu.opdesc, "JUMP %03X", cpu.pc.WORD);
+}
+
+/******************************************************************************/
+
+/**
+ * 2nnn - CALL nnn
+ * 
+ * Jump to subroutine. Save the current program counter on the stack.
+ */
+void
+jump_to_subroutine(void)
+{
+    memory_write(cpu.sp, cpu.pc.WORD & 0x00FF);
+    cpu.sp.WORD++;
+    memory_write(cpu.sp, (cpu.pc.WORD & 0xFF00) >> 8);
+    cpu.sp.WORD++;
+    cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
+    sprintf(cpu.opdesc, "CALL %03X", cpu.pc.WORD);
+}
+
+/******************************************************************************/
+
+/**
  * 3xnn - SKE Vx, nn
  * 
  * Skip if source register equal constant value. The program counter
@@ -803,6 +828,8 @@ skip_if_register_equal_register(void)
     sprintf(cpu.opdesc, "SKE V%X, V%X", x, y);
 }
 
+/******************************************************************************/
+
 /**
  * 6xnn - LOAD Vx, nn
  * 
@@ -816,6 +843,37 @@ move_value_to_register(void)
     sprintf(cpu.opdesc, "LOAD V%X, %02X", x, (cpu.operand.WORD & 0x00FF));
 }
             
+/******************************************************************************/
+
+/**
+ * 7snn - ADD Vx, nn
+ * 
+ * Add the constant value to the source register.
+ */
+void
+add_value_to_register(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.v[x] = cpu.v[x] + ((cpu.operand.WORD & 0x00FF) % 256);
+    sprintf(cpu.opdesc, "ADD V%X, %02X", x, cpu.operand.BYTE.low);
+}
+
+/******************************************************************************/
+
+/**
+ * 8ts0 - LOAD Vx, Vy
+ *
+ * Move the y register into the x register. 
+ */
+void
+move_register_into_register(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    cpu.v[x] = cpu.v[y];
+    sprintf(cpu.opdesc, "LOAD V%X, V%X", x, y);
+}
+
 /******************************************************************************/
 
 /**

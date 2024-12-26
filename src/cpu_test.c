@@ -40,8 +40,20 @@ teardown_cpu_screen_test(void)
     screen_destroy();
 }
 
+void
+test_jump_to_address(void)
+{
+    setup();
+    for (int a = 0x0000; a < 0xFFFF; a += 0x10) {
+        cpu.operand.WORD = a;
+        cpu.pc.WORD = 0x0000;
+        jump_to_address();
+        CU_ASSERT_EQUAL(a & 0x0FFF, cpu.pc.WORD);
+    }
+}
+
 void 
-test_jump_to_address(void) 
+test_jump_to_address_integration(void) 
 {
     setup();
     tword.WORD = 0x1FFF;
@@ -54,7 +66,7 @@ test_jump_to_address(void)
 }
 
 void
-test_jump_to_subroutine(void)
+test_jump_to_subroutine_integration(void)
 {
     setup();
     tword.WORD = 0x2FFF;
@@ -65,6 +77,20 @@ test_jump_to_subroutine(void)
     CU_ASSERT_EQUAL(cpu.pc.WORD, 0xFFF);
     CU_ASSERT_EQUAL(cpu.sp.WORD, SP_START + 2);
     teardown();
+}
+
+void
+test_jump_to_subroutine(void)
+{
+    setup();
+    for (int a = 0x0200; a < 0xFFFF; a++) {
+        cpu.operand.WORD = a & 0xFFFF;
+        cpu.sp.WORD = 0;
+        cpu.pc.WORD = 0x100;
+        jump_to_subroutine();
+        CU_ASSERT_EQUAL((a & 0x0FFF), cpu.pc.WORD);
+        CU_ASSERT_EQUAL(2, cpu.sp.WORD);
+    }
 }
 
 void
@@ -205,9 +231,29 @@ test_move_value_to_register(void)
     }
 }
 
+void
+test_add_value_to_register(void)
+{
+    setup();
+    for (int r = 0; r < 0x10; r++) {
+        for (int reg_value = 0; reg_value < 0xFF; reg_value += 0x10) {
+            for (int value = 0; value < 0xFF; value++) {
+                cpu.v[r] = reg_value;
+                cpu.operand.WORD = r << 8;
+                cpu.operand.WORD += value;
+                add_value_to_register();
+                if (value + reg_value < 256) {
+                    CU_ASSERT_EQUAL(value + reg_value, cpu.v[r]);
+                } else {
+                    CU_ASSERT_EQUAL(value + reg_value - 256, cpu.v[r]);
+                }
+            }
+        }
+    }
+}
 
 void
-test_add_value_to_register(void) 
+test_add_value_to_register_integration(void) 
 {
     setup();
     tword.WORD = 0x71AA;
@@ -229,7 +275,7 @@ test_add_value_to_register(void)
 }
 
 void
-test_load_register_to_register(void) 
+test_move_register_to_register_integration(void) 
 {
     setup();
     tword.WORD = 0x8120;
@@ -241,6 +287,24 @@ test_load_register_to_register(void)
     CU_ASSERT_EQUAL(cpu.v[0x1], 0x02);
     CU_ASSERT_EQUAL(cpu.v[0x2], 0x02);
     teardown();
+}
+
+void 
+test_move_register_to_register(void)
+{
+    setup();
+    for (int x = 0; x < 0x10; x++) {
+        for (int y = 0; y < 0x10; y++) {
+            if (x != y) {
+                cpu.v[y] = 0x32;
+                cpu.v[x] = 0;
+                cpu.operand.WORD = x << 8;
+                cpu.operand.WORD += (y << 4);
+                move_register_into_register();
+                CU_ASSERT_EQUAL(0x32, cpu.v[x]);
+            }
+        }
+    }
 }
 
 void
@@ -708,8 +772,24 @@ test_read_registers_from_rpl(void)
     teardown();
 }
 
+void 
+test_return_from_subroutine(void)
+{
+    setup();
+    for (int a = 0x200; a < 0xFFFF; a += 0x10) {
+        memory_write(cpu.sp, a & 0x00FF);
+        tword.WORD = cpu.sp.WORD;
+        tword.WORD++;
+        memory_write(tword, (a & 0xFF00) >> 8);
+        cpu.sp.WORD += 2;
+        cpu.pc.WORD = 0;
+        return_from_subroutine();
+        CU_ASSERT_EQUAL(a, cpu.pc.WORD);
+    }
+}
+
 void
-test_return_from_subroutine(void) 
+test_return_from_subroutine_integration(void) 
 {
     setup();
     tword.WORD = 0x00EE;
