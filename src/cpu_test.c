@@ -308,7 +308,7 @@ test_move_register_to_register(void)
 }
 
 void
-test_logical_or(void) 
+test_logical_or_integration(void) 
 {
     setup();
     tword.WORD = 0x8121;
@@ -323,7 +323,51 @@ test_logical_or(void)
 }
 
 void
-test_logical_and(void) 
+test_logical_or(void)
+{
+    setup();
+    for (int x = 0; x < 0x10; x++) {
+        for (int y = 0; y < 0x10; y++) {
+            if (x != y) {
+                for (int s = 0; s < 0xFF; s += 0x10) {
+                    for (int t = 0; t < 0xFF; t += 0x10) {
+                        cpu.v[x] = s;
+                        cpu.v[y] = t;
+                        cpu.operand.WORD = x << 8;
+                        cpu.operand.WORD += (y << 4);
+                        logical_or();
+                        CU_ASSERT_EQUAL(s | t, cpu.v[x]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
+test_logical_and(void)
+{
+    setup();
+    for (int x = 0; x < 0x10; x++) {
+        for (int y = 0; y < 0x10; y++) {
+            if (x != y) {
+                for (int s = 0; s < 0xFF; s += 0x10) {
+                    for (int t = 0; t < 0xFF; t += 0x10) {
+                        cpu.v[x] = s;
+                        cpu.v[y] = t;
+                        cpu.operand.WORD = x << 8;
+                        cpu.operand.WORD += (y << 4);
+                        logical_and();
+                        CU_ASSERT_EQUAL(s & t, cpu.v[x]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
+test_logical_and_integration(void) 
 {
     setup();
     tword.WORD = 0x8122;
@@ -338,7 +382,29 @@ test_logical_and(void)
 }
 
 void
-test_logical_xor(void) 
+test_exclusive_or(void)
+{
+    setup();
+    for (int x = 0; x < 0x10; x++) {
+        for (int y = 0; y < 0x10; y++) {
+            if (x != y) {
+                for (int s = 0; s < 0xFF; s += 0x10) {
+                    for (int t = 0; t < 0xFF; t += 0x10) {
+                        cpu.v[x] = s;
+                        cpu.v[y] = t;
+                        cpu.operand.WORD = x << 8;
+                        cpu.operand.WORD += (y << 4);
+                        exclusive_or();
+                        CU_ASSERT_EQUAL(s ^ t, cpu.v[x]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
+test_exclusive_or_integration(void) 
 {
     setup();
     tword.WORD = 0x8123;

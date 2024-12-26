@@ -305,37 +305,16 @@ cpu_execute_single(void)
                     move_register_into_register();
                     break;
 
-                /* 8ts1 - OR Vs, Vt */
-                /* Perform a logical OR operation between the source and */
-                /* the target register, and store the result in the      */
-                /* target register                                       */
                 case 0x1:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    cpu.v[tgt] = cpu.v[tgt] | cpu.v[src];
-                    sprintf(cpu.opdesc, "OR V%X, V%X", tgt, src);
+                    logical_or();
                     break;
 
-                /* 8ts2 - AND Vs, Vt */
-                /* Perform a logical AND operation between the source and */
-                /* the target register, and store the result in the       */
-                /* target register                                        */
                 case 0x2:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    cpu.v[tgt] = cpu.v[tgt] & cpu.v[src];
-                    sprintf(cpu.opdesc, "AND V%X, V%X", tgt, src);
+                    logical_and();
                     break;
 
-                /* 8ts3 - XOR  Vs, Vt */
-                /* Perform a logical XOR operation between the source and */
-                /* the target register, and store the result in the       */
-                /* target register                                        */
                 case 0x3:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    cpu.v[tgt] = cpu.v[tgt] ^ cpu.v[src];
-                    sprintf(cpu.opdesc, "XOR V%X, V%X", tgt, src);
+                    exclusive_or();
                     break;
                 
                 /* 8ts4 - ADD  Vt, Vs */ 
@@ -846,7 +825,7 @@ move_value_to_register(void)
 /******************************************************************************/
 
 /**
- * 7snn - ADD Vx, nn
+ * 7xnn - ADD Vx, nn
  * 
  * Add the constant value to the source register.
  */
@@ -861,7 +840,7 @@ add_value_to_register(void)
 /******************************************************************************/
 
 /**
- * 8ts0 - LOAD Vx, Vy
+ * 8xy0 - LOAD Vx, Vy
  *
  * Move the y register into the x register. 
  */
@@ -874,6 +853,55 @@ move_register_into_register(void)
     sprintf(cpu.opdesc, "LOAD V%X, V%X", x, y);
 }
 
+/******************************************************************************/
+
+/**
+ * 8xy1 - OR Vx, Vy
+ * 
+ * Perform a logical OR operation between x and y and store the result
+ * in x.
+ */
+void
+logical_or(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    cpu.v[x] |= cpu.v[y];
+    sprintf(cpu.opdesc, "OR V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xy2 - AND Vx, Vy
+ * 
+ * Perform a logical AND between x and y and store the result in x.
+ */
+void
+logical_and(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    cpu.v[x] &= cpu.v[y];
+    sprintf(cpu.opdesc, "AND V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xy3 - XOR  Vx, Vy
+ * 
+ * Perform a logical XOR between x and y and store the result in x.
+ */
+void
+exclusive_or(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    cpu.v[x] ^= cpu.v[y];
+    sprintf(cpu.opdesc, "XOR V%X, V%X", x, y);
+}
+                
 /******************************************************************************/
 
 /**

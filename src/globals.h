@@ -136,6 +136,9 @@ void skip_if_register_equal_register(void);
 void move_value_to_register(void);
 void add_value_to_register(void);
 void move_register_into_register(void);
+void logical_or(void);
+void logical_and(void);
+void exclusive_or(void);
 
 /* memory.c */
 int memory_init(int memorysize);
@@ -185,8 +188,11 @@ void test_add_value_to_register_integration(void);
 void test_move_register_to_register(void);
 void test_move_register_to_register_integration(void);
 void test_logical_or(void);
+void test_logical_or_integration(void);
 void test_logical_and(void);
-void test_logical_xor(void);
+void test_logical_and_integration(void);
+void test_exclusive_or(void);
+void test_exclusive_or_integration(void);
 void test_add_register_to_register(void);
 void test_sub_register_from_register(void);
 void test_shift_register_right(void);

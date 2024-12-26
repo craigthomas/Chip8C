@@ -52,8 +52,11 @@ main() {
         CU_add_test(cpu_suite, "test_move_register_to_register", test_move_register_to_register) == NULL ||
         CU_add_test(cpu_suite, "test_move_register_to_register_integration", test_move_register_to_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_logical_or", test_logical_or) == NULL ||
+        CU_add_test(cpu_suite, "test_logical_or_integration", test_logical_or_integration) == NULL ||
         CU_add_test(cpu_suite, "test_logical_and", test_logical_and) == NULL ||
-        CU_add_test(cpu_suite, "test_logical_xor", test_logical_xor) == NULL ||
+        CU_add_test(cpu_suite, "test_logical_and_integration", test_logical_and_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_exclusive_or", test_exclusive_or) == NULL ||
+        CU_add_test(cpu_suite, "test_exclusive_or_integration", test_exclusive_or_integration) == NULL ||
         CU_add_test(cpu_suite, "test_add_register_to_register", test_add_register_to_register) == NULL ||
         CU_add_test(cpu_suite, "test_sub_register_from_register", test_sub_register_from_register) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_right", test_shift_register_right) == NULL ||
