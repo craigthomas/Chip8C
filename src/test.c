@@ -58,10 +58,15 @@ main() {
         CU_add_test(cpu_suite, "test_exclusive_or", test_exclusive_or) == NULL ||
         CU_add_test(cpu_suite, "test_exclusive_or_integration", test_exclusive_or_integration) == NULL ||
         CU_add_test(cpu_suite, "test_add_register_to_register", test_add_register_to_register) == NULL ||
+        CU_add_test(cpu_suite, "test_add_register_to_register_integration", test_add_register_to_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_sub_register_from_register", test_sub_register_from_register) == NULL ||
+        CU_add_test(cpu_suite, "test_sub_register_from_register_integration", test_sub_register_from_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_right", test_shift_register_right) == NULL ||
+        CU_add_test(cpu_suite, "test_shift_register_right_integration", test_shift_register_right) == NULL ||
         CU_add_test(cpu_suite, "test_sub_register_from_register_source_from_target", test_sub_register_from_register_source_from_target) == NULL ||
+        CU_add_test(cpu_suite, "test_sub_register_from_register_source_from_target_integration", test_sub_register_from_register_source_from_target_integration) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_left", test_shift_register_left) == NULL ||
+        CU_add_test(cpu_suite, "test_shift_register_left_integration", test_shift_register_left_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_index", test_load_index) == NULL ||
         CU_add_test(cpu_suite, "test_jump_index_plus_value", test_jump_index_plus_value) == NULL ||
         CU_add_test(cpu_suite, "test_generate_random", test_generate_random) == NULL ||

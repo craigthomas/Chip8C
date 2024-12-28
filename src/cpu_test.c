@@ -419,7 +419,35 @@ test_exclusive_or_integration(void)
 }
 
 void
-test_add_register_to_register(void) 
+test_add_register_to_register(void)
+{
+    setup();
+    for (int source = 0; source < 0xF; source++) {
+        for (int target = 0; target < 0xF; target++) {
+            if (source != target) {
+                for (int sourceVal = 0; sourceVal < 0xFF; sourceVal += 0x10) {
+                    for (int targetVal = 0; targetVal < 0xFF; targetVal += 0x10) {
+                        cpu.v[source] = sourceVal;
+                        cpu.v[target] = targetVal;
+                        cpu.operand.WORD = source << 8;
+                        cpu.operand.WORD += (target << 4);
+                        add_register_to_register();
+                        if ((sourceVal + targetVal) > 255) {
+                            CU_ASSERT_EQUAL(sourceVal + targetVal - 256, cpu.v[source]);
+                            CU_ASSERT_EQUAL(1, cpu.v[0xF]);
+                        } else {
+                            CU_ASSERT_EQUAL(sourceVal + targetVal, cpu.v[source]);
+                            CU_ASSERT_EQUAL(0, cpu.v[0xF]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
+test_add_register_to_register_integration(void) 
 {
     setup();
     tword.WORD = 0x8124;
@@ -464,6 +492,39 @@ void
 test_sub_register_from_register(void) 
 {
     setup();
+    for (int source = 0; source < 0xF; source++) {
+        for (int target = 0; target < 0xF; target++) {
+            if (source != target) {
+                for (int sourceVal = 0; sourceVal < 0xFF; sourceVal += 0x10) {
+                    for (int targetVal = 0; targetVal < 0xFF; targetVal += 0x10) {
+                        cpu.v[source] = (short) sourceVal;
+                        cpu.v[target] = (short) targetVal;
+                        cpu.operand.WORD = source << 8;
+                        cpu.operand.WORD += (target << 4);
+                        subtract_register_from_register();
+                        if (sourceVal > targetVal) {
+                            CU_ASSERT_EQUAL(sourceVal - targetVal, cpu.v[source]);
+                            CU_ASSERT_EQUAL(1, cpu.v[0xF]);
+                        }
+                        if (sourceVal < targetVal) {
+                            CU_ASSERT_EQUAL(sourceVal - targetVal + 256, cpu.v[source]);
+                            CU_ASSERT_EQUAL(0, cpu.v[0xF]);
+                        }
+                        if (sourceVal == targetVal) {
+                            CU_ASSERT_EQUAL(0, cpu.v[source]);
+                            CU_ASSERT_EQUAL(1, cpu.v[0xF]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
+test_sub_register_from_register_integration(void) 
+{
+    setup();
     tword.WORD = 0x8125;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
@@ -490,7 +551,28 @@ test_sub_register_from_register(void)
 }
 
 void
-test_shift_register_right(void) 
+test_shift_register_right(void)
+{
+    setup();
+    for (int x = 0; x < 0xF; x++) {
+        for (int y = 0; y < 0xF; y++) {
+            for (int value = 0; value < 256; value++) {
+                cpu.operand.WORD = x << 8;
+                cpu.operand.WORD |= y << 4;
+                cpu.v[y] = (short) value;
+                short shifted_val = (short) (value >> 1);
+                short bit_zero = (short) (cpu.v[y] & 0x1);
+                cpu.v[0xF] = (short) 0;
+                shift_right();
+                CU_ASSERT_EQUAL(shifted_val, cpu.v[x]);
+                CU_ASSERT_EQUAL(bit_zero, cpu.v[0xF]);
+            }
+        }
+    }
+}
+
+void
+test_shift_register_right_integration(void) 
 {
     setup();
     tword.WORD = 0x8106;
@@ -516,6 +598,39 @@ void
 test_sub_register_from_register_source_from_target(void) 
 {
     setup();
+    for (int source = 0; source < 0xF; source++) {
+        for (int target = 0; target < 0xF; target++) {
+            if (source != target) {
+                for (int sourceValue = 0; sourceValue < 0xFF; sourceValue += 10) {
+                    for (int targetValue = 0; targetValue < 0xF; targetValue++) {
+                        cpu.v[source] = (short) sourceValue;
+                        cpu.v[target] = (short) targetValue;
+                        cpu.operand.WORD = source << 8;
+                        cpu.operand.WORD += (target << 4);
+                        subtract_register_from_register_borrow();
+                        if (targetValue > sourceValue) {
+                            CU_ASSERT_EQUAL(targetValue - sourceValue, cpu.v[source]);
+                            CU_ASSERT_EQUAL(1, cpu.v[0xF]);
+                        }
+                        if (targetValue < sourceValue) {
+                            CU_ASSERT_EQUAL(256 + targetValue - sourceValue, cpu.v[source]);
+                            CU_ASSERT_EQUAL(0, cpu.v[0xF]);
+                        }
+                        if (targetValue == sourceValue) {
+                            CU_ASSERT_EQUAL(0, cpu.v[source]);
+                            CU_ASSERT_EQUAL(1, cpu.v[0xF]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
+test_sub_register_from_register_source_from_target_integration(void) 
+{
+    setup();
     tword.WORD = 0x8127;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
@@ -524,7 +639,7 @@ test_sub_register_from_register_source_from_target(void)
     cpu_execute_single();
     CU_ASSERT_EQUAL(cpu.v[0x1], 0xF1);
     CU_ASSERT_EQUAL(cpu.v[0x2], 0x01);
-    CU_ASSERT_EQUAL(cpu.v[0xF], 0x01);
+    CU_ASSERT_EQUAL(cpu.v[0xF], 0x00);
     teardown();
 
     setup();
@@ -535,20 +650,41 @@ test_sub_register_from_register_source_from_target(void)
     cpu_execute_single();
     CU_ASSERT_EQUAL(cpu.v[0x1], 0x01);
     CU_ASSERT_EQUAL(cpu.v[0x2], 0x02);
-    CU_ASSERT_EQUAL(cpu.v[0xF], 0x00);
+    CU_ASSERT_EQUAL(cpu.v[0xF], 0x01);
     teardown();
 }
 
 void
-test_shift_register_left(void) 
+test_shift_register_left(void)
 {
     setup();
-    tword.WORD = 0x810E;
+    for (int x = 0; x < 0xF; x++) {
+        for (int y = 0; y < 0xF; y++) {
+            for (int value = 0; value < 256; value++) {
+                cpu.v[y] = value;
+                cpu.operand.WORD = x << 8;
+                cpu.operand.WORD += (y << 4);
+                short bit_seven = ((value & 0x80) >> 7);
+                short shifted_val = ((value << 1) & 0xFF);
+                cpu.v[0xF] = 0;
+                shift_left();
+                CU_ASSERT_EQUAL(shifted_val, cpu.v[x]);
+                CU_ASSERT_EQUAL(bit_seven, cpu.v[0xF]);
+            }
+        }
+    }
+}
+
+void
+test_shift_register_left_integration(void) 
+{
+    setup();
+    tword.WORD = 0x801E;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
     cpu.v[0x1] = 0x01;
     cpu_execute_single();
-    CU_ASSERT_EQUAL(cpu.v[0x1], 0x02);
+    CU_ASSERT_EQUAL(cpu.v[0x0], 0x02);
     CU_ASSERT_EQUAL(cpu.v[0xF], 0x00);
     teardown();
 
@@ -558,7 +694,7 @@ test_shift_register_left(void)
     cpu.pc.WORD = 0x0000;
     cpu.v[0x1] = 0x80;
     cpu_execute_single();
-    CU_ASSERT_EQUAL(cpu.v[0x1], 0x00);
+    CU_ASSERT_EQUAL(cpu.v[0x0], 0x00);
     CU_ASSERT_EQUAL(cpu.v[0xF], 0x01);
     teardown();
 }

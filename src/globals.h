@@ -139,6 +139,11 @@ void move_register_into_register(void);
 void logical_or(void);
 void logical_and(void);
 void exclusive_or(void);
+void add_register_to_register(void);
+void subtract_register_from_register(void);
+void shift_right(void);
+void subtract_register_from_register_borrow(void);
+void shift_left(void);
 
 /* memory.c */
 int memory_init(int memorysize);
@@ -194,10 +199,15 @@ void test_logical_and_integration(void);
 void test_exclusive_or(void);
 void test_exclusive_or_integration(void);
 void test_add_register_to_register(void);
+void test_add_register_to_register_integration(void);
 void test_sub_register_from_register(void);
+void test_sub_register_from_register_integration(void);
 void test_shift_register_right(void);
+void test_shift_register_right_integration(void);
 void test_sub_register_from_register_source_from_target(void);
+void test_sub_register_from_register_source_from_target_integration(void);
 void test_shift_register_left(void);
+void test_shift_register_left_integration(void);
 void test_load_index(void);
 void test_jump_index_plus_value(void);
 void test_generate_random(void);

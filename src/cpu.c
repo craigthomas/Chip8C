@@ -192,9 +192,9 @@ cpu_execute_single(void)
     cpu.operand.BYTE.low = memory_read(cpu.pc.WORD);
     cpu.pc.WORD++;
 
-    switch (cpu.operand.BYTE.high & 0xF0) {
+    switch ((cpu.operand.WORD & 0xF000) >> 12) {
         /* Misc subroutines */
-        case 0x00:
+        case 0x0:
             switch (cpu.operand.BYTE.low) {
                 /* 00Cn - SCRD */
                 /* Scroll Down */
@@ -270,37 +270,36 @@ cpu_execute_single(void)
             } 
             break;
 
-        case 0x10:
+        case 0x1:
             jump_to_address();
             break;
 
-        case 0x20:
+        case 0x2:
             jump_to_subroutine();
             break;
 
-        case 0x30:
+        case 0x3:
             skip_if_register_equal_value();
             break;
 
-        case 0x40:
+        case 0x4:
             skip_if_register_not_equal_value();
             break;
 
-        case 0x50:
+        case 0x5:
             skip_if_register_equal_register();
             break;
 
-        case 0x60:
+        case 0x6:
             move_value_to_register();
             break;
 
-        case 0x70:
+        case 0x7:
             add_value_to_register();
             break;
 
-        /* Logical operations */ 
-        case 0x80:
-            switch (cpu.operand.BYTE.low & 0x0F) {
+        case 0x8:
+            switch (cpu.operand.WORD & 0xF) {
                 case 0x0: 
                     move_register_into_register();
                     break;
@@ -317,76 +316,24 @@ cpu_execute_single(void)
                     exclusive_or();
                     break;
                 
-                /* 8ts4 - ADD  Vt, Vs */ 
-                /* Add the value in the source register to the value in   */
-                /* the target register, and store the result in the       */
-                /* target register. If a carry is generated, set a carry  */
-                /* flag in register VF                                    */
                 case 0x4:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    temp = cpu.v[src] + cpu.v[tgt];
-                    cpu.v[0xF] = (temp > 255) ? 1 : 0;
-                    cpu.v[tgt] = (temp > 255) ? temp - 256 : temp;
-                    sprintf(cpu.opdesc, "ADD V%X, V%X", tgt, src);
+                    add_register_to_register();
                     break;
 
-                /* 8ts5 - SUB  Vt, Vs */
-                /* Subtract the value in the target register from the     */
-                /* value in the source register, and store the result in  */
-                /* the target register. If a borrow is NOT generated, set */
-                /* a carry flag in register VF                            */
                 case 0x5:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    if (cpu.v[tgt] > cpu.v[src]) {
-                        cpu.v[0xF] = 1;
-                        cpu.v[tgt] -= cpu.v[src];
-                    } 
-                    else {
-                        cpu.v[0xF] = 0;
-                        cpu.v[tgt] = 256 + cpu.v[tgt] - cpu.v[src];
-                    }
-                    sprintf(cpu.opdesc, "SUB V%X, V%X", tgt, src);
+                    subtract_register_from_register();
                     break;
 
-                /* 8s06 - SHR  Vs */
-                /* Shift the bits in the specified register 1 bit to the  */
-                /* right. Bit 0 will be shifted into register vf          */
                 case 0x6:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.v[0xF] = (cpu.v[src] & 1) ? 1 : 0;
-                    cpu.v[src] = cpu.v[src] >> 1;
-                    sprintf(cpu.opdesc, "SHR V%X", src);
+                    shift_right();
                     break;
 
-                /* 8ts7 - SUBN Vt, Vs */
-                /* Subtract the value in the source register from the     */
-                /* value in the target register, and store the result in  */
-                /* the target register. If a borrow is NOT generated, set */
-                /* a carry flag in register VF                            */
                 case 0x7:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    if (cpu.v[src] < cpu.v[tgt]) {
-                        cpu.v[0xF] = 1;
-                        cpu.v[tgt] = cpu.v[src] - cpu.v[tgt];
-                    } 
-                    else {
-                        cpu.v[0xF] = 0;
-                        cpu.v[tgt] = 256 + cpu.v[src] - cpu.v[tgt];
-                    }
-                    sprintf(cpu.opdesc, "SUBN V%X, V%X", tgt, src);
+                    subtract_register_from_register_borrow();
                     break;
 
-                /* 8s0E - SHL  Vs */
-                /* Shift the bits in the specified register 1 bit to the  */
-                /* left. Bit 7 will be shifted into register vf           */
                 case 0xE:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.v[0xF] = (cpu.v[src] & 0x80) ? 1 : 0;
-                    cpu.v[src] = cpu.v[src] << 1;
-                    sprintf(cpu.opdesc, "SHL V%X", src);
+                    shift_left();
                     break;
 
                 default:
@@ -396,7 +343,7 @@ cpu_execute_single(void)
 
         /* 9st0 - SKNE Vs, Vt */
         /* Skip if source register is equal to target register */
-        case 0x90:
+        case 0x9:
             src = cpu.operand.BYTE.high & 0xF;
             tgt = (cpu.operand.BYTE.low & 0xF0) >> 4;
             if (cpu.v[src] != cpu.v[tgt]) {
@@ -407,7 +354,7 @@ cpu_execute_single(void)
 
         /* Annn - LOAD I, nnn */
         /* Load index register with constant value */
-        case 0xA0:
+        case 0xA:
             cpu.i.WORD = (cpu.operand.WORD & 0x0FFF);
             sprintf(cpu.opdesc, "LOAD I, %03X", (cpu.operand.WORD 
                     & 0x0FFF));
@@ -416,7 +363,7 @@ cpu_execute_single(void)
         /* Bnnn - JUMP [I] + nnn */
         /* Load the program counter with the memory value located at the  */
         /* specified operand plus the value of the index register         */
-        case 0xB0:
+        case 0xB:
             cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF) + cpu.i.WORD;
             sprintf(cpu.opdesc, "JUMP I + %03X", (cpu.operand.WORD 
                     & 0x0FFF));
@@ -426,7 +373,7 @@ cpu_execute_single(void)
         /* A random number between 0 and 255 is generated. The contents   */
         /* of it are then ANDed with the constant value passed in the     */
         /* operand. The result is stored in the target register           */
-        case 0xC0:
+        case 0xC:
             tgt = cpu.operand.BYTE.high & 0xF;
             cpu.v[tgt] = (rand() % 255) & cpu.operand.BYTE.low;
             sprintf(cpu.opdesc, "RAND V%X, %02X", tgt, 
@@ -462,7 +409,7 @@ cpu_execute_single(void)
         /* the x and y coordinates for the sprite. If writing a pixel to  */
         /* a location causes that pixel to be turned off, then VF will be */
         /* set to 1.                                                      */
-        case 0xD0:
+        case 0xD:
             x = cpu.operand.BYTE.high & 0xF;
             y = (cpu.operand.BYTE.low & 0xF0) >> 4;
             tword.WORD = cpu.i.WORD;
@@ -521,7 +468,7 @@ cpu_execute_single(void)
             break;
 
         /* Keyboard routines */
-        case 0xE0:
+        case 0xE:
             switch (cpu.operand.BYTE.low) {
                 /* Es9E - SKPR Vs */
                 /* Check to see if the key specified in the source        */
@@ -553,7 +500,7 @@ cpu_execute_single(void)
             break;
 
         /* Other I/O Routines */
-        case 0xF0:
+        case 0xF:
             switch (cpu.operand.BYTE.low) {
                 /* Ft07 - LOAD Vt, DELAY */
                 /* Move the value of the delay timer into the target      */
@@ -901,8 +848,104 @@ exclusive_or(void)
     cpu.v[x] ^= cpu.v[y];
     sprintf(cpu.opdesc, "XOR V%X, V%X", x, y);
 }
-                
+
 /******************************************************************************/
+
+/* 
+ * 8xy4 - ADD  Vx, Vy
+ *
+ * Add the value in the source register to the value in the target register,
+ * and store the result in the target register. If a carry is generated, set
+ * a carry flag in register VF.
+ */
+void
+add_register_to_register(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int carry = (cpu.v[x] + cpu.v[y]) > 255 ? 1 : 0;
+    cpu.v[x] = (cpu.v[x] + cpu.v[y]) % 256;
+    cpu.v[0xF] = carry;
+    sprintf(cpu.opdesc, "ADD V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/* 
+ * 8xy5 - SUB  Vx, Vy
+ *
+ * Subtract the value in the target register from the value in the source
+ * register, and store the result in the target register. If a borrow is NOT
+ * generated, set a carry flag in register VF.
+ */
+void
+subtract_register_from_register(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int borrow = (cpu.v[x] >= cpu.v[y]) ? 1 : 0;
+    cpu.v[x] = (cpu.v[x] >= cpu.v[y]) ? (cpu.v[x] - cpu.v[y]) : 256 + (cpu.v[x] - cpu.v[y]);
+    cpu.v[0xF] = borrow;
+    sprintf(cpu.opdesc, "SUB V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xy6 - SHR Vx, Vy
+ * 
+ * Shift the bits in the specified register 1 bit to the right. Bit 0 will
+ * be shifted into register VF.
+ */
+void
+shift_right(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int bit_one = cpu.v[y] & 0x1;
+    cpu.v[x] = cpu.v[y] >> 1;
+    cpu.v[0xF] = bit_one;
+    sprintf(cpu.opdesc, "SHR V%X", x);
+}
+    
+/******************************************************************************/
+
+/**
+ * 8xy7 - SUBN Vx, Vy
+ * 
+ * Subtract the value in the target register from the value in the source
+ * register, and store the result in the target register. If a borrow is NOT
+ * generated, set a carry flag in register VF.
+ */
+void
+subtract_register_from_register_borrow(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int not_borrow = (cpu.v[y] >= cpu.v[x]) ? 1 : 0;
+    cpu.v[x] = (cpu.v[y] >= cpu.v[x]) ? cpu.v[y] - cpu.v[x] : 256 + cpu.v[y] - cpu.v[x];
+    cpu.v[0xF] = not_borrow;
+    sprintf(cpu.opdesc, "SUBN V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xyE - SHL Vx, Vy
+ * 
+ * Shift the bits in the specified register 1 bit to the left. Bit 7 will be
+ * shifted into register VF.
+ */
+void
+shift_left(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int bit_seven = (cpu.v[y] & 0x80) >> 7;
+    cpu.v[x] = (cpu.v[y] << 1) & 0xFF;
+    cpu.v[0xF] = bit_seven;
+    sprintf(cpu.opdesc, "SHL V%X", x);
+}
 
 /**
  * This function contains the main CPU execution loop. It is responsible for 
