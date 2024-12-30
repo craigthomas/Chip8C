@@ -910,6 +910,21 @@ void
 test_add_index(void)
 {
     setup();
+    for (int r = 0; r < 0xF; r++) {
+        for (int index = 0; index < 0xFFF; index += 10) {
+            cpu.i.WORD = index;
+            cpu.v[r] = 0x89;
+            cpu.operand.WORD = r << 8;
+            add_register_to_index();
+            CU_ASSERT_EQUAL(index + 0x89, cpu.i.WORD);
+        }
+    }
+}
+
+void
+test_add_index_integration(void)
+{
+    setup();
     tword.WORD = 0xF11E;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
@@ -924,6 +939,19 @@ void
 test_load_sprite_index(void)
 {
     setup();
+    for (int number = 0; number < 0x10; number++) {
+        cpu.i.WORD = 0xFFF;
+        cpu.v[0] = (short) number;
+        cpu.operand.WORD = 0xF029;
+        load_index_with_sprite();
+        CU_ASSERT_EQUAL(number * 5, cpu.i.WORD);
+    }
+}
+
+void
+test_load_sprite_index_integration(void)
+{
+    setup();
     tword.WORD = 0xF129;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
@@ -936,6 +964,23 @@ test_load_sprite_index(void)
 
 void
 test_bcd(void)
+{
+    setup();
+    char bcd[4];
+    for (int number = 0; number < 0x100; number++) {
+        sprintf(bcd, "%03d", number);
+        cpu.i.WORD = 0;
+        cpu.v[0] = number;
+        cpu.operand.WORD = 0xF033;
+        store_bcd_in_memory();
+        CU_ASSERT_EQUAL(bcd[0], memory_read(0x0000)+48);
+        CU_ASSERT_EQUAL(bcd[1], memory_read(0x0001)+48);
+        CU_ASSERT_EQUAL(bcd[2], memory_read(0x0002)+48);
+    }
+}
+
+void
+test_bcd_integration(void)
 {
     setup();
     tword.WORD = 0xF133;
@@ -954,6 +999,38 @@ void
 test_store_registers(void)
 {
     setup();
+    int index = 0x500;
+
+    for (int x = 0; x < 0x10; x++) {
+        cpu.v[x] = x + 0x89;
+    }
+
+    for (int n = 0; n < 0x10; n++) {
+        for (int c = 0; c < 0x10; c++) {
+            cpu.i.WORD = index + c;
+            memory_write(cpu.i, 0x00);
+        }
+
+        cpu.i.WORD = index;
+        cpu.operand.WORD = n << 8;
+        int indexBefore = index;
+        store_registers_in_memory();
+        CU_ASSERT_EQUAL(indexBefore + n + 1, cpu.i.WORD);
+
+        for (int c = 0; c < 0x10; c++) {
+            if (c > n) {
+                CU_ASSERT_EQUAL(0, memory_read(index + c));
+            } else {
+                CU_ASSERT_EQUAL(0x89 + c, memory_read(index + c));
+            }
+        }
+    }
+}
+
+void
+test_store_registers_integration(void)
+{
+    setup();
     tword.WORD = 0xF055;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
@@ -966,6 +1043,40 @@ test_store_registers(void)
 
 void
 test_load_registers(void)
+{
+    setup();
+    int index = 0x500;
+    cpu.i.WORD = index;
+
+    for (int n = 0; n < 0x10; n++) {
+        memory_write(cpu.i, n + 0x89);
+        cpu.i.WORD++;
+    }
+
+    for (int n = 0; n < 0x10; n++) {
+        cpu.i.WORD = index;
+        for (int r = 0; r < 0x10; r++) {
+            cpu.v[r] = 0;
+        }
+
+        cpu.operand.WORD = 0xF065;
+        cpu.operand.WORD |= (n << 8);
+        int indexBefore = cpu.i.WORD;
+        load_registers_from_memory();
+        CU_ASSERT_EQUAL(indexBefore + n + 1, cpu.i.WORD);
+
+        for (int r = 0; r < 0x10; r++) {
+            if (r > n) {
+                CU_ASSERT_EQUAL(0, cpu.v[r]);
+            } else {
+                CU_ASSERT_EQUAL(r + 0x89, cpu.v[r]);
+            }
+        }
+    }    
+}
+
+void
+test_load_registers_integration(void)
 {
     setup();
     tword.WORD = 0xF165;
@@ -984,6 +1095,20 @@ test_load_registers(void)
 
 void
 test_store_registers_in_rpl(void)
+{
+    setup();
+    cpu.operand.WORD = 0xF00;
+    for (int regNumber = 0; regNumber < 16; regNumber++) {
+        cpu.v[regNumber] = regNumber;
+    }
+    store_registers_in_rpl();
+    for (int regNumber = 0; regNumber < 16; regNumber++) {
+        CU_ASSERT_EQUAL(regNumber, cpu.rpl[regNumber]);
+    }
+}
+
+void
+test_store_registers_in_rpl_integration(void)
 {
     setup();
     tword.WORD = 0xFF75;
@@ -1028,6 +1153,20 @@ test_store_registers_in_rpl(void)
 
 void
 test_read_registers_from_rpl(void)
+{
+    setup();
+    cpu.operand.WORD = 0xF00;
+    for (int regNumber = 0; regNumber < 16; regNumber++) {
+        cpu.rpl[regNumber] = (short) regNumber;
+    }
+    read_registers_from_rpl();
+    for (int regNumber = 0; regNumber < 16; regNumber++) {
+        CU_ASSERT_EQUAL(regNumber, cpu.v[regNumber]);
+    }
+}
+
+void
+test_read_registers_from_rpl_integration(void)
 {
     setup();
     tword.WORD = 0xFF85;

@@ -170,93 +170,52 @@ cpu_process_sdl_events(void)
 void
 cpu_execute_single(void) 
 {
-    byte src;           /* Source register */
-    byte tbyte;         /* A temporary byte */
-    int temp;           /* A general purpose temporary integer */
-    int i;
-    word tword;         /* A temporary word */
-
     cpu.oldpc = cpu.pc;
-    
     cpu.operand.BYTE.high = memory_read(cpu.pc.WORD);
     cpu.pc.WORD++;
     cpu.operand.BYTE.low = memory_read(cpu.pc.WORD);
     cpu.pc.WORD++;
 
     switch ((cpu.operand.WORD & 0xF000) >> 12) {
-        /* Misc subroutines */
         case 0x0:
-            switch (cpu.operand.BYTE.low) {
-                /* 00Cn - SCRD */
-                /* Scroll Down */
-                case 0xC0:
-                case 0xC1:
-                case 0xC2:
-                case 0xC3:
-                case 0xC4:
-                case 0xC5:
-                case 0xC6:
-                case 0xC7:
-                case 0xC8:
-                case 0xC9:
-                case 0xCA:
-                case 0xCB:
-                case 0xCC:
-                case 0xCD:
-                case 0xCE:
-                case 0xCF:
-                    temp = cpu.operand.BYTE.low & 0x0F;
-                    screen_scroll_down(temp);
-                    sprintf(cpu.opdesc, "SCRD %d", temp);
-                    break;
-
-                /* 00E0 - CLS */
-                /* Clear screen */
+            switch (cpu.operand.WORD & 0xFF) {
                 case 0xE0:
-                    screen_blank();
-                    sprintf(cpu.opdesc, "CLS");
+                    clear_screen();
                     break;
 
                 case 0xEE:
                     return_from_subroutine();
                     break;
 
-                /* 00FB - SCRR */
-                /* Scroll right */
                 case 0xFB:
-                    screen_scroll_right();
-                    sprintf(cpu.opdesc, "SCRR");
+                    scroll_right();
                     break;
 
-                /* 00FC - SCRL */
-                /* Scroll left */
                 case 0xFC:
-                    screen_scroll_left();
-                    sprintf(cpu.opdesc, "SCRL");
+                    scroll_left();
                     break;
 
-                /* 00FD - EXIT */
-                /* Exit interpreter */
                 case 0xFD:
-                    cpu.state = CPU_STOP;
-                    sprintf(cpu.opdesc, "EXIT");
+                    exit_interpreter();
                     break;
 
-                /* 00FE - EXTD */
-                /* Disable extended mode */
                 case 0xFE:
-                    screen_set_normal_mode();
-                    sprintf(cpu.opdesc, "EXTD");
+                    disable_extended_mode();
                     break;
 
-                /* 00FF - EXTE */
-                /* Enable extended mode */
                 case 0xFF:
-                    screen_set_extended_mode();
-                    sprintf(cpu.opdesc, "EXTE");
+                    enable_extended_mode();
                     break;
 
                 default:
+                    switch (cpu.operand.WORD & 0xF0) {
+                        case 0xC0:
+                            scroll_down();
+                            break;
+
+                        default:
+                            break;
+                    }
                     break;
             } 
             break;
@@ -385,105 +344,32 @@ cpu_execute_single(void)
                     move_register_into_sound();
                     break;
 
-                /* Fs1E - ADD  I, Vs */
-                /* Add the value of the source register into the index    */
-                /* register                                               */
                 case 0x1E:
-                    src = cpu.operand.BYTE.high & 0xF; 
-                    cpu.i.WORD += cpu.v[src];
-                    sprintf(cpu.opdesc, "ADD I, V%X", src);
+                    add_register_to_index();
                     break;
 
-                /* Fs29 - LOAD I, Vs */
-                /* Load the index with the sprite indicated in the source */
-                /* register. All sprites are 5 bytes long, so the         */
-                /* location of the specified sprite is its index          */
-                /* multiplied by 5. Font sprites start at memory index 0  */
                 case 0x29:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.i.WORD = cpu.v[src] * 5;
-                    sprintf(cpu.opdesc, "LOAD I, V%X", src);
+                    load_index_with_sprite();
                     break;
 
-                /* Fs33 - BCD */
-                /* Take the value stored in source and place the digits   */
-                /* in the following locations:                            */
-                /*                                                        */
-                /*      hundreds   -> self.memory[index]                  */
-                /*      tens       -> self.memory[index + 1]              */
-                /*      ones       -> self.memory[index + 2]              */
-                /*                                                        */
-                /* For example, if the value is 123, then the following   */
-                /* values will be placed at the specified locations:      */
-                /*                                                        */
-                /*      1 -> self.memory[index]                           */
-                /*      2 -> self.memory[index + 1]                       */
-                /* 3 -> self.memory[index + 2]                            */
                 case 0x33:
-                    src = cpu.operand.BYTE.high & 0xF;
-
-                    tword.WORD = cpu.i.WORD;
-                    i = cpu.v[src] / 100;
-                    memory_write(tword, i);
-
-                    tword.WORD++;
-                    i = (cpu.v[src] % 100) / 10;
-                    memory_write(tword, i);
-
-                    tword.WORD++;
-                    i = (cpu.v[src] % 100) % 10;
-                    memory_write(tword, i);
-                    sprintf(cpu.opdesc, "BCD V%X (%03d)", src, cpu.v[src]);
+                    store_bcd_in_memory();
                     break;
 
-                /* Fn55 - STOR [I], Vn */
-                /* Store all of the n registers in the memory pointed to  */
-                /* by the index register. For example, to store all of    */
-                /* the V registers, n would be the value 'F'              */
                 case 0x55:
-                    tword.WORD = cpu.i.WORD;
-                    for (i = 0; i <= (cpu.operand.BYTE.high & 0xF); i++) {
-                        memory_write(tword, cpu.v[i]);
-                        tword.WORD++;
-                    }
-                    sprintf(cpu.opdesc, "STOR %X", (cpu.operand.BYTE.high 
-                            & 0xF));
+                    store_registers_in_memory();
                     break;
 
-                /* Fn65 - LOAD Vn, [I] */
-                /* Read all of the V registers from the memory pointed to */
-                /* by the index register. For example, to load all of the */
-                /* V registers, n would be 'F'                            */
                 case 0x65:
-                    temp = cpu.i.WORD;
-                    tbyte = cpu.operand.BYTE.high & 0xF;
-                    for (i = 0; i <= tbyte; i++) {
-                        cpu.v[i] = memory_read(temp);
-                        temp++;
-                    }
-                    sprintf(cpu.opdesc, "LOAD %X", tbyte);
+                    load_registers_from_memory();
                     break;
 
-                /* Fn75 - SRPL n */
-                /* Stores the values from n number of registers           */
-                /* (starting from 0) to the RPL store. */
                 case 0x75:
-                    tbyte = cpu.operand.BYTE.high & 0xF;
-                    for (i = 0; i <= tbyte; i++) {
-                        cpu.rpl[i] = cpu.v[i];
-                    }
-                    sprintf(cpu.opdesc, "SRPL %X", tbyte);
+                    store_registers_in_rpl();
                     break;
 
-                /* Fn85 - LRPL n */
-                /* Loads n number of registers from the RPL store to      */
-                /* their respective registers. */
                 case 0x85:
-                    tbyte = cpu.operand.BYTE.high & 0xF;
-                    for (i = 0; i <= tbyte; i++) {
-                        cpu.v[i] = cpu.rpl[i];
-                    }
-                    sprintf(cpu.opdesc, "LRPL %X", tbyte);
+                    read_registers_from_rpl();
                     break;
                 
                 default:
@@ -494,6 +380,35 @@ cpu_execute_single(void)
         default:
             break; 
     }
+}
+
+/******************************************************************************/
+
+/**
+ * 00Cn - SCRD n
+ * 
+ * Scrolls the screen down n pixels.
+ */
+void
+scroll_down(void)
+{
+    int x = cpu.operand.WORD & 0xF;
+    screen_scroll_down(x);
+    sprintf(cpu.opdesc, "SCRD %d", x);
+}
+
+/******************************************************************************/
+
+/**
+ * 00E0 - CLS
+ * 
+ * Clear screen
+ */
+void
+clear_screen(void)
+{
+    screen_blank();
+    sprintf(cpu.opdesc, "CLS");
 }
 
 /******************************************************************************/
@@ -512,6 +427,75 @@ return_from_subroutine(void)
     cpu.sp.WORD--;
     cpu.pc.BYTE.low = memory_read(cpu.sp.WORD);
     sprintf(cpu.opdesc, "RTS");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FB - SCRR
+ * 
+ * Scroll the screen right by 4 pixels.
+ */
+void
+scroll_right(void)
+{
+    screen_scroll_right();
+    sprintf(cpu.opdesc, "SCRR");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FC - SCRL
+ * 
+ * Scroll the screen left by 4 pixels.
+ */
+void
+scroll_left(void)
+{
+    screen_scroll_left();
+    sprintf(cpu.opdesc, "SCRL");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FD - EXIT
+ *
+ * Exit interpreter.
+ */
+void
+exit_interpreter(void)
+{
+    cpu.state = CPU_STOP;
+    sprintf(cpu.opdesc, "EXIT");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FE - EXTD
+ * 
+ * Disable extended mode
+ */
+void
+disable_extended_mode(void)
+{
+    screen_set_normal_mode();
+    sprintf(cpu.opdesc, "EXTD");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FF - EXTE
+ * Enable extended mode
+ */
+void
+enable_extended_mode(void)
+{
+    screen_set_extended_mode();
+    sprintf(cpu.opdesc, "EXTE");
 }
 
 /******************************************************************************/
@@ -1051,6 +1035,159 @@ move_register_into_sound(void)
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     cpu.st = cpu.v[x];
     sprintf(cpu.opdesc, "LOAD SOUND, V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx1E - ADD  I, Vx
+ * 
+ * Add the value of the source register into the index
+ * register.
+ */
+void
+add_register_to_index(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.i.WORD += cpu.v[x];
+    sprintf(cpu.opdesc, "ADD I, V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx29 - LOAD I, Vx
+ * 
+ * Load the index with the sprite indicated in the source
+ * register. All sprites are 5 bytes long, so the        
+ * location of the specified sprite is its index         
+ * multiplied by 5. Font sprites start at memory index 0.
+ */
+void
+load_index_with_sprite(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.i.WORD = cpu.v[x] * 5;
+    sprintf(cpu.opdesc, "LOAD I, V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx33 - BCD
+ * 
+ * Take the value stored in source and place the digits   
+ * in the following locations:                            
+ *                                                        
+ *      hundreds   -> self.memory[index]                  
+ *      tens       -> self.memory[index + 1]              
+ *      ones       -> self.memory[index + 2]              
+ *                                                        
+ * For example, if the value is 123, then the following   
+ * values will be placed at the specified locations:      
+ *                                                        
+ *      1 -> self.memory[index]                           
+ *      2 -> self.memory[index + 1]                       
+ *      3 -> self.memory[index + 2]                       
+ */
+void
+store_bcd_in_memory(void)
+{
+    word tword;
+
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+
+    tword.WORD = cpu.i.WORD;
+    int i = cpu.v[x] / 100;
+    memory_write(tword, i);
+
+    tword.WORD++;
+    i = (cpu.v[x] % 100) / 10;
+    memory_write(tword, i);
+
+    tword.WORD++;
+    i = (cpu.v[x] % 100) % 10;
+    memory_write(tword, i);
+    sprintf(cpu.opdesc, "BCD V%X (%03d)", x, cpu.v[x]);
+}
+
+/******************************************************************************/
+
+/**
+ * Fn55 - STOR n
+ * 
+ * Store all of the n registers in the memory pointed to  
+ * by the index register. For example, to store all of    
+ * the V registers, n would be the value 'F'              
+ */
+void
+store_registers_in_memory(void)
+{
+    word tword;
+
+    int n = (cpu.operand.WORD & 0x0F00) >> 8;
+    for (int i = 0; i <= n; i++) {
+        tword.WORD = cpu.i.WORD + i;
+        memory_write(tword, cpu.v[i]);
+    }
+    cpu.i.WORD += n + 1;
+    sprintf(cpu.opdesc, "STOR %X", n);
+}
+
+/******************************************************************************/
+
+/**
+ * Fn65 - LOAD n
+ * 
+ * Read all of the V registers from the memory pointed to 
+ * by the index register. For example, to load all of the 
+ * V registers, n would be 'F'.
+ */
+void
+load_registers_from_memory(void)
+{
+    int n = (cpu.operand.WORD & 0x0F00) >> 8;
+    for (int i = 0; i <= n; i++) {
+        cpu.v[i] = memory_read(cpu.i.WORD + i);
+    }
+    cpu.i.WORD += n + 1;
+    sprintf(cpu.opdesc, "LOAD %X", n);
+}
+
+/******************************************************************************/
+
+/**
+ * Fn75 - SRPL n
+ * 
+ * Stores the values from n number of registers        
+ * (starting from 0) to the RPL store.
+ */
+void
+store_registers_in_rpl(void)
+{
+    int n = (cpu.operand.WORD & 0x0F00) >> 8;
+    for (int i = 0; i <= n; i++) {
+        cpu.rpl[i] = cpu.v[i];
+    }
+    sprintf(cpu.opdesc, "SRPL %X", n);
+}
+
+/******************************************************************************/
+
+/**
+ * Fn85 - LRPL n
+ * 
+ * Loads n number of registers from the RPL store to      
+ * their respective registers.
+ */
+void
+read_registers_from_rpl(void)
+{
+    int n = (cpu.operand.WORD & 0x0F00) >> 8;
+    for (int i = 0; i <= n; i++) {
+        cpu.v[i] = cpu.rpl[i];
+    }
+    sprintf(cpu.opdesc, "LRPL %X", n);
 }
 
 /******************************************************************************/

@@ -80,12 +80,19 @@ main() {
         CU_add_test(cpu_suite, "test_load_source_into_sound", test_load_source_into_sound) == NULL ||
         CU_add_test(cpu_suite, "test_load_source_into_sound_integration", test_load_source_into_sound_integration) == NULL ||
         CU_add_test(cpu_suite, "test_add_index", test_add_index) == NULL ||
+        CU_add_test(cpu_suite, "test_add_index_integration", test_add_index_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_sprite_index", test_load_sprite_index) == NULL ||
+        CU_add_test(cpu_suite, "test_load_sprite_index_integration", test_load_sprite_index_integration) == NULL ||
         CU_add_test(cpu_suite, "test_bcd", test_bcd) == NULL ||
+        CU_add_test(cpu_suite, "test_bcd_integration", test_bcd_integration) == NULL ||
         CU_add_test(cpu_suite, "test_store_registers", test_store_registers) == NULL ||
+        CU_add_test(cpu_suite, "test_store_registers_integration", test_store_registers_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_registers", test_load_registers) == NULL ||
+        CU_add_test(cpu_suite, "test_load_registers_integration", test_load_registers_integration) == NULL ||
         CU_add_test(cpu_suite, "test_store_registers_in_rpl", test_store_registers_in_rpl) == NULL ||
+        CU_add_test(cpu_suite, "test_store_registers_in_rpl_integration", test_store_registers_in_rpl_integration) == NULL ||
         CU_add_test(cpu_suite, "test_read_registers_from_rpl", test_read_registers_from_rpl) == NULL ||
+        CU_add_test(cpu_suite, "test_read_registers_from_rpl_integration", test_read_registers_from_rpl_integration) == NULL ||
         CU_add_test(cpu_suite, "test_return_from_subroutine", test_return_from_subroutine) == NULL ||
         CU_add_test(cpu_suite, "test_return_from_subroutine_integration", test_return_from_subroutine_integration) == NULL ||
         CU_add_test(cpu_suite, "test_exit_interpreter", test_exit_interpreter) == NULL ||
