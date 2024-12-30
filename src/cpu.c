@@ -171,7 +171,6 @@ void
 cpu_execute_single(void) 
 {
     byte src;           /* Source register */
-    byte tgt;           /* Target register */
     byte tbyte;         /* A temporary byte */
     int temp;           /* A general purpose temporary integer */
     int i;
@@ -359,16 +358,8 @@ cpu_execute_single(void)
                     skip_if_key_pressed();
                     break;
 
-                /* EsA1 - SKUP Vs */
-                /* Check for the specified keypress in the source         */
-                /* register and if it is NOT pressed, will skip the next  */
-                /* instruction                                            */
                 case 0xA1:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    if (!keyboard_checkforkeypress (cpu.v[src])) {
-                        cpu.pc.WORD += 2;
-                    }
-                    sprintf(cpu.opdesc, "SKUP V%X", src);
+                    skip_if_key_not_pressed();
                     break;
 
                 default:
@@ -376,43 +367,22 @@ cpu_execute_single(void)
             }
             break;
 
-        /* Other I/O Routines */
         case 0xF:
-            switch (cpu.operand.BYTE.low) {
-                /* Ft07 - LOAD Vt, DELAY */
-                /* Move the value of the delay timer into the target      */
-                /* register.                                              */
+            switch (cpu.operand.WORD & 0xFF) {
                 case 0x07:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    cpu.v[tgt] = cpu.dt; 
-                    sprintf(cpu.opdesc, "LOAD V%X, DELAY", tgt);
+                    move_delay_timer_into_register();
                     break;
 
-                /* Ft0A - KEYD Vt */
-                /* Stop execution until a key is pressed. Move the value  */
-                /* of the key pressed into the specified register         */
                 case 0x0A:
-                    awaiting_keypress = TRUE;
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    sprintf(cpu.opdesc, "KEYD V%X", tgt);
+                    wait_for_keypress();
                     break;     
 
-                /* Fs15 - LOAD DELAY, Vs */
-                /* Move the value stored in the specified source register */
-                /* into the delay timer                                   */
                 case 0x15:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.dt = cpu.v[src];
-                    sprintf(cpu.opdesc, "LOAD DELAY, V%X", src);
+                    move_register_into_delay();
                     break;             
 
-                /* Fs18 - LOAD SOUND, Vs */
-                /* Move the value stored in the specified source register */
-                /* into the sound timer                                   */
                 case 0x18:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.st = cpu.v[src];
-                    sprintf(cpu.opdesc, "LOAD SOUND, V%X", src);
+                    move_register_into_sound();
                     break;
 
                 /* Fs1E - ADD  I, Vs */
@@ -999,6 +969,91 @@ skip_if_key_pressed(void)
     }
     sprintf(cpu.opdesc, "SKPR V%X", x);
 }
+
+/******************************************************************************/
+
+/**
+ * ExA1 - SKUP Vx
+ * 
+ * Check for the specified keypress in the source         
+ * register and if it is NOT pressed, will skip the next  
+ * instruction                                           
+ */
+void
+skip_if_key_not_pressed(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    if (!keyboard_checkforkeypress(cpu.v[x])) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKUP V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx07 - LOAD Vx, DELAY 
+ * 
+ * Move the value of the delay timer into the target      
+ * register.                                              
+ */
+void
+move_delay_timer_into_register(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.v[x] = cpu.dt; 
+    sprintf(cpu.opdesc, "LOAD V%X, DELAY", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx0A - KEYD Vx
+ * 
+ * Stop execution until a key is pressed. Move the value 
+ * of the key pressed into the specified register.
+ */
+void
+wait_for_keypress(void)
+{
+    awaiting_keypress = TRUE;
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    sprintf(cpu.opdesc, "KEYD V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx15 - LOAD DELAY, Vx
+ * 
+ * Move the value stored in the specified source register
+ * into the delay timer.
+ */
+void
+move_register_into_delay(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.dt = cpu.v[x];
+    sprintf(cpu.opdesc, "LOAD DELAY, V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx18 - LOAD SOUND, Vx
+ * 
+ * Move the value stored in the specified source register
+ * into the sound timer.
+ */                                
+void
+move_register_into_sound(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.st = cpu.v[x];
+    sprintf(cpu.opdesc, "LOAD SOUND, V%X", x);
+}
+
+/******************************************************************************/
 
 /**
  * This function contains the main CPU execution loop. It is responsible for 

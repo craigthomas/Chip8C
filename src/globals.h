@@ -150,6 +150,11 @@ void jump_to_register_plus_value(void);
 void generate_random_number(void);
 void draw_sprite(void);
 void skip_if_key_pressed(void);
+void skip_if_key_not_pressed(void);
+void move_delay_timer_into_register(void);
+void wait_for_keypress(void);
+void move_register_into_delay(void);
+void move_register_into_sound(void);
 
 /* memory.c */
 int memory_init(int memorysize);
@@ -221,8 +226,11 @@ void test_jump_index_plus_value(void);
 void test_jump_index_plus_value_integration(void);
 void test_generate_random(void);
 void test_load_delay_into_target(void);
+void test_load_delay_into_target_integration(void);
 void test_load_source_into_delay(void);
+void test_load_source_into_delay_integration(void);
 void test_load_source_into_sound(void);
+void test_load_source_into_sound_integration(void);
 void test_add_index(void);
 void test_load_sprite_index(void);
 void test_bcd(void);

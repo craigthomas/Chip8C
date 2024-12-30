@@ -824,6 +824,21 @@ void
 test_load_delay_into_target(void)
 {
     setup();
+    for (int r = 0; r < 0xF; r++) {
+        for (int value = 0; value < 0xFF; value += 10) {
+            cpu.dt = (short) value;
+            cpu.operand.WORD = r << 8;
+            cpu.v[r] = 0;
+            move_delay_timer_into_register();
+            CU_ASSERT_EQUAL(value, cpu.v[r]);
+        }
+    }
+}
+
+void
+test_load_delay_into_target_integration(void)
+{
+    setup();
     tword.WORD = 0xF107;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
@@ -835,6 +850,21 @@ test_load_delay_into_target(void)
 
 void
 test_load_source_into_delay(void)
+{
+    setup();
+    for (int r = 0; r < 0xF; r++) {
+        for (int value = 0; value < 0xFF; value += 10) {
+            cpu.v[r] = (short) value;
+            cpu.operand.WORD = r << 8;
+            cpu.dt = 0;
+            move_register_into_delay();
+            CU_ASSERT_EQUAL(value, cpu.dt);
+        }
+    }
+}
+
+void
+test_load_source_into_delay_integration(void)
 {
     setup();
     tword.WORD = 0xF115;
@@ -849,6 +879,21 @@ test_load_source_into_delay(void)
 
 void
 test_load_source_into_sound(void)
+{
+    setup();
+    for (int r = 0; r < 0xF; r++) {
+        for (int value = 0; value < 0xFF; value += 10) {
+            cpu.v[r] = (short) value;
+            cpu.operand.WORD = r << 8;
+            cpu.st = 0;
+            move_register_into_sound();
+            CU_ASSERT_EQUAL(value, cpu.st);
+        }
+    }
+}
+
+void
+test_load_source_into_sound_integration(void)
 {
     setup();
     tword.WORD = 0xF118;
