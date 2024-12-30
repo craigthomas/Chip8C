@@ -44,6 +44,7 @@ main() {
         CU_add_test(cpu_suite, "test_skip_if_register_not_equal_value_integration", test_skip_if_register_not_equal_value_integration) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_register_integration", test_skip_if_register_equal_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_register", test_skip_if_register_equal_register) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_register", test_skip_if_register_not_equal_register) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_not_equal_register_integration", test_skip_if_register_not_equal_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_move_value_to_register_integration", test_move_value_to_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_move_value_to_register", test_move_value_to_register) == NULL ||
@@ -68,7 +69,9 @@ main() {
         CU_add_test(cpu_suite, "test_shift_register_left", test_shift_register_left) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_left_integration", test_shift_register_left_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_index", test_load_index) == NULL ||
+        CU_add_test(cpu_suite, "test_load_index_integration", test_load_index_integration) == NULL ||
         CU_add_test(cpu_suite, "test_jump_index_plus_value", test_jump_index_plus_value) == NULL ||
+        CU_add_test(cpu_suite, "test_jump_index_plus_value_integration", test_jump_index_plus_value_integration) == NULL ||
         CU_add_test(cpu_suite, "test_generate_random", test_generate_random) == NULL ||
         CU_add_test(cpu_suite, "test_load_delay_into_target", test_load_delay_into_target) == NULL ||
         CU_add_test(cpu_suite, "test_load_source_into_delay", test_load_source_into_delay) == NULL ||

@@ -699,6 +699,31 @@ test_shift_register_left_integration(void)
     teardown();
 }
 
+void 
+test_skip_if_register_not_equal_register(void) 
+{
+    setup();
+    for (int x = 0; x < 0x10; x++) {
+        cpu.v[x] = (short) x;
+    }
+
+    for (int register1 = 0; register1 < 0x10; register1++) {
+        for (int register2 = 0; register2 < 0x10; register2++) {
+            cpu.operand.WORD = register1;
+            cpu.operand.WORD <<= 4;
+            cpu.operand.WORD += register2;
+            cpu.operand.WORD <<= 4;
+            cpu.pc.WORD = 0;
+            skip_if_register_not_equal_register();
+            if (register1 != register2) {
+                CU_ASSERT_EQUAL(2, cpu.pc.WORD);
+            } else {
+                CU_ASSERT_EQUAL(0, cpu.pc.WORD);
+            }
+        }
+    }
+}
+
 void
 test_skip_if_register_not_equal_register_integration(void) 
 {
@@ -722,8 +747,19 @@ test_skip_if_register_not_equal_register_integration(void)
     teardown();
 }
 
+void 
+test_load_index(void)
+{
+    setup();
+    for (int value = 0; value < 0x10000; value++) {
+        cpu.operand.WORD = value;
+        load_index_with_value();
+        CU_ASSERT_EQUAL(value & 0x0FFF, cpu.i.WORD);
+    }
+}
+
 void
-test_load_index(void) 
+test_load_index_integration(void) 
 {
     setup();
     tword.WORD = 0xAFFF;
@@ -735,15 +771,30 @@ test_load_index(void)
 }
 
 void
-test_jump_index_plus_value(void) 
+test_jump_index_plus_value(void)
+{
+    setup();
+    for (int index = 0; index < 0xFFF; index += 10) {
+        for (int value = 0; value < 0xFFF; value += 10) {
+            cpu.v[0] = index;
+            cpu.pc.WORD = 0;
+            cpu.operand.WORD = value;
+            jump_to_register_plus_value();
+            CU_ASSERT_EQUAL(((index & 0xFF) + value) & 0xFFFF, cpu.pc.WORD);
+        }
+    }
+}
+
+void
+test_jump_index_plus_value_integration(void) 
 {
     setup();
     tword.WORD = 0xB010;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
-    cpu.i.WORD = 0x0101;
+    cpu.v[0] = 0x01;
     cpu_execute_single();
-    CU_ASSERT_EQUAL(cpu.pc.WORD, 0x0111);
+    CU_ASSERT_EQUAL(cpu.pc.WORD, 0x0011);
     teardown();
 
     setup();

@@ -170,20 +170,12 @@ cpu_process_sdl_events(void)
 void
 cpu_execute_single(void) 
 {
-    byte x;             /* Stores what is usually the x reg nibble */
-    byte y;             /* Stores what is usually the y reg nibble */
     byte src;           /* Source register */
     byte tgt;           /* Target register */
     byte tbyte;         /* A temporary byte */
     int temp;           /* A general purpose temporary integer */
-    int i;              /* Used for FOR loop control */
-    int j;              /* Used for FOR loop control */
-    int k;              /* Used for FOR loop control */
-    int color;          /* Stores whether to turn a pixel on or off */
-    int currentcolor;   /* Stores the background pixel value */
+    int i;
     word tword;         /* A temporary word */
-    int xcor;           /* The x coordinate to draw a pixel at */
-    int ycor;           /* The y coordinate to draw a pixel at */
 
     cpu.oldpc = cpu.pc;
     
@@ -341,145 +333,30 @@ cpu_execute_single(void)
             }
             break;
 
-        /* 9st0 - SKNE Vs, Vt */
-        /* Skip if source register is equal to target register */
         case 0x9:
-            src = cpu.operand.BYTE.high & 0xF;
-            tgt = (cpu.operand.BYTE.low & 0xF0) >> 4;
-            if (cpu.v[src] != cpu.v[tgt]) {
-                cpu.pc.WORD += 2;
-            }
-            sprintf(cpu.opdesc, "SKNE V%X, V%X", src, tgt);
+            skip_if_register_not_equal_register();
             break;
 
-        /* Annn - LOAD I, nnn */
-        /* Load index register with constant value */
         case 0xA:
-            cpu.i.WORD = (cpu.operand.WORD & 0x0FFF);
-            sprintf(cpu.opdesc, "LOAD I, %03X", (cpu.operand.WORD 
-                    & 0x0FFF));
+            load_index_with_value();
             break;
 
-        /* Bnnn - JUMP [I] + nnn */
-        /* Load the program counter with the memory value located at the  */
-        /* specified operand plus the value of the index register         */
         case 0xB:
-            cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF) + cpu.i.WORD;
-            sprintf(cpu.opdesc, "JUMP I + %03X", (cpu.operand.WORD 
-                    & 0x0FFF));
+            jump_to_register_plus_value();
             break;
 
-        /* Ctnn - RAND Vt, nn */
-        /* A random number between 0 and 255 is generated. The contents   */
-        /* of it are then ANDed with the constant value passed in the     */
-        /* operand. The result is stored in the target register           */
         case 0xC:
-            tgt = cpu.operand.BYTE.high & 0xF;
-            cpu.v[tgt] = (rand() % 255) & cpu.operand.BYTE.low;
-            sprintf(cpu.opdesc, "RAND V%X, %02X", tgt, 
-                    (cpu.operand.BYTE.low));
+            generate_random_number();
             break;
     
-        /* Dxyn - DRAW x, y, n_bytes */ 
-        /* Draws the sprite pointed to in the index register at the       */
-        /* specified x and y coordinates. Drawing is done via an XOR      */
-        /* routine, meaning that if the target pixel is already turned    */
-        /* on, and a pixel is set to be turned on at that same location   */
-        /* via the draw, then the pixel is turned off. The routine will   */
-        /* wrap the pixels if they are drawn off the edge of the screen.  */
-        /* Each sprite is 8 bits (1 byte) wide. The n_bytes parameter     */
-        /* sets how tall the sprite is. Consecutive bytes in the memory   */
-        /* pointed to by the index register make up the bytes of the      */
-        /* sprite. Each bit in the sprite byte determines whether a pixel */
-        /* is turned on (1) or turned off (0). For example, assume that   */
-        /* the index register pointed to the following 7 bytes:           */
-        /*                                                                */
-        /*                 bit 0 1 2 3 4 5 6 7                            */
-        /*                                                                */
-        /*     byte 0          0 1 1 1 1 1 0 0                            */
-        /*     byte 1          0 1 0 0 0 0 0 0                            */
-        /*     byte 2          0 1 0 0 0 0 0 0                            */
-        /*     byte 3          0 1 1 1 1 1 0 0                            */
-        /*     byte 4          0 1 0 0 0 0 0 0                            */
-        /*     byte 5          0 1 0 0 0 0 0 0                            */
-        /*     byte 6          0 1 1 1 1 1 0 0                            */
-        /*                                                                */
-        /* This would draw a character on the screen that looks like an   */
-        /* 'E'. The x_source and y_source tell which registers contain    */
-        /* the x and y coordinates for the sprite. If writing a pixel to  */
-        /* a location causes that pixel to be turned off, then VF will be */
-        /* set to 1.                                                      */
         case 0xD:
-            x = cpu.operand.BYTE.high & 0xF;
-            y = (cpu.operand.BYTE.low & 0xF0) >> 4;
-            tword.WORD = cpu.i.WORD;
-            tbyte = cpu.operand.BYTE.low & 0xF;
-            cpu.v[0xF] = 0;
-
-            if (screen_is_extended_mode() && tbyte == 0) {
-                for (i = 0; i < 16; i++) {
-                    for (k = 0; k < 2; k++) {
-                        tbyte = memory_read(cpu.i.WORD + (i * 2) + k);
-                        ycor = cpu.v[y] + i;
-                        ycor = ycor % screen_get_height();
-
-                        for (j = 0; j < 8; j++) {
-                            xcor = cpu.v[x] + j + (k * 8);
-                            xcor = xcor % screen_get_width();
-
-                            color = (tbyte & 0x80) ? 1 : 0;
-                            currentcolor = screen_get_pixel(xcor, ycor);
-
-                            cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
-                            color = color ^ currentcolor;
-
-                            screen_draw(xcor, ycor, color);
-                            tbyte = tbyte << 1;
-                        } 
-                    }
-                }
-                sprintf(cpu.opdesc, "DRAWEX V%X, V%X, %X", x, y, 
-                        (cpu.operand.BYTE.low & 0xF));
-            } else {
-                for (i = 0; i < (cpu.operand.BYTE.low & 0xF); i++) {
-                    tbyte = memory_read (cpu.i.WORD + i);
-                    ycor = cpu.v[y] + i;
-                    ycor = ycor % screen_get_height();
-
-                    for (j = 0; j < 8; j++) {
-                        xcor = cpu.v[x] + j;
-                        xcor = xcor % screen_get_width();
-
-                        color = (tbyte & 0x80) ? 1 : 0;
-                        currentcolor = screen_get_pixel(xcor, ycor);
-
-                        cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
-                        color = color ^ currentcolor;
-
-                        screen_draw(xcor, ycor, color);
-                        tbyte = tbyte << 1;
-                    } 
-                }
-                sprintf(cpu.opdesc, "DRAW V%X, V%X, %X", x, y, 
-                        (cpu.operand.BYTE.low & 0xF));
-            }
-
-            screen_refresh(FALSE);
+            draw_sprite();
             break;
 
-        /* Keyboard routines */
         case 0xE:
-            switch (cpu.operand.BYTE.low) {
-                /* Es9E - SKPR Vs */
-                /* Check to see if the key specified in the source        */
-                /* register is pressed, and if it is, skips the next      */
-                /* instruction                                            */
+            switch (cpu.operand.WORD & 0xFF) {
                 case 0x9E:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    if (keyboard_checkforkeypress (cpu.v[src])) {
-                        cpu.pc.WORD += 2;
-                    }
-                    sprintf(cpu.opdesc, "SKPR V%X", src);
+                    skip_if_key_pressed();
                     break;
 
                 /* EsA1 - SKUP Vs */
@@ -945,6 +822,182 @@ shift_left(void)
     cpu.v[x] = (cpu.v[y] << 1) & 0xFF;
     cpu.v[0xF] = bit_seven;
     sprintf(cpu.opdesc, "SHL V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * 9xy0 - SKNE Vx, Vy
+ * 
+ * Skip if source register is equal to target register. The program counter
+ * is updated to skip the next instruction by advancing it by 2 bytes.
+ */
+void
+skip_if_register_not_equal_register(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    if (cpu.v[x] != cpu.v[y]) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKNE V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * Annn - LOAD I, nnn
+ * 
+ * Load index register with constant value.
+ */
+void
+load_index_with_value(void) 
+{
+    cpu.i.WORD = (cpu.operand.WORD & 0x0FFF);
+    sprintf(cpu.opdesc, "LOAD I, %03X", (cpu.operand.WORD & 0x0FFF));
+}
+
+/******************************************************************************/
+
+/**
+ * 
+ * Bnnn - JUMP V0 + nnn
+ * 
+ * Load the program counter with the memory value located at the specified
+ * operand plus the value of the register.
+ */
+void
+jump_to_register_plus_value(void)
+{
+    cpu.pc.WORD = (cpu.v[0] & 0xFF) + (cpu.operand.WORD & 0x0FFF);
+    sprintf(cpu.opdesc, "JUMP V0 + %03X", (cpu.operand.WORD & 0x0FFF));
+}
+
+/******************************************************************************/
+
+/**
+ * Cxnn - RAND Vx, nn
+ * 
+ * A random number between 0 and 255 is generated. The contents
+ * of it are then ANDed with the constant value passed in the
+ * operand. The result is stored in the target register.
+ */
+void
+generate_random_number(void)
+{
+    int x = cpu.operand.BYTE.high & 0xF;
+    cpu.v[x] = (rand() % 255) & cpu.operand.BYTE.low;
+    sprintf(cpu.opdesc, "RAND V%X, %02X", x, (cpu.operand.BYTE.low));
+}
+
+/******************************************************************************/
+
+/**
+ * Dxyn - DRAW x, y, n_bytes
+ * 
+ * Draws the sprite pointed to in the index register at the       
+ * specified x and y coordinates. Drawing is done via an XOR      
+ * routine, meaning that if the target pixel is already turned    
+ * on, and a pixel is set to be turned on at that same location   
+ * via the draw, then the pixel is turned off. The routine will  
+ * wrap the pixels if they are drawn off the edge of the screen.  
+ * Each sprite is 8 bits (1 byte) wide. The n_bytes parameter     
+ * sets how tall the sprite is. Consecutive bytes in the memory   
+ * pointed to by the index register make up the bytes of the      
+ * sprite. Each bit in the sprite byte determines whether a pixel 
+ * is turned on (1) or turned off (0). For example, assume that   
+ * the index register pointed to the following 7 bytes:           
+ *                                                                
+ *                 bit 0 1 2 3 4 5 6 7                            
+ *                                                                
+ *     byte 0          0 1 1 1 1 1 0 0                            
+ *     byte 1          0 1 0 0 0 0 0 0                            
+ *     byte 2          0 1 0 0 0 0 0 0                            
+ *     byte 3          0 1 1 1 1 1 0 0                            
+ *     byte 4          0 1 0 0 0 0 0 0                            
+ *     byte 5          0 1 0 0 0 0 0 0                            
+ *     byte 6          0 1 1 1 1 1 0 0                            
+ *                                                               
+ * This would draw a character on the screen that looks like an   
+ * 'E'. The x_source and y_source tell which registers contain    
+ * the x and y coordinates for the sprite. If writing a pixel to  
+ * a location causes that pixel to be turned off, then VF will be 
+ * set to 1.                                                      
+ */
+void
+draw_sprite(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    byte tbyte = cpu.operand.BYTE.low & 0xF;
+    cpu.v[0xF] = 0;
+
+    if (screen_is_extended_mode() && tbyte == 0) {
+        for (int i = 0; i < 16; i++) {
+            for (int k = 0; k < 2; k++) {
+                tbyte = memory_read(cpu.i.WORD + (i * 2) + k);
+                int ycor = cpu.v[y] + i;
+                ycor = ycor % screen_get_height();
+
+                for (int j = 0; j < 8; j++) {
+                    int xcor = cpu.v[x] + j + (k * 8);
+                    xcor = xcor % screen_get_width();
+
+                    int color = (tbyte & 0x80) ? 1 : 0;
+                    int currentcolor = screen_get_pixel(xcor, ycor);
+
+                    cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
+                    color = color ^ currentcolor;
+
+                    screen_draw(xcor, ycor, color);
+                    tbyte = tbyte << 1;
+                } 
+            }
+        }
+        sprintf(cpu.opdesc, "DRAWEX V%X, V%X, %X", x, y, (cpu.operand.WORD & 0xF));
+    } else {
+        for (int i = 0; i < (cpu.operand.BYTE.low & 0xF); i++) {
+            tbyte = memory_read (cpu.i.WORD + i);
+            int ycor = cpu.v[y] + i;
+            ycor = ycor % screen_get_height();
+
+            for (int j = 0; j < 8; j++) {
+                int xcor = cpu.v[x] + j;
+                xcor = xcor % screen_get_width();
+
+                int color = (tbyte & 0x80) ? 1 : 0;
+                int currentcolor = screen_get_pixel(xcor, ycor);
+
+                cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
+                color = color ^ currentcolor;
+
+                screen_draw(xcor, ycor, color);
+                tbyte = tbyte << 1;
+            } 
+        }
+        sprintf(cpu.opdesc, "DRAW V%X, V%X, %X", x, y, (cpu.operand.WORD & 0xF));
+    }
+
+    screen_refresh(FALSE);
+}
+
+/******************************************************************************/
+
+/**
+ * Ex9E - SKPR Vx
+ * 
+ * Check to see if the key specified in the source        
+ * register is pressed, and if it is, skips the next      
+ * instruction.
+ */
+void
+skip_if_key_pressed(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    if (keyboard_checkforkeypress(cpu.v[x])) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKPR V%X", x);
 }
 
 /**
