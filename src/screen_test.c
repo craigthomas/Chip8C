@@ -53,14 +53,14 @@ test_screen_blank(void)
     int y = 0;
 
     setup_screen_test();
-    for (x = 0; x < SCREEN_WIDTH; x++) {
-        for (y = 0; y < SCREEN_HEIGHT; y++) {
+    for (x = 0; x < screen_get_width(); x++) {
+        for (y = 0; y < screen_get_height(); y++) {
             screen_draw(x, y, 1);
         }
     }
     screen_blank();
-    for (x = 0; x < SCREEN_WIDTH; x++) {
-        for (y = 0; y < SCREEN_HEIGHT; y++) {
+    for (x = 0; x < screen_get_width(); x++) {
+        for (y = 0; y < screen_get_height(); y++) {
             CU_ASSERT_FALSE(screen_get_pixel(x, y));
         }
     }

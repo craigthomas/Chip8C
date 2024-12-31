@@ -33,6 +33,10 @@
 int 
 memory_init(int memorysize) 
 {
+   if (memory != NULL) {
+      free(memory);
+      memory = NULL;
+   }
    memory = (byte *)malloc(sizeof (byte) * memorysize);
    return memory != NULL;
 }
@@ -46,6 +50,7 @@ void
 memory_destroy(void) 
 {
    free(memory);
+   memory = NULL;
 }
 
 /* E N D   O F   F I L E *****************************************************/

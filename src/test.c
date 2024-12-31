@@ -36,36 +36,65 @@ main() {
     }
 
     if (CU_add_test(cpu_suite, "test_jump_to_address", test_jump_to_address) == NULL ||
+        CU_add_test(cpu_suite, "test_jump_to_address_integration", test_jump_to_address_integration) == NULL ||
         CU_add_test(cpu_suite, "test_jump_to_subroutine", test_jump_to_subroutine) == NULL ||
+        CU_add_test(cpu_suite, "test_jump_to_subroutine_integration", test_jump_to_subroutine_integration) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_value", test_skip_if_register_equal_value) == NULL ||
-        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_value", test_skip_if_register_not_equal_value) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_equal_value_integration", test_skip_if_register_equal_value_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_value_integration", test_skip_if_register_not_equal_value_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_equal_register_integration", test_skip_if_register_equal_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_register", test_skip_if_register_equal_register) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_not_equal_register", test_skip_if_register_not_equal_register) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_register_integration", test_skip_if_register_not_equal_register_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_move_value_to_register_integration", test_move_value_to_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_move_value_to_register", test_move_value_to_register) == NULL ||
         CU_add_test(cpu_suite, "test_add_value_to_register", test_add_value_to_register) == NULL ||
-        CU_add_test(cpu_suite, "test_load_register_to_register", test_load_register_to_register) == NULL ||
+        CU_add_test(cpu_suite, "test_add_value_to_register_integration", test_add_value_to_register_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_move_register_to_register", test_move_register_to_register) == NULL ||
+        CU_add_test(cpu_suite, "test_move_register_to_register_integration", test_move_register_to_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_logical_or", test_logical_or) == NULL ||
+        CU_add_test(cpu_suite, "test_logical_or_integration", test_logical_or_integration) == NULL ||
         CU_add_test(cpu_suite, "test_logical_and", test_logical_and) == NULL ||
-        CU_add_test(cpu_suite, "test_logical_xor", test_logical_xor) == NULL ||
+        CU_add_test(cpu_suite, "test_logical_and_integration", test_logical_and_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_exclusive_or", test_exclusive_or) == NULL ||
+        CU_add_test(cpu_suite, "test_exclusive_or_integration", test_exclusive_or_integration) == NULL ||
         CU_add_test(cpu_suite, "test_add_register_to_register", test_add_register_to_register) == NULL ||
+        CU_add_test(cpu_suite, "test_add_register_to_register_integration", test_add_register_to_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_sub_register_from_register", test_sub_register_from_register) == NULL ||
+        CU_add_test(cpu_suite, "test_sub_register_from_register_integration", test_sub_register_from_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_right", test_shift_register_right) == NULL ||
+        CU_add_test(cpu_suite, "test_shift_register_right_integration", test_shift_register_right) == NULL ||
         CU_add_test(cpu_suite, "test_sub_register_from_register_source_from_target", test_sub_register_from_register_source_from_target) == NULL ||
+        CU_add_test(cpu_suite, "test_sub_register_from_register_source_from_target_integration", test_sub_register_from_register_source_from_target_integration) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_left", test_shift_register_left) == NULL ||
+        CU_add_test(cpu_suite, "test_shift_register_left_integration", test_shift_register_left_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_index", test_load_index) == NULL ||
+        CU_add_test(cpu_suite, "test_load_index_integration", test_load_index_integration) == NULL ||
         CU_add_test(cpu_suite, "test_jump_index_plus_value", test_jump_index_plus_value) == NULL ||
+        CU_add_test(cpu_suite, "test_jump_index_plus_value_integration", test_jump_index_plus_value_integration) == NULL ||
         CU_add_test(cpu_suite, "test_generate_random", test_generate_random) == NULL ||
         CU_add_test(cpu_suite, "test_load_delay_into_target", test_load_delay_into_target) == NULL ||
+        CU_add_test(cpu_suite, "test_load_delay_into_target_integration", test_load_delay_into_target_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_source_into_delay", test_load_source_into_delay) == NULL ||
+        CU_add_test(cpu_suite, "test_load_source_into_delay_integration", test_load_source_into_delay_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_source_into_sound", test_load_source_into_sound) == NULL ||
+        CU_add_test(cpu_suite, "test_load_source_into_sound_integration", test_load_source_into_sound_integration) == NULL ||
         CU_add_test(cpu_suite, "test_add_index", test_add_index) == NULL ||
+        CU_add_test(cpu_suite, "test_add_index_integration", test_add_index_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_sprite_index", test_load_sprite_index) == NULL ||
+        CU_add_test(cpu_suite, "test_load_sprite_index_integration", test_load_sprite_index_integration) == NULL ||
         CU_add_test(cpu_suite, "test_bcd", test_bcd) == NULL ||
+        CU_add_test(cpu_suite, "test_bcd_integration", test_bcd_integration) == NULL ||
         CU_add_test(cpu_suite, "test_store_registers", test_store_registers) == NULL ||
+        CU_add_test(cpu_suite, "test_store_registers_integration", test_store_registers_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_registers", test_load_registers) == NULL ||
+        CU_add_test(cpu_suite, "test_load_registers_integration", test_load_registers_integration) == NULL ||
         CU_add_test(cpu_suite, "test_store_registers_in_rpl", test_store_registers_in_rpl) == NULL ||
+        CU_add_test(cpu_suite, "test_store_registers_in_rpl_integration", test_store_registers_in_rpl_integration) == NULL ||
         CU_add_test(cpu_suite, "test_read_registers_from_rpl", test_read_registers_from_rpl) == NULL ||
+        CU_add_test(cpu_suite, "test_read_registers_from_rpl_integration", test_read_registers_from_rpl_integration) == NULL ||
         CU_add_test(cpu_suite, "test_return_from_subroutine", test_return_from_subroutine) == NULL ||
+        CU_add_test(cpu_suite, "test_return_from_subroutine_integration", test_return_from_subroutine_integration) == NULL ||
         CU_add_test(cpu_suite, "test_exit_interpreter", test_exit_interpreter) == NULL ||
         CU_add_test(cpu_suite, "test_cpu_scroll_left", test_cpu_scroll_left) == NULL ||
         CU_add_test(cpu_suite, "test_cpu_scroll_right", test_cpu_scroll_right) == NULL ||

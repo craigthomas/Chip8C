@@ -109,6 +109,10 @@ cpu_reset(void)
     srand(time(0));
     cpu.state = CPU_PAUSED;
 
+    if (cpu.opdesc != NULL) {
+        free(cpu.opdesc);
+        cpu.opdesc = NULL;
+    }
     cpu.opdesc = (char *)malloc(MAXSTRSIZE);
     awaiting_keypress = FALSE;
 }
@@ -166,297 +170,120 @@ cpu_process_sdl_events(void)
 void
 cpu_execute_single(void) 
 {
-    byte x;             /* Stores what is usually the x reg nibble */
-    byte y;             /* Stores what is usually the y reg nibble */
-    byte src;           /* Source register */
-    byte tgt;           /* Target register */
-    byte tbyte;         /* A temporary byte */
-    int temp;           /* A general purpose temporary integer */
-    int i;              /* Used for FOR loop control */
-    int j;              /* Used for FOR loop control */
-    int k;              /* Used for FOR loop control */
-    int color;          /* Stores whether to turn a pixel on or off */
-    int currentcolor;   /* Stores the background pixel value */
-    word tword;         /* A temporary word */
-    int xcor;           /* The x coordinate to draw a pixel at */
-    int ycor;           /* The y coordinate to draw a pixel at */
-
     cpu.oldpc = cpu.pc;
-    
     cpu.operand.BYTE.high = memory_read(cpu.pc.WORD);
     cpu.pc.WORD++;
     cpu.operand.BYTE.low = memory_read(cpu.pc.WORD);
     cpu.pc.WORD++;
 
-    switch (cpu.operand.BYTE.high & 0xF0) {
-        /* Misc subroutines */
-        case 0x00:
-            switch (cpu.operand.BYTE.low) {
-                /* 00Cn - SCRD */
-                /* Scroll Down */
-                case 0xC0:
-                case 0xC1:
-                case 0xC2:
-                case 0xC3:
-                case 0xC4:
-                case 0xC5:
-                case 0xC6:
-                case 0xC7:
-                case 0xC8:
-                case 0xC9:
-                case 0xCA:
-                case 0xCB:
-                case 0xCC:
-                case 0xCD:
-                case 0xCE:
-                case 0xCF:
-                    temp = cpu.operand.BYTE.low & 0x0F;
-                    screen_scroll_down(temp);
-                    sprintf(cpu.opdesc, "SCRD %d", temp);
-                    break;
-
-                /* 00E0 - CLS */
-                /* Clear screen */
+    switch ((cpu.operand.WORD & 0xF000) >> 12) {
+        case 0x0:
+            switch (cpu.operand.WORD & 0xFF) {
                 case 0xE0:
-                    screen_blank();
-                    sprintf(cpu.opdesc, "CLS");
+                    clear_screen();
                     break;
 
-                /* 00EE - RTS */
-                /* Return from subroutine */
                 case 0xEE:
-                    cpu.sp.WORD--;
-                    cpu.pc.BYTE.high = memory_read(cpu.sp.WORD);
-                    cpu.sp.WORD--;
-                    cpu.pc.BYTE.low = memory_read(cpu.sp.WORD);
-                    sprintf(cpu.opdesc, "RTS");
+                    return_from_subroutine();
                     break;
 
-                /* 00FB - SCRR */
-                /* Scroll right */
                 case 0xFB:
-                    screen_scroll_right();
-                    sprintf(cpu.opdesc, "SCRR");
+                    scroll_right();
                     break;
 
-                /* 00FC - SCRL */
-                /* Scroll left */
                 case 0xFC:
-                    screen_scroll_left();
-                    sprintf(cpu.opdesc, "SCRL");
+                    scroll_left();
                     break;
 
-                /* 00FD - EXIT */
-                /* Exit interpreter */
                 case 0xFD:
-                    cpu.state = CPU_STOP;
-                    sprintf(cpu.opdesc, "EXIT");
+                    exit_interpreter();
                     break;
 
-                /* 00FE - EXTD */
-                /* Disable extended mode */
                 case 0xFE:
-                    screen_set_normal_mode();
-                    sprintf(cpu.opdesc, "EXTD");
+                    disable_extended_mode();
                     break;
 
-                /* 00FF - EXTE */
-                /* Enable extended mode */
                 case 0xFF:
-                    screen_set_extended_mode();
-                    sprintf(cpu.opdesc, "EXTE");
+                    enable_extended_mode();
                     break;
 
                 default:
+                    switch (cpu.operand.WORD & 0xF0) {
+                        case 0xC0:
+                            scroll_down();
+                            break;
+
+                        default:
+                            break;
+                    }
                     break;
             } 
             break;
 
-        /* 1nnn - JUMP nnn */
-        /* Jump to address */
-        case 0x10:
-            cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
-            sprintf(cpu.opdesc, "JUMP %03X", cpu.pc.WORD);
+        case 0x1:
+            jump_to_address();
             break;
 
-        /* 2nnn - CALL nnn */
-        /* Jump to subroutine */
-        case 0x20:
-            memory_write(cpu.sp, cpu.pc.BYTE.low);
-            cpu.sp.WORD++;
-            memory_write(cpu.sp, cpu.pc.BYTE.high);
-            cpu.sp.WORD++;
-            cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
-            sprintf(cpu.opdesc, "CALL %03X", cpu.pc.WORD);
+        case 0x2:
+            jump_to_subroutine();
             break;
 
-        /* 3snn - SKE Vs, nn */
-        /* Skip if source register equal value */
-        case 0x30:
-            src = cpu.operand.BYTE.high & 0xF;
-            if (cpu.v[src] == cpu.operand.BYTE.low) {
-                cpu.pc.WORD += 2;
-            }
-            sprintf(cpu.opdesc, "SKE V%X, %02X", src, 
-                    cpu.operand.BYTE.low);
+        case 0x3:
+            skip_if_register_equal_value();
             break;
 
-        /* 4snn - SKNE Vs, nn */
-        /* Skip if source register contents not equal constant value */
-        case 0x40:
-            src = cpu.operand.BYTE.high & 0xF;
-            if (cpu.v[src] != cpu.operand.BYTE.low) {
-                cpu.pc.WORD += 2;
-            }
-            sprintf(cpu.opdesc, "SKNE V%X, %02X", src, 
-                    cpu.operand.BYTE.low);
+        case 0x4:
+            skip_if_register_not_equal_value();
             break;
 
-        /* 5st0 - SKE Vs, Vt */
-        /* Skip if source register value is equal to target register */
-        case 0x50:
-            src = cpu.operand.BYTE.high & 0xF;
-            tgt = (cpu.operand.BYTE.low & 0xF0) >> 4;
-            if (cpu.v[src] == cpu.v[tgt]) {
-                cpu.pc.WORD += 2;
-            }
-            sprintf(cpu.opdesc, "SKE V%X, V%X", src, tgt);
+        case 0x5:
+            skip_if_register_equal_register();
             break;
 
-        /* 6snn - LOAD Vs, nn */
-        /* Move the constant value into the source register */
-        case 0x60:
-            src = cpu.operand.BYTE.high & 0xF;
-            cpu.v[src] = cpu.operand.BYTE.low;
-            sprintf(cpu.opdesc, "LOAD V%X, %02X", src, 
-                    cpu.operand.BYTE.low);
+        case 0x6:
+            move_value_to_register();
             break;
 
-        /* 7snn - ADD Vs, nn */
-        /* Add the constant value to the source register */
-        case 0x70:
-            src = cpu.operand.BYTE.high & 0xF;
-            temp = cpu.v[src] + cpu.operand.BYTE.low;
-            cpu.v[src] = (temp > 255) ? temp - 256 : temp;
-            sprintf(cpu.opdesc, "ADD V%X, %02X", src, 
-                    cpu.operand.BYTE.low);
+        case 0x7:
+            add_value_to_register();
             break;
 
-        /* Logical operations */ 
-        case 0x80:
-            switch (cpu.operand.BYTE.low & 0x0F) {
-                /* 8ts0 - LOAD Vs, Vt */
-                /* Move the value of the source register into the target */
+        case 0x8:
+            switch (cpu.operand.WORD & 0xF) {
                 case 0x0: 
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    cpu.v[tgt] = cpu.v[src];
-                    sprintf(cpu.opdesc, "LOAD V%X, V%X", tgt, src);
+                    move_register_into_register();
                     break;
 
-                /* 8ts1 - OR Vs, Vt */
-                /* Perform a logical OR operation between the source and */
-                /* the target register, and store the result in the      */
-                /* target register                                       */
                 case 0x1:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    cpu.v[tgt] = cpu.v[tgt] | cpu.v[src];
-                    sprintf(cpu.opdesc, "OR V%X, V%X", tgt, src);
+                    logical_or();
                     break;
 
-                /* 8ts2 - AND Vs, Vt */
-                /* Perform a logical AND operation between the source and */
-                /* the target register, and store the result in the       */
-                /* target register                                        */
                 case 0x2:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    cpu.v[tgt] = cpu.v[tgt] & cpu.v[src];
-                    sprintf(cpu.opdesc, "AND V%X, V%X", tgt, src);
+                    logical_and();
                     break;
 
-                /* 8ts3 - XOR  Vs, Vt */
-                /* Perform a logical XOR operation between the source and */
-                /* the target register, and store the result in the       */
-                /* target register                                        */
                 case 0x3:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    cpu.v[tgt] = cpu.v[tgt] ^ cpu.v[src];
-                    sprintf(cpu.opdesc, "XOR V%X, V%X", tgt, src);
+                    exclusive_or();
                     break;
                 
-                /* 8ts4 - ADD  Vt, Vs */ 
-                /* Add the value in the source register to the value in   */
-                /* the target register, and store the result in the       */
-                /* target register. If a carry is generated, set a carry  */
-                /* flag in register VF                                    */
                 case 0x4:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    temp = cpu.v[src] + cpu.v[tgt];
-                    cpu.v[0xF] = (temp > 255) ? 1 : 0;
-                    cpu.v[tgt] = (temp > 255) ? temp - 256 : temp;
-                    sprintf(cpu.opdesc, "ADD V%X, V%X", tgt, src);
+                    add_register_to_register();
                     break;
 
-                /* 8ts5 - SUB  Vt, Vs */
-                /* Subtract the value in the target register from the     */
-                /* value in the source register, and store the result in  */
-                /* the target register. If a borrow is NOT generated, set */
-                /* a carry flag in register VF                            */
                 case 0x5:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    if (cpu.v[tgt] > cpu.v[src]) {
-                        cpu.v[0xF] = 1;
-                        cpu.v[tgt] -= cpu.v[src];
-                    } 
-                    else {
-                        cpu.v[0xF] = 0;
-                        cpu.v[tgt] = 256 + cpu.v[tgt] - cpu.v[src];
-                    }
-                    sprintf(cpu.opdesc, "SUB V%X, V%X", tgt, src);
+                    subtract_register_from_register();
                     break;
 
-                /* 8s06 - SHR  Vs */
-                /* Shift the bits in the specified register 1 bit to the  */
-                /* right. Bit 0 will be shifted into register vf          */
                 case 0x6:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.v[0xF] = (cpu.v[src] & 1) ? 1 : 0;
-                    cpu.v[src] = cpu.v[src] >> 1;
-                    sprintf(cpu.opdesc, "SHR V%X", src);
+                    shift_right();
                     break;
 
-                /* 8ts7 - SUBN Vt, Vs */
-                /* Subtract the value in the source register from the     */
-                /* value in the target register, and store the result in  */
-                /* the target register. If a borrow is NOT generated, set */
-                /* a carry flag in register VF                            */
                 case 0x7:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    src = (cpu.operand.BYTE.low & 0xF0) >> 4;
-                    if (cpu.v[src] < cpu.v[tgt]) {
-                        cpu.v[0xF] = 1;
-                        cpu.v[tgt] = cpu.v[src] - cpu.v[tgt];
-                    } 
-                    else {
-                        cpu.v[0xF] = 0;
-                        cpu.v[tgt] = 256 + cpu.v[src] - cpu.v[tgt];
-                    }
-                    sprintf(cpu.opdesc, "SUBN V%X, V%X", tgt, src);
+                    subtract_register_from_register_borrow();
                     break;
 
-                /* 8s0E - SHL  Vs */
-                /* Shift the bits in the specified register 1 bit to the  */
-                /* left. Bit 7 will be shifted into register vf           */
                 case 0xE:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.v[0xF] = (cpu.v[src] & 0x80) ? 1 : 0;
-                    cpu.v[src] = cpu.v[src] << 1;
-                    sprintf(cpu.opdesc, "SHL V%X", src);
+                    shift_left();
                     break;
 
                 default:
@@ -464,157 +291,34 @@ cpu_execute_single(void)
             }
             break;
 
-        /* 9st0 - SKNE Vs, Vt */
-        /* Skip if source register is equal to target register */
-        case 0x90:
-            src = cpu.operand.BYTE.high & 0xF;
-            tgt = (cpu.operand.BYTE.low & 0xF0) >> 4;
-            if (cpu.v[src] != cpu.v[tgt]) {
-                cpu.pc.WORD += 2;
-            }
-            sprintf(cpu.opdesc, "SKNE V%X, V%X", src, tgt);
+        case 0x9:
+            skip_if_register_not_equal_register();
             break;
 
-        /* Annn - LOAD I, nnn */
-        /* Load index register with constant value */
-        case 0xA0:
-            cpu.i.WORD = (cpu.operand.WORD & 0x0FFF);
-            sprintf(cpu.opdesc, "LOAD I, %03X", (cpu.operand.WORD 
-                    & 0x0FFF));
+        case 0xA:
+            load_index_with_value();
             break;
 
-        /* Bnnn - JUMP [I] + nnn */
-        /* Load the program counter with the memory value located at the  */
-        /* specified operand plus the value of the index register         */
-        case 0xB0:
-            cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF) + cpu.i.WORD;
-            sprintf(cpu.opdesc, "JUMP I + %03X", (cpu.operand.WORD 
-                    & 0x0FFF));
+        case 0xB:
+            jump_to_register_plus_value();
             break;
 
-        /* Ctnn - RAND Vt, nn */
-        /* A random number between 0 and 255 is generated. The contents   */
-        /* of it are then ANDed with the constant value passed in the     */
-        /* operand. The result is stored in the target register           */
-        case 0xC0:
-            tgt = cpu.operand.BYTE.high & 0xF;
-            cpu.v[tgt] = (rand() % 255) & cpu.operand.BYTE.low;
-            sprintf(cpu.opdesc, "RAND V%X, %02X", tgt, 
-                    (cpu.operand.BYTE.low));
+        case 0xC:
+            generate_random_number();
             break;
     
-        /* Dxyn - DRAW x, y, n_bytes */ 
-        /* Draws the sprite pointed to in the index register at the       */
-        /* specified x and y coordinates. Drawing is done via an XOR      */
-        /* routine, meaning that if the target pixel is already turned    */
-        /* on, and a pixel is set to be turned on at that same location   */
-        /* via the draw, then the pixel is turned off. The routine will   */
-        /* wrap the pixels if they are drawn off the edge of the screen.  */
-        /* Each sprite is 8 bits (1 byte) wide. The n_bytes parameter     */
-        /* sets how tall the sprite is. Consecutive bytes in the memory   */
-        /* pointed to by the index register make up the bytes of the      */
-        /* sprite. Each bit in the sprite byte determines whether a pixel */
-        /* is turned on (1) or turned off (0). For example, assume that   */
-        /* the index register pointed to the following 7 bytes:           */
-        /*                                                                */
-        /*                 bit 0 1 2 3 4 5 6 7                            */
-        /*                                                                */
-        /*     byte 0          0 1 1 1 1 1 0 0                            */
-        /*     byte 1          0 1 0 0 0 0 0 0                            */
-        /*     byte 2          0 1 0 0 0 0 0 0                            */
-        /*     byte 3          0 1 1 1 1 1 0 0                            */
-        /*     byte 4          0 1 0 0 0 0 0 0                            */
-        /*     byte 5          0 1 0 0 0 0 0 0                            */
-        /*     byte 6          0 1 1 1 1 1 0 0                            */
-        /*                                                                */
-        /* This would draw a character on the screen that looks like an   */
-        /* 'E'. The x_source and y_source tell which registers contain    */
-        /* the x and y coordinates for the sprite. If writing a pixel to  */
-        /* a location causes that pixel to be turned off, then VF will be */
-        /* set to 1.                                                      */
-        case 0xD0:
-            x = cpu.operand.BYTE.high & 0xF;
-            y = (cpu.operand.BYTE.low & 0xF0) >> 4;
-            tword.WORD = cpu.i.WORD;
-            tbyte = cpu.operand.BYTE.low & 0xF;
-            cpu.v[0xF] = 0;
-
-            if (screen_is_extended_mode() && tbyte == 0) {
-                for (i = 0; i < 16; i++) {
-                    for (k = 0; k < 2; k++) {
-                        tbyte = memory_read(cpu.i.WORD + (i * 2) + k);
-                        ycor = cpu.v[y] + i;
-                        ycor = ycor % screen_get_height();
-
-                        for (j = 0; j < 8; j++) {
-                            xcor = cpu.v[x] + j + (k * 8);
-                            xcor = xcor % screen_get_width();
-
-                            color = (tbyte & 0x80) ? 1 : 0;
-                            currentcolor = screen_get_pixel(xcor, ycor);
-
-                            cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
-                            color = color ^ currentcolor;
-
-                            screen_draw(xcor, ycor, color);
-                            tbyte = tbyte << 1;
-                        } 
-                    }
-                }
-                sprintf(cpu.opdesc, "DRAWEX V%X, V%X, %X", x, y, 
-                        (cpu.operand.BYTE.low & 0xF));
-            } else {
-                for (i = 0; i < (cpu.operand.BYTE.low & 0xF); i++) {
-                    tbyte = memory_read (cpu.i.WORD + i);
-                    ycor = cpu.v[y] + i;
-                    ycor = ycor % screen_get_height();
-
-                    for (j = 0; j < 8; j++) {
-                        xcor = cpu.v[x] + j;
-                        xcor = xcor % screen_get_width();
-
-                        color = (tbyte & 0x80) ? 1 : 0;
-                        currentcolor = screen_get_pixel(xcor, ycor);
-
-                        cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
-                        color = color ^ currentcolor;
-
-                        screen_draw(xcor, ycor, color);
-                        tbyte = tbyte << 1;
-                    } 
-                }
-                sprintf(cpu.opdesc, "DRAW V%X, V%X, %X", x, y, 
-                        (cpu.operand.BYTE.low & 0xF));
-            }
-
-            screen_refresh(FALSE);
+        case 0xD:
+            draw_sprite();
             break;
 
-        /* Keyboard routines */
-        case 0xE0:
-            switch (cpu.operand.BYTE.low) {
-                /* Es9E - SKPR Vs */
-                /* Check to see if the key specified in the source        */
-                /* register is pressed, and if it is, skips the next      */
-                /* instruction                                            */
+        case 0xE:
+            switch (cpu.operand.WORD & 0xFF) {
                 case 0x9E:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    if (keyboard_checkforkeypress (cpu.v[src])) {
-                        cpu.pc.WORD += 2;
-                    }
-                    sprintf(cpu.opdesc, "SKPR V%X", src);
+                    skip_if_key_pressed();
                     break;
 
-                /* EsA1 - SKUP Vs */
-                /* Check for the specified keypress in the source         */
-                /* register and if it is NOT pressed, will skip the next  */
-                /* instruction                                            */
                 case 0xA1:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    if (!keyboard_checkforkeypress (cpu.v[src])) {
-                        cpu.pc.WORD += 2;
-                    }
-                    sprintf(cpu.opdesc, "SKUP V%X", src);
+                    skip_if_key_not_pressed();
                     break;
 
                 default:
@@ -622,144 +326,50 @@ cpu_execute_single(void)
             }
             break;
 
-        /* Other I/O Routines */
-        case 0xF0:
-            switch (cpu.operand.BYTE.low) {
-                /* Ft07 - LOAD Vt, DELAY */
-                /* Move the value of the delay timer into the target      */
-                /* register.                                              */
+        case 0xF:
+            switch (cpu.operand.WORD & 0xFF) {
                 case 0x07:
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    cpu.v[tgt] = cpu.dt; 
-                    sprintf(cpu.opdesc, "LOAD V%X, DELAY", tgt);
+                    move_delay_timer_into_register();
                     break;
 
-                /* Ft0A - KEYD Vt */
-                /* Stop execution until a key is pressed. Move the value  */
-                /* of the key pressed into the specified register         */
                 case 0x0A:
-                    awaiting_keypress = TRUE;
-                    tgt = cpu.operand.BYTE.high & 0xF;
-                    sprintf(cpu.opdesc, "KEYD V%X", tgt);
+                    wait_for_keypress();
                     break;     
 
-                /* Fs15 - LOAD DELAY, Vs */
-                /* Move the value stored in the specified source register */
-                /* into the delay timer                                   */
                 case 0x15:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.dt = cpu.v[src];
-                    sprintf(cpu.opdesc, "LOAD DELAY, V%X", src);
+                    move_register_into_delay();
                     break;             
 
-                /* Fs18 - LOAD SOUND, Vs */
-                /* Move the value stored in the specified source register */
-                /* into the sound timer                                   */
                 case 0x18:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.st = cpu.v[src];
-                    sprintf(cpu.opdesc, "LOAD SOUND, V%X", src);
+                    move_register_into_sound();
                     break;
 
-                /* Fs1E - ADD  I, Vs */
-                /* Add the value of the source register into the index    */
-                /* register                                               */
                 case 0x1E:
-                    src = cpu.operand.BYTE.high & 0xF; 
-                    cpu.i.WORD += cpu.v[src];
-                    sprintf(cpu.opdesc, "ADD I, V%X", src);
+                    add_register_to_index();
                     break;
 
-                /* Fs29 - LOAD I, Vs */
-                /* Load the index with the sprite indicated in the source */
-                /* register. All sprites are 5 bytes long, so the         */
-                /* location of the specified sprite is its index          */
-                /* multiplied by 5. Font sprites start at memory index 0  */
                 case 0x29:
-                    src = cpu.operand.BYTE.high & 0xF;
-                    cpu.i.WORD = cpu.v[src] * 5;
-                    sprintf(cpu.opdesc, "LOAD I, V%X", src);
+                    load_index_with_sprite();
                     break;
 
-                /* Fs33 - BCD */
-                /* Take the value stored in source and place the digits   */
-                /* in the following locations:                            */
-                /*                                                        */
-                /*      hundreds   -> self.memory[index]                  */
-                /*      tens       -> self.memory[index + 1]              */
-                /*      ones       -> self.memory[index + 2]              */
-                /*                                                        */
-                /* For example, if the value is 123, then the following   */
-                /* values will be placed at the specified locations:      */
-                /*                                                        */
-                /*      1 -> self.memory[index]                           */
-                /*      2 -> self.memory[index + 1]                       */
-                /* 3 -> self.memory[index + 2]                            */
                 case 0x33:
-                    src = cpu.operand.BYTE.high & 0xF;
-
-                    tword.WORD = cpu.i.WORD;
-                    i = cpu.v[src] / 100;
-                    memory_write(tword, i);
-
-                    tword.WORD++;
-                    i = (cpu.v[src] % 100) / 10;
-                    memory_write(tword, i);
-
-                    tword.WORD++;
-                    i = (cpu.v[src] % 100) % 10;
-                    memory_write(tword, i);
-                    sprintf(cpu.opdesc, "BCD V%X (%03d)", src, cpu.v[src]);
+                    store_bcd_in_memory();
                     break;
 
-                /* Fn55 - STOR [I], Vn */
-                /* Store all of the n registers in the memory pointed to  */
-                /* by the index register. For example, to store all of    */
-                /* the V registers, n would be the value 'F'              */
                 case 0x55:
-                    tword.WORD = cpu.i.WORD;
-                    for (i = 0; i <= (cpu.operand.BYTE.high & 0xF); i++) {
-                        memory_write(tword, cpu.v[i]);
-                        tword.WORD++;
-                    }
-                    sprintf(cpu.opdesc, "STOR %X", (cpu.operand.BYTE.high 
-                            & 0xF));
+                    store_registers_in_memory();
                     break;
 
-                /* Fn65 - LOAD Vn, [I] */
-                /* Read all of the V registers from the memory pointed to */
-                /* by the index register. For example, to load all of the */
-                /* V registers, n would be 'F'                            */
                 case 0x65:
-                    temp = cpu.i.WORD;
-                    tbyte = cpu.operand.BYTE.high & 0xF;
-                    for (i = 0; i <= tbyte; i++) {
-                        cpu.v[i] = memory_read(temp);
-                        temp++;
-                    }
-                    sprintf(cpu.opdesc, "LOAD %X", tbyte);
+                    load_registers_from_memory();
                     break;
 
-                /* Fn75 - SRPL n */
-                /* Stores the values from n number of registers           */
-                /* (starting from 0) to the RPL store. */
                 case 0x75:
-                    tbyte = cpu.operand.BYTE.high & 0xF;
-                    for (i = 0; i <= tbyte; i++) {
-                        cpu.rpl[i] = cpu.v[i];
-                    }
-                    sprintf(cpu.opdesc, "SRPL %X", tbyte);
+                    store_registers_in_rpl();
                     break;
 
-                /* Fn85 - LRPL n */
-                /* Loads n number of registers from the RPL store to      */
-                /* their respective registers. */
                 case 0x85:
-                    tbyte = cpu.operand.BYTE.high & 0xF;
-                    for (i = 0; i <= tbyte; i++) {
-                        cpu.v[i] = cpu.rpl[i];
-                    }
-                    sprintf(cpu.opdesc, "LRPL %X", tbyte);
+                    read_registers_from_rpl();
                     break;
                 
                 default:
@@ -770,6 +380,814 @@ cpu_execute_single(void)
         default:
             break; 
     }
+}
+
+/******************************************************************************/
+
+/**
+ * 00Cn - SCRD n
+ * 
+ * Scrolls the screen down n pixels.
+ */
+void
+scroll_down(void)
+{
+    int x = cpu.operand.WORD & 0xF;
+    screen_scroll_down(x);
+    sprintf(cpu.opdesc, "SCRD %d", x);
+}
+
+/******************************************************************************/
+
+/**
+ * 00E0 - CLS
+ * 
+ * Clear screen
+ */
+void
+clear_screen(void)
+{
+    screen_blank();
+    sprintf(cpu.opdesc, "CLS");
+}
+
+/******************************************************************************/
+
+/**
+ * 00EE - RTS
+ * 
+ * Return from subroutine. Pop the current value in the stack off of the 
+ * stack, and set the program counter to the value popped.
+ */
+void
+return_from_subroutine(void)
+{
+    cpu.sp.WORD--;
+    cpu.pc.BYTE.high = memory_read(cpu.sp.WORD);
+    cpu.sp.WORD--;
+    cpu.pc.BYTE.low = memory_read(cpu.sp.WORD);
+    sprintf(cpu.opdesc, "RTS");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FB - SCRR
+ * 
+ * Scroll the screen right by 4 pixels.
+ */
+void
+scroll_right(void)
+{
+    screen_scroll_right();
+    sprintf(cpu.opdesc, "SCRR");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FC - SCRL
+ * 
+ * Scroll the screen left by 4 pixels.
+ */
+void
+scroll_left(void)
+{
+    screen_scroll_left();
+    sprintf(cpu.opdesc, "SCRL");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FD - EXIT
+ *
+ * Exit interpreter.
+ */
+void
+exit_interpreter(void)
+{
+    cpu.state = CPU_STOP;
+    sprintf(cpu.opdesc, "EXIT");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FE - EXTD
+ * 
+ * Disable extended mode
+ */
+void
+disable_extended_mode(void)
+{
+    screen_set_normal_mode();
+    sprintf(cpu.opdesc, "EXTD");
+}
+
+/******************************************************************************/
+
+/**
+ * 00FF - EXTE
+ * Enable extended mode
+ */
+void
+enable_extended_mode(void)
+{
+    screen_set_extended_mode();
+    sprintf(cpu.opdesc, "EXTE");
+}
+
+/******************************************************************************/
+
+/**
+ * 1nnn - JUMP nnn 
+ * 
+ * Jump to address.
+ */
+void
+jump_to_address(void)
+{
+    cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
+    sprintf(cpu.opdesc, "JUMP %03X", cpu.pc.WORD);
+}
+
+/******************************************************************************/
+
+/**
+ * 2nnn - CALL nnn
+ * 
+ * Jump to subroutine. Save the current program counter on the stack.
+ */
+void
+jump_to_subroutine(void)
+{
+    memory_write(cpu.sp, cpu.pc.WORD & 0x00FF);
+    cpu.sp.WORD++;
+    memory_write(cpu.sp, (cpu.pc.WORD & 0xFF00) >> 8);
+    cpu.sp.WORD++;
+    cpu.pc.WORD = (cpu.operand.WORD & 0x0FFF);
+    sprintf(cpu.opdesc, "CALL %03X", cpu.pc.WORD);
+}
+
+/******************************************************************************/
+
+/**
+ * 3xnn - SKE Vx, nn
+ * 
+ * Skip if source register equal constant value. The program counter
+ * is updated to skip the next instruction by advancing it by 2 bytes.
+ */ 
+void
+skip_if_register_equal_value(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    if (cpu.v[x] == (cpu.operand.WORD & 0x00FF)) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKE V%X, %02X", x, cpu.operand.BYTE.low);
+}
+
+/******************************************************************************/
+
+/**
+ * 4xnn - SKNE Vx, nn
+ * 
+ * Skip if source register contents not equal constant value. The program
+ * counter is updated to skip the next instruction by advancing it by 2 bytes.
+ */
+void
+skip_if_register_not_equal_value(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    if (cpu.v[x] != (cpu.operand.WORD & 0x00FF)) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKNE V%X, %02X", x, cpu.operand.BYTE.low);
+}
+
+/******************************************************************************/
+
+/**
+ * 5xy0 - SKE Vx, Vy
+ * 
+ * Skip if source register value is equal to target register. The program 
+ * counter is updated to skip the next instruction by advancing it by 2 bytes.
+ */
+void 
+skip_if_register_equal_register(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    if (cpu.v[x] == cpu.v[y]) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKE V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 6xnn - LOAD Vx, nn
+ * 
+ * Move the constant value into the specified register.
+ */
+void
+move_value_to_register(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.v[x] = cpu.operand.WORD & 0x00FF;
+    sprintf(cpu.opdesc, "LOAD V%X, %02X", x, (cpu.operand.WORD & 0x00FF));
+}
+            
+/******************************************************************************/
+
+/**
+ * 7xnn - ADD Vx, nn
+ * 
+ * Add the constant value to the source register.
+ */
+void
+add_value_to_register(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.v[x] = cpu.v[x] + ((cpu.operand.WORD & 0x00FF) % 256);
+    sprintf(cpu.opdesc, "ADD V%X, %02X", x, cpu.operand.BYTE.low);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xy0 - LOAD Vx, Vy
+ *
+ * Move the y register into the x register. 
+ */
+void
+move_register_into_register(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    cpu.v[x] = cpu.v[y];
+    sprintf(cpu.opdesc, "LOAD V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xy1 - OR Vx, Vy
+ * 
+ * Perform a logical OR operation between x and y and store the result
+ * in x.
+ */
+void
+logical_or(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    cpu.v[x] |= cpu.v[y];
+    sprintf(cpu.opdesc, "OR V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xy2 - AND Vx, Vy
+ * 
+ * Perform a logical AND between x and y and store the result in x.
+ */
+void
+logical_and(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    cpu.v[x] &= cpu.v[y];
+    sprintf(cpu.opdesc, "AND V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xy3 - XOR  Vx, Vy
+ * 
+ * Perform a logical XOR between x and y and store the result in x.
+ */
+void
+exclusive_or(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    cpu.v[x] ^= cpu.v[y];
+    sprintf(cpu.opdesc, "XOR V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/* 
+ * 8xy4 - ADD  Vx, Vy
+ *
+ * Add the value in the source register to the value in the target register,
+ * and store the result in the target register. If a carry is generated, set
+ * a carry flag in register VF.
+ */
+void
+add_register_to_register(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int carry = (cpu.v[x] + cpu.v[y]) > 255 ? 1 : 0;
+    cpu.v[x] = (cpu.v[x] + cpu.v[y]) % 256;
+    cpu.v[0xF] = carry;
+    sprintf(cpu.opdesc, "ADD V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/* 
+ * 8xy5 - SUB  Vx, Vy
+ *
+ * Subtract the value in the target register from the value in the source
+ * register, and store the result in the target register. If a borrow is NOT
+ * generated, set a carry flag in register VF.
+ */
+void
+subtract_register_from_register(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int borrow = (cpu.v[x] >= cpu.v[y]) ? 1 : 0;
+    cpu.v[x] = (cpu.v[x] >= cpu.v[y]) ? (cpu.v[x] - cpu.v[y]) : 256 + (cpu.v[x] - cpu.v[y]);
+    cpu.v[0xF] = borrow;
+    sprintf(cpu.opdesc, "SUB V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xy6 - SHR Vx, Vy
+ * 
+ * Shift the bits in the specified register 1 bit to the right. Bit 0 will
+ * be shifted into register VF.
+ */
+void
+shift_right(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int bit_one = cpu.v[y] & 0x1;
+    cpu.v[x] = cpu.v[y] >> 1;
+    cpu.v[0xF] = bit_one;
+    sprintf(cpu.opdesc, "SHR V%X", x);
+}
+    
+/******************************************************************************/
+
+/**
+ * 8xy7 - SUBN Vx, Vy
+ * 
+ * Subtract the value in the target register from the value in the source
+ * register, and store the result in the target register. If a borrow is NOT
+ * generated, set a carry flag in register VF.
+ */
+void
+subtract_register_from_register_borrow(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int not_borrow = (cpu.v[y] >= cpu.v[x]) ? 1 : 0;
+    cpu.v[x] = (cpu.v[y] >= cpu.v[x]) ? cpu.v[y] - cpu.v[x] : 256 + cpu.v[y] - cpu.v[x];
+    cpu.v[0xF] = not_borrow;
+    sprintf(cpu.opdesc, "SUBN V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 8xyE - SHL Vx, Vy
+ * 
+ * Shift the bits in the specified register 1 bit to the left. Bit 7 will be
+ * shifted into register VF.
+ */
+void
+shift_left(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int bit_seven = (cpu.v[y] & 0x80) >> 7;
+    cpu.v[x] = (cpu.v[y] << 1) & 0xFF;
+    cpu.v[0xF] = bit_seven;
+    sprintf(cpu.opdesc, "SHL V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * 9xy0 - SKNE Vx, Vy
+ * 
+ * Skip if source register is equal to target register. The program counter
+ * is updated to skip the next instruction by advancing it by 2 bytes.
+ */
+void
+skip_if_register_not_equal_register(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    if (cpu.v[x] != cpu.v[y]) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKNE V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * Annn - LOAD I, nnn
+ * 
+ * Load index register with constant value.
+ */
+void
+load_index_with_value(void) 
+{
+    cpu.i.WORD = (cpu.operand.WORD & 0x0FFF);
+    sprintf(cpu.opdesc, "LOAD I, %03X", (cpu.operand.WORD & 0x0FFF));
+}
+
+/******************************************************************************/
+
+/**
+ * 
+ * Bnnn - JUMP V0 + nnn
+ * 
+ * Load the program counter with the memory value located at the specified
+ * operand plus the value of the register.
+ */
+void
+jump_to_register_plus_value(void)
+{
+    cpu.pc.WORD = (cpu.v[0] & 0xFF) + (cpu.operand.WORD & 0x0FFF);
+    sprintf(cpu.opdesc, "JUMP V0 + %03X", (cpu.operand.WORD & 0x0FFF));
+}
+
+/******************************************************************************/
+
+/**
+ * Cxnn - RAND Vx, nn
+ * 
+ * A random number between 0 and 255 is generated. The contents
+ * of it are then ANDed with the constant value passed in the
+ * operand. The result is stored in the target register.
+ */
+void
+generate_random_number(void)
+{
+    int x = cpu.operand.BYTE.high & 0xF;
+    cpu.v[x] = (rand() % 255) & cpu.operand.BYTE.low;
+    sprintf(cpu.opdesc, "RAND V%X, %02X", x, (cpu.operand.BYTE.low));
+}
+
+/******************************************************************************/
+
+/**
+ * Dxyn - DRAW x, y, n_bytes
+ * 
+ * Draws the sprite pointed to in the index register at the       
+ * specified x and y coordinates. Drawing is done via an XOR      
+ * routine, meaning that if the target pixel is already turned    
+ * on, and a pixel is set to be turned on at that same location   
+ * via the draw, then the pixel is turned off. The routine will  
+ * wrap the pixels if they are drawn off the edge of the screen.  
+ * Each sprite is 8 bits (1 byte) wide. The n_bytes parameter     
+ * sets how tall the sprite is. Consecutive bytes in the memory   
+ * pointed to by the index register make up the bytes of the      
+ * sprite. Each bit in the sprite byte determines whether a pixel 
+ * is turned on (1) or turned off (0). For example, assume that   
+ * the index register pointed to the following 7 bytes:           
+ *                                                                
+ *                 bit 0 1 2 3 4 5 6 7                            
+ *                                                                
+ *     byte 0          0 1 1 1 1 1 0 0                            
+ *     byte 1          0 1 0 0 0 0 0 0                            
+ *     byte 2          0 1 0 0 0 0 0 0                            
+ *     byte 3          0 1 1 1 1 1 0 0                            
+ *     byte 4          0 1 0 0 0 0 0 0                            
+ *     byte 5          0 1 0 0 0 0 0 0                            
+ *     byte 6          0 1 1 1 1 1 0 0                            
+ *                                                               
+ * This would draw a character on the screen that looks like an   
+ * 'E'. The x_source and y_source tell which registers contain    
+ * the x and y coordinates for the sprite. If writing a pixel to  
+ * a location causes that pixel to be turned off, then VF will be 
+ * set to 1.                                                      
+ */
+void
+draw_sprite(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    byte tbyte = cpu.operand.BYTE.low & 0xF;
+    cpu.v[0xF] = 0;
+
+    if (screen_is_extended_mode() && tbyte == 0) {
+        for (int i = 0; i < 16; i++) {
+            for (int k = 0; k < 2; k++) {
+                tbyte = memory_read(cpu.i.WORD + (i * 2) + k);
+                int ycor = cpu.v[y] + i;
+                ycor = ycor % screen_get_height();
+
+                for (int j = 0; j < 8; j++) {
+                    int xcor = cpu.v[x] + j + (k * 8);
+                    xcor = xcor % screen_get_width();
+
+                    int color = (tbyte & 0x80) ? 1 : 0;
+                    int currentcolor = screen_get_pixel(xcor, ycor);
+
+                    cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
+                    color = color ^ currentcolor;
+
+                    screen_draw(xcor, ycor, color);
+                    tbyte = tbyte << 1;
+                } 
+            }
+        }
+        sprintf(cpu.opdesc, "DRAWEX V%X, V%X, %X", x, y, (cpu.operand.WORD & 0xF));
+    } else {
+        for (int i = 0; i < (cpu.operand.BYTE.low & 0xF); i++) {
+            tbyte = memory_read (cpu.i.WORD + i);
+            int ycor = cpu.v[y] + i;
+            ycor = ycor % screen_get_height();
+
+            for (int j = 0; j < 8; j++) {
+                int xcor = cpu.v[x] + j;
+                xcor = xcor % screen_get_width();
+
+                int color = (tbyte & 0x80) ? 1 : 0;
+                int currentcolor = screen_get_pixel(xcor, ycor);
+
+                cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
+                color = color ^ currentcolor;
+
+                screen_draw(xcor, ycor, color);
+                tbyte = tbyte << 1;
+            } 
+        }
+        sprintf(cpu.opdesc, "DRAW V%X, V%X, %X", x, y, (cpu.operand.WORD & 0xF));
+    }
+
+    screen_refresh(FALSE);
+}
+
+/******************************************************************************/
+
+/**
+ * Ex9E - SKPR Vx
+ * 
+ * Check to see if the key specified in the source        
+ * register is pressed, and if it is, skips the next      
+ * instruction.
+ */
+void
+skip_if_key_pressed(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    if (keyboard_checkforkeypress(cpu.v[x])) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKPR V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * ExA1 - SKUP Vx
+ * 
+ * Check for the specified keypress in the source         
+ * register and if it is NOT pressed, will skip the next  
+ * instruction                                           
+ */
+void
+skip_if_key_not_pressed(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    if (!keyboard_checkforkeypress(cpu.v[x])) {
+        cpu.pc.WORD += 2;
+    }
+    sprintf(cpu.opdesc, "SKUP V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx07 - LOAD Vx, DELAY 
+ * 
+ * Move the value of the delay timer into the target      
+ * register.                                              
+ */
+void
+move_delay_timer_into_register(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.v[x] = cpu.dt; 
+    sprintf(cpu.opdesc, "LOAD V%X, DELAY", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx0A - KEYD Vx
+ * 
+ * Stop execution until a key is pressed. Move the value 
+ * of the key pressed into the specified register.
+ */
+void
+wait_for_keypress(void)
+{
+    awaiting_keypress = TRUE;
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    sprintf(cpu.opdesc, "KEYD V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx15 - LOAD DELAY, Vx
+ * 
+ * Move the value stored in the specified source register
+ * into the delay timer.
+ */
+void
+move_register_into_delay(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.dt = cpu.v[x];
+    sprintf(cpu.opdesc, "LOAD DELAY, V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx18 - LOAD SOUND, Vx
+ * 
+ * Move the value stored in the specified source register
+ * into the sound timer.
+ */                                
+void
+move_register_into_sound(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.st = cpu.v[x];
+    sprintf(cpu.opdesc, "LOAD SOUND, V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx1E - ADD  I, Vx
+ * 
+ * Add the value of the source register into the index
+ * register.
+ */
+void
+add_register_to_index(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.i.WORD += cpu.v[x];
+    sprintf(cpu.opdesc, "ADD I, V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx29 - LOAD I, Vx
+ * 
+ * Load the index with the sprite indicated in the source
+ * register. All sprites are 5 bytes long, so the        
+ * location of the specified sprite is its index         
+ * multiplied by 5. Font sprites start at memory index 0.
+ */
+void
+load_index_with_sprite(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    cpu.i.WORD = cpu.v[x] * 5;
+    sprintf(cpu.opdesc, "LOAD I, V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx33 - BCD
+ * 
+ * Take the value stored in source and place the digits   
+ * in the following locations:                            
+ *                                                        
+ *      hundreds   -> self.memory[index]                  
+ *      tens       -> self.memory[index + 1]              
+ *      ones       -> self.memory[index + 2]              
+ *                                                        
+ * For example, if the value is 123, then the following   
+ * values will be placed at the specified locations:      
+ *                                                        
+ *      1 -> self.memory[index]                           
+ *      2 -> self.memory[index + 1]                       
+ *      3 -> self.memory[index + 2]                       
+ */
+void
+store_bcd_in_memory(void)
+{
+    word tword;
+
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+
+    tword.WORD = cpu.i.WORD;
+    int i = cpu.v[x] / 100;
+    memory_write(tword, i);
+
+    tword.WORD++;
+    i = (cpu.v[x] % 100) / 10;
+    memory_write(tword, i);
+
+    tword.WORD++;
+    i = (cpu.v[x] % 100) % 10;
+    memory_write(tword, i);
+    sprintf(cpu.opdesc, "BCD V%X (%03d)", x, cpu.v[x]);
+}
+
+/******************************************************************************/
+
+/**
+ * Fn55 - STOR n
+ * 
+ * Store all of the n registers in the memory pointed to  
+ * by the index register. For example, to store all of    
+ * the V registers, n would be the value 'F'              
+ */
+void
+store_registers_in_memory(void)
+{
+    word tword;
+
+    int n = (cpu.operand.WORD & 0x0F00) >> 8;
+    for (int i = 0; i <= n; i++) {
+        tword.WORD = cpu.i.WORD + i;
+        memory_write(tword, cpu.v[i]);
+    }
+    cpu.i.WORD += n + 1;
+    sprintf(cpu.opdesc, "STOR %X", n);
+}
+
+/******************************************************************************/
+
+/**
+ * Fn65 - LOAD n
+ * 
+ * Read all of the V registers from the memory pointed to 
+ * by the index register. For example, to load all of the 
+ * V registers, n would be 'F'.
+ */
+void
+load_registers_from_memory(void)
+{
+    int n = (cpu.operand.WORD & 0x0F00) >> 8;
+    for (int i = 0; i <= n; i++) {
+        cpu.v[i] = memory_read(cpu.i.WORD + i);
+    }
+    cpu.i.WORD += n + 1;
+    sprintf(cpu.opdesc, "LOAD %X", n);
+}
+
+/******************************************************************************/
+
+/**
+ * Fn75 - SRPL n
+ * 
+ * Stores the values from n number of registers        
+ * (starting from 0) to the RPL store.
+ */
+void
+store_registers_in_rpl(void)
+{
+    int n = (cpu.operand.WORD & 0x0F00) >> 8;
+    for (int i = 0; i <= n; i++) {
+        cpu.rpl[i] = cpu.v[i];
+    }
+    sprintf(cpu.opdesc, "SRPL %X", n);
+}
+
+/******************************************************************************/
+
+/**
+ * Fn85 - LRPL n
+ * 
+ * Loads n number of registers from the RPL store to      
+ * their respective registers.
+ */
+void
+read_registers_from_rpl(void)
+{
+    int n = (cpu.operand.WORD & 0x0F00) >> 8;
+    for (int i = 0; i <= n; i++) {
+        cpu.v[i] = cpu.rpl[i];
+    }
+    sprintf(cpu.opdesc, "LRPL %X", n);
 }
 
 /******************************************************************************/
