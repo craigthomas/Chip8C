@@ -249,6 +249,10 @@ cpu_execute_single(void)
                     store_subset_of_registers_in_memory();
                     break;
 
+                case 0x3:
+                    load_subset_of_registers_from_memory();
+                    break;
+
                 default:
                     break;
             }
@@ -632,6 +636,34 @@ store_subset_of_registers_in_memory(void)
         }
     }
     sprintf(cpu.opdesc, "STORSUB [I], V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 5xy3 - LOADSUB [I], Vx, Vy
+ * 
+ * Load a subset of registers from x to y in memory starting at index.
+ */
+void
+load_subset_of_registers_from_memory(void) 
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int ptr = 0;
+
+    if (y >= x) {
+        for (int z = x; z < y + 1; z++) {
+            cpu.v[z] = memory_read(cpu.i.WORD + ptr);
+            ptr++;
+        }
+    } else {
+        for (int z = x; z > (y - 1); z--) {
+            cpu.v[z] = memory_read(cpu.i.WORD + ptr);
+            ptr++;
+        }
+    }
+    sprintf(cpu.opdesc, "LOADSUB [I], V%X, V%X", x, y);
 }
 
 /******************************************************************************/
