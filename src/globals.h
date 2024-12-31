@@ -172,6 +172,7 @@ void load_registers_from_memory(void);
 void store_registers_in_rpl(void);
 void read_registers_from_rpl(void);
 void load_pitch(void);
+void store_subset_of_registers_in_memory(void);
 
 /* memory.c */
 int memory_init(int memorysize);
@@ -264,6 +265,10 @@ void test_read_registers_from_rpl(void);
 void test_read_registers_from_rpl_integration(void);
 void test_load_pitch(void);
 void test_load_pitch_integration(void);
+void test_store_subset_one_two(void);
+void test_store_subset_one_one(void);
+void test_store_subset_three_one(void);
+void test_store_subset_of_registers_in_memory_integration(void);
 void test_exit_interpreter(void);
 void test_cpu_scroll_left(void);
 void test_cpu_scroll_right(void);

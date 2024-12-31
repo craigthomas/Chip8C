@@ -240,7 +240,18 @@ cpu_execute_single(void)
             break;
 
         case 0x5:
-            skip_if_register_equal_register();
+            switch (cpu.operand.WORD & 0xF) {
+                case 0x0:
+                    skip_if_register_equal_register();
+                    break;
+
+                case 0x2:
+                    store_subset_of_registers_in_memory();
+                    break;
+
+                default:
+                    break;
+            }
             break;
 
         case 0x6:
@@ -590,6 +601,37 @@ skip_if_register_equal_register(void)
         cpu.pc.WORD += 2;
     }
     sprintf(cpu.opdesc, "SKE V%X, V%X", x, y);
+}
+
+/******************************************************************************/
+
+/**
+ * 5xy2 - STORSUB [I], Vx, Vy
+ * 
+ * Store a subset of registers from x to y in memory starting at index.
+ */
+void
+store_subset_of_registers_in_memory(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    int y = (cpu.operand.WORD & 0x00F0) >> 4;
+    int ptr = 0;
+    word tword;
+
+    if (y >= x) {
+        for (int z = x; z < y + 1; z++) {
+            tword.WORD = cpu.i.WORD + ptr;
+            memory_write(tword, cpu.v[z]);
+            ptr++;
+        }
+    } else {
+        for (int z = x; z > (y - 1); z--) {
+            tword.WORD = cpu.i.WORD + ptr;
+            memory_write(tword, cpu.v[z]);
+            ptr++;
+        }
+    }
+    sprintf(cpu.opdesc, "STORSUB [I], V%X, V%X", x, y);
 }
 
 /******************************************************************************/

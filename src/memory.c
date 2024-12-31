@@ -38,6 +38,9 @@ memory_init(int memorysize)
       memory = NULL;
    }
    memory = (byte *)malloc(sizeof (byte) * memorysize);
+   if (memory != NULL) {
+      memset(memory, 0, memorysize);
+   }
    return memory != NULL;
 }
 
