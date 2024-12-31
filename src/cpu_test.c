@@ -1236,6 +1236,70 @@ test_load_pitch_integration(void)
 }
 
 void 
+test_store_subset_one_two(void) 
+{
+    setup();
+    cpu.v[1] = 5;
+    cpu.v[2] = 6;
+    cpu.i.WORD = 0x5000;
+    cpu.operand.WORD = 0x5122;
+    store_subset_of_registers_in_memory();
+    CU_ASSERT_EQUAL(5, memory_read(0x5000));
+    CU_ASSERT_EQUAL(6, memory_read(0x5001));
+    teardown();
+}
+
+void 
+test_store_subset_one_one(void) 
+{
+    setup();
+    cpu.v[1] = 5;
+    cpu.v[2] = 6;
+    cpu.i.WORD = 0x5000;
+    cpu.operand.WORD = 0x5112;
+    store_subset_of_registers_in_memory();
+    CU_ASSERT_EQUAL(5, memory_read(0x5000));
+    CU_ASSERT_EQUAL(0, memory_read(0x5001));
+    teardown();
+}
+
+void 
+test_store_subset_three_one(void) 
+{
+    setup();
+    cpu.v[1] = 5;
+    cpu.v[2] = 6;
+    cpu.v[3] = 7;
+    cpu.i.WORD = 0x5000;
+    cpu.operand.WORD = 0x5312;
+    store_subset_of_registers_in_memory();
+    CU_ASSERT_EQUAL(7, memory_read(0x5000));
+    CU_ASSERT_EQUAL(6, memory_read(0x5001));
+    CU_ASSERT_EQUAL(5, memory_read(0x5002));
+    teardown();
+}
+
+void 
+test_store_subset_of_registers_in_memory_integration(void) 
+{
+    setup();
+    cpu.v[1] = 5;
+    cpu.v[2] = 6;
+    cpu.v[3] = 7;
+    cpu.pc.WORD = 0x0000;
+    cpu.i.WORD = 0x5000;
+    tword.WORD = 0x0000;
+    memory_write(tword, 0x53);
+    tword.WORD = 0x0001;
+    memory_write(tword, 0x12);
+    cpu_execute_single();
+    CU_ASSERT_EQUAL(7, memory_read(0x5000));
+    CU_ASSERT_EQUAL(6, memory_read(0x5001));
+    CU_ASSERT_EQUAL(5, memory_read(0x5002));
+    teardown();
+}
+
+void 
 test_return_from_subroutine(void)
 {
     setup();
