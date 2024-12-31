@@ -99,6 +99,10 @@ main() {
         CU_add_test(cpu_suite, "test_store_subset_one_one", test_store_subset_one_one) == NULL ||
         CU_add_test(cpu_suite, "test_store_subset_three_one", test_store_subset_three_one) == NULL ||
         CU_add_test(cpu_suite, "test_store_subset_of_registers_in_memory_integration", test_store_subset_of_registers_in_memory_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_load_subset_one_two", test_load_subset_one_two) == NULL ||
+        CU_add_test(cpu_suite, "test_load_subset_one_one", test_load_subset_one_one) == NULL ||
+        CU_add_test(cpu_suite, "test_load_subset_three_one", test_load_subset_three_one) == NULL ||
+        CU_add_test(cpu_suite, "test_load_subset_integration", test_load_subset_integration) == NULL ||
         CU_add_test(cpu_suite, "test_return_from_subroutine", test_return_from_subroutine) == NULL ||
         CU_add_test(cpu_suite, "test_return_from_subroutine_integration", test_return_from_subroutine_integration) == NULL ||
         CU_add_test(cpu_suite, "test_exit_interpreter", test_exit_interpreter) == NULL ||
