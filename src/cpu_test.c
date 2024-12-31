@@ -1209,6 +1209,32 @@ test_read_registers_from_rpl_integration(void)
     teardown();
 }
 
+void
+test_load_pitch(void)
+{
+    setup();
+    cpu.v[1] = 112;
+    cpu.operand.WORD = 0xF13A;
+    load_pitch();
+    CU_ASSERT_EQUAL(112, pitch);
+    CU_ASSERT_EQUAL(8000.0, playback_rate);    
+    teardown();
+}
+
+void
+test_load_pitch_integration(void)
+{
+    setup();
+    tword.WORD = 0xF13A;
+    memory_write_word(address, tword);
+    cpu.v[1] = 112;
+    cpu.pc.WORD = 0x0000;
+    cpu_execute_single();
+    CU_ASSERT_EQUAL(112, pitch);
+    CU_ASSERT_EQUAL(8000.0, playback_rate);    
+    teardown();  
+}
+
 void 
 test_return_from_subroutine(void)
 {
@@ -1223,6 +1249,7 @@ test_return_from_subroutine(void)
         return_from_subroutine();
         CU_ASSERT_EQUAL(a, cpu.pc.WORD);
     }
+    teardown();
 }
 
 void

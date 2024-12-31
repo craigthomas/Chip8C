@@ -9,6 +9,7 @@
 
 /* I N C L U D E S ************************************************************/
 
+#include <math.h>
 #include <time.h>
 #include "globals.h"
 
@@ -115,6 +116,8 @@ cpu_reset(void)
     }
     cpu.opdesc = (char *)malloc(MAXSTRSIZE);
     awaiting_keypress = FALSE;
+    playback_rate = 4000.0;
+    pitch = 64;
 }
 
 /******************************************************************************/
@@ -354,6 +357,10 @@ cpu_execute_single(void)
 
                 case 0x33:
                     store_bcd_in_memory();
+                    break;
+
+                case 0x3A:
+                    load_pitch();
                     break;
 
                 case 0x55:
@@ -1109,6 +1116,22 @@ store_bcd_in_memory(void)
     i = (cpu.v[x] % 100) % 10;
     memory_write(tword, i);
     sprintf(cpu.opdesc, "BCD V%X (%03d)", x, cpu.v[x]);
+}
+
+/******************************************************************************/
+
+/**
+ * Fx3A - Pitch Vx
+ * 
+ * Loads the value from register x into the pitch register.
+ */
+void
+load_pitch(void)
+{
+    int x = (cpu.operand.WORD & 0x0F00) >> 8;
+    pitch = cpu.v[x];
+    playback_rate = 4000.0 * pow(2.0, (((float) pitch - 64.0) / 48.0));
+    sprintf(cpu.opdesc, "PITCH V%X (%X)", x, cpu.v[x]);
 }
 
 /******************************************************************************/
