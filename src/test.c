@@ -93,6 +93,8 @@ main() {
         CU_add_test(cpu_suite, "test_store_registers_in_rpl_integration", test_store_registers_in_rpl_integration) == NULL ||
         CU_add_test(cpu_suite, "test_read_registers_from_rpl", test_read_registers_from_rpl) == NULL ||
         CU_add_test(cpu_suite, "test_read_registers_from_rpl_integration", test_read_registers_from_rpl_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_load_pitch", test_load_pitch) == NULL ||
+        CU_add_test(cpu_suite, "test_load_pitch_integration", test_load_pitch_integration) == NULL ||
         CU_add_test(cpu_suite, "test_return_from_subroutine", test_return_from_subroutine) == NULL ||
         CU_add_test(cpu_suite, "test_return_from_subroutine_integration", test_return_from_subroutine_integration) == NULL ||
         CU_add_test(cpu_suite, "test_exit_interpreter", test_exit_interpreter) == NULL ||

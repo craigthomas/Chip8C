@@ -112,6 +112,8 @@ extern unsigned long cpu_interrupt;   /**< The CPU interrupt routine            
 extern int decrement_timers;          /**< Flags CPU to decrement DELAY and SOUND    */
 extern int op_delay;                  /**< Millisecond delay on the CPU              */
 extern int awaiting_keypress;         /**< Whether to wait for a keypress event      */
+extern float playback_rate;           /**< The playback rate for audio samples       */
+extern int pitch;                     /**< The pitch for the current audio sample    */
 
 /* Event captures */
 extern SDL_Event event;               /**< Stores SDL events                         */
@@ -169,6 +171,7 @@ void store_registers_in_memory(void);
 void load_registers_from_memory(void);
 void store_registers_in_rpl(void);
 void read_registers_from_rpl(void);
+void load_pitch(void);
 
 /* memory.c */
 int memory_init(int memorysize);
@@ -259,6 +262,8 @@ void test_store_registers_in_rpl(void);
 void test_store_registers_in_rpl_integration(void);
 void test_read_registers_from_rpl(void);
 void test_read_registers_from_rpl_integration(void);
+void test_load_pitch(void);
+void test_load_pitch_integration(void);
 void test_exit_interpreter(void);
 void test_cpu_scroll_left(void);
 void test_cpu_scroll_right(void);
