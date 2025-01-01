@@ -63,10 +63,12 @@ main() {
         CU_add_test(cpu_suite, "test_sub_register_from_register", test_sub_register_from_register) == NULL ||
         CU_add_test(cpu_suite, "test_sub_register_from_register_integration", test_sub_register_from_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_right", test_shift_register_right) == NULL ||
+        CU_add_test(cpu_suite, "test_shift_register_right_quirks", test_shift_register_right_quirks) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_right_integration", test_shift_register_right) == NULL ||
         CU_add_test(cpu_suite, "test_sub_register_from_register_source_from_target", test_sub_register_from_register_source_from_target) == NULL ||
         CU_add_test(cpu_suite, "test_sub_register_from_register_source_from_target_integration", test_sub_register_from_register_source_from_target_integration) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_left", test_shift_register_left) == NULL ||
+        CU_add_test(cpu_suite, "test_shift_register_left_quirks", test_shift_register_left_quirks) == NULL ||
         CU_add_test(cpu_suite, "test_shift_register_left_integration", test_shift_register_left_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_index", test_load_index) == NULL ||
         CU_add_test(cpu_suite, "test_load_index_integration", test_load_index_integration) == NULL ||

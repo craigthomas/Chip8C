@@ -19,6 +19,7 @@ setup(void)
 {
     CU_TEST_FATAL(memory_init(MEM_SIZE));
     jump_quirks = FALSE;
+    shift_quirks = FALSE;
     cpu_reset();
 }
 
@@ -570,6 +571,27 @@ test_shift_register_right(void)
             }
         }
     }
+    teardown();
+}
+
+void
+test_shift_register_right_quirks(void)
+{
+    setup();
+    shift_quirks = TRUE;
+    for (int x = 0; x < 0xF; x++) {
+        for (int value = 0; value < 256; value++) {
+            cpu.operand.WORD = x << 8;
+            cpu.v[x] = (short) value;
+            short shifted_val = (short) (value >> 1);
+            short bit_zero = (short) (cpu.v[x] & 0x1);
+            cpu.v[0xF] = (short) 0;
+            shift_right();
+            CU_ASSERT_EQUAL(shifted_val, cpu.v[x]);
+            CU_ASSERT_EQUAL(bit_zero, cpu.v[0xF]);
+        }
+    }
+    teardown();
 }
 
 void
@@ -674,6 +696,27 @@ test_shift_register_left(void)
             }
         }
     }
+    teardown();
+}
+
+void
+test_shift_register_left_quirks(void)
+{
+    setup();
+    shift_quirks = TRUE;
+    for (int x = 0; x < 0xF; x++) {
+        for (int value = 0; value < 256; value++) {
+            cpu.v[x] = value;
+            cpu.operand.WORD = x << 8;
+            short bit_seven = ((value & 0x80) >> 7);
+            short shifted_val = ((value << 1) & 0xFF);
+            cpu.v[0xF] = 0;
+            shift_left();
+            CU_ASSERT_EQUAL(shifted_val, cpu.v[x]);
+            CU_ASSERT_EQUAL(bit_seven, cpu.v[0xF]);
+        }
+    }
+    teardown();
 }
 
 void
