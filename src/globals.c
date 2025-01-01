@@ -46,5 +46,6 @@ SDL_Event event;               /**< Stores SDL events                         */
 /* Emulator flags */
 int jump_quirks;               /**< Stores whether jump quirks are turned on  */
 int shift_quirks;              /**< Stores whether shift quirks are turned on */
+int index_quirks;              /**< Stores whether index quirks are turned on */
 
 /* E N D   O F   F I L E ******************************************************/

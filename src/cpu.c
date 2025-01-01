@@ -1245,7 +1245,9 @@ store_registers_in_memory(void)
         tword.WORD = cpu.i.WORD + i;
         memory_write(tword, cpu.v[i]);
     }
-    cpu.i.WORD += n + 1;
+    if (!index_quirks) {
+        cpu.i.WORD += n + 1;
+    }
     sprintf(cpu.opdesc, "STOR %X", n);
 }
 
@@ -1265,7 +1267,9 @@ load_registers_from_memory(void)
     for (int i = 0; i <= n; i++) {
         cpu.v[i] = memory_read(cpu.i.WORD + i);
     }
-    cpu.i.WORD += n + 1;
+    if (!index_quirks) {
+        cpu.i.WORD += n + 1;
+    }
     sprintf(cpu.opdesc, "LOAD %X", n);
 }
 
