@@ -20,6 +20,7 @@ setup(void)
     CU_TEST_FATAL(memory_init(MEM_SIZE));
     jump_quirks = FALSE;
     shift_quirks = FALSE;
+    index_quirks = FALSE;
     cpu_reset();
 }
 
@@ -1093,6 +1094,39 @@ test_store_registers(void)
 }
 
 void
+test_store_registers_quirks(void)
+{
+    setup();
+    index_quirks = TRUE;
+    int index = 0x500;
+
+    for (int x = 0; x < 0x10; x++) {
+        cpu.v[x] = x + 0x89;
+    }
+
+    for (int n = 0; n < 0x10; n++) {
+        for (int c = 0; c < 0x10; c++) {
+            cpu.i.WORD = index + c;
+            memory_write(cpu.i, 0x00);
+        }
+
+        cpu.i.WORD = index;
+        cpu.operand.WORD = n << 8;
+        int indexBefore = index;
+        store_registers_in_memory();
+        CU_ASSERT_EQUAL(indexBefore, cpu.i.WORD);
+
+        for (int c = 0; c < 0x10; c++) {
+            if (c > n) {
+                CU_ASSERT_EQUAL(0, memory_read(index + c));
+            } else {
+                CU_ASSERT_EQUAL(0x89 + c, memory_read(index + c));
+            }
+        }
+    }
+}
+
+void
 test_store_registers_integration(void)
 {
     setup();
@@ -1129,6 +1163,41 @@ test_load_registers(void)
         int indexBefore = cpu.i.WORD;
         load_registers_from_memory();
         CU_ASSERT_EQUAL(indexBefore + n + 1, cpu.i.WORD);
+
+        for (int r = 0; r < 0x10; r++) {
+            if (r > n) {
+                CU_ASSERT_EQUAL(0, cpu.v[r]);
+            } else {
+                CU_ASSERT_EQUAL(r + 0x89, cpu.v[r]);
+            }
+        }
+    }    
+}
+
+void
+test_load_registers_quirks(void)
+{
+    setup();
+    index_quirks = TRUE;
+    int index = 0x500;
+    cpu.i.WORD = index;
+
+    for (int n = 0; n < 0x10; n++) {
+        memory_write(cpu.i, n + 0x89);
+        cpu.i.WORD++;
+    }
+
+    for (int n = 0; n < 0x10; n++) {
+        cpu.i.WORD = index;
+        for (int r = 0; r < 0x10; r++) {
+            cpu.v[r] = 0;
+        }
+
+        cpu.operand.WORD = 0xF065;
+        cpu.operand.WORD |= (n << 8);
+        int indexBefore = cpu.i.WORD;
+        load_registers_from_memory();
+        CU_ASSERT_EQUAL(indexBefore, cpu.i.WORD);
 
         for (int r = 0; r < 0x10; r++) {
             if (r > n) {

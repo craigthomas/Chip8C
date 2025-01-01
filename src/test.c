@@ -89,8 +89,10 @@ main() {
         CU_add_test(cpu_suite, "test_bcd", test_bcd) == NULL ||
         CU_add_test(cpu_suite, "test_bcd_integration", test_bcd_integration) == NULL ||
         CU_add_test(cpu_suite, "test_store_registers", test_store_registers) == NULL ||
+        CU_add_test(cpu_suite, "test_store_registers_quirks", test_store_registers_quirks) == NULL ||
         CU_add_test(cpu_suite, "test_store_registers_integration", test_store_registers_integration) == NULL ||
         CU_add_test(cpu_suite, "test_load_registers", test_load_registers) == NULL ||
+        CU_add_test(cpu_suite, "test_load_registers_quirks", test_load_registers_quirks) == NULL ||
         CU_add_test(cpu_suite, "test_load_registers_integration", test_load_registers_integration) == NULL ||
         CU_add_test(cpu_suite, "test_store_registers_in_rpl", test_store_registers_in_rpl) == NULL ||
         CU_add_test(cpu_suite, "test_store_registers_in_rpl_integration", test_store_registers_in_rpl_integration) == NULL ||

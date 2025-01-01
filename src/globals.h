@@ -121,6 +121,7 @@ extern SDL_Event event;               /**< Stores SDL events                    
 /* Emulator flags */
 extern int jump_quirks;               /**< Stores whether jump quirks are turned on  */
 extern int shift_quirks;              /**< Stores whether shift quirks are turned on */
+extern int index_quirks;              /**< Stores whether index quirks are turned on */
 
 /* Test variables */
 extern word tword;
@@ -264,8 +265,10 @@ void test_load_sprite_index_integration(void);
 void test_bcd(void);
 void test_bcd_integration(void);
 void test_store_registers(void);
+void test_store_registers_quirks(void);
 void test_store_registers_integration(void);
 void test_load_registers(void);
+void test_load_registers_quirks(void);
 void test_load_registers_integration(void);
 void test_store_registers_in_rpl(void);
 void test_store_registers_in_rpl_integration(void);
