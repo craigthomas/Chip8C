@@ -814,8 +814,14 @@ shift_right(void)
 {
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     int y = (cpu.operand.WORD & 0x00F0) >> 4;
-    int bit_one = cpu.v[y] & 0x1;
-    cpu.v[x] = cpu.v[y] >> 1;
+    int bit_one;
+    if (shift_quirks) {
+        bit_one = cpu.v[x] & 0x1;
+        cpu.v[x] = (cpu.v[x] >> 1);
+    } else {
+        bit_one = cpu.v[y] & 0x1;
+        cpu.v[x] = cpu.v[y] >> 1;
+    }
     cpu.v[0xF] = bit_one;
     sprintf(cpu.opdesc, "SHR V%X", x);
 }
@@ -853,8 +859,14 @@ shift_left(void)
 {
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     int y = (cpu.operand.WORD & 0x00F0) >> 4;
-    int bit_seven = (cpu.v[y] & 0x80) >> 7;
-    cpu.v[x] = (cpu.v[y] << 1) & 0xFF;
+    int bit_seven;
+    if (shift_quirks) {
+        bit_seven = (cpu.v[x] & 0x80) >> 7;
+        cpu.v[x] = (cpu.v[x] << 1) & 0xFF;
+    } else {
+        bit_seven = (cpu.v[y] & 0x80) >> 7;
+        cpu.v[x] = (cpu.v[y] << 1) & 0xFF;
+    }
     cpu.v[0xF] = bit_seven;
     sprintf(cpu.opdesc, "SHL V%X", x);
 }

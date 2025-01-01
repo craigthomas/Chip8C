@@ -120,6 +120,7 @@ extern SDL_Event event;               /**< Stores SDL events                    
 
 /* Emulator flags */
 extern int jump_quirks;               /**< Stores whether jump quirks are turned on  */
+extern int shift_quirks;              /**< Stores whether shift quirks are turned on */
 
 /* Test variables */
 extern word tword;
@@ -237,10 +238,12 @@ void test_add_register_to_register_integration(void);
 void test_sub_register_from_register(void);
 void test_sub_register_from_register_integration(void);
 void test_shift_register_right(void);
+void test_shift_register_right_quirks(void);
 void test_shift_register_right_integration(void);
 void test_sub_register_from_register_source_from_target(void);
 void test_sub_register_from_register_source_from_target_integration(void);
 void test_shift_register_left(void);
+void test_shift_register_left_quirks(void);
 void test_shift_register_left_integration(void);
 void test_load_index(void);
 void test_load_index_integration(void);

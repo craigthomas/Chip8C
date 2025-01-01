@@ -62,7 +62,7 @@ loadrom(char *romfilename, int offset)
 void 
 print_help(void) 
 {
-    printf("usage: yac8e [-h] [-s] [-j] ROM\n\n");
+    printf("usage: yac8e [-h] [-s] [-S] [-j] ROM\n\n");
     printf("Starts a simple Chip 8 emulator. See README.md for more ");
     printf("information, and\nLICENSE for terms of use.\n\n");
     printf("positional arguments:\n");
@@ -71,6 +71,7 @@ print_help(void)
     printf("  -h, --help         show this help message and exit\n");
     printf("  -s, --scale N      scales the display by a factor of N\n");
     printf("  -j, --jump_quirks  enables jump quirks\n");
+    printf("  -S, --shift_quirks enables shift quirks\n");
 }
 
 /******************************************************************************/
@@ -86,17 +87,19 @@ char *
 parse_options(int argc, char **argv) 
 {
     jump_quirks = FALSE;
+    shift_quirks = FALSE;
     scale_factor = SCALE_FACTOR;
     op_delay = 0;
 
     int option_index = 0;
-    const char *short_options = ":hjs:";
+    const char *short_options = ":hjSs:";
     static struct option long_options[] =
     {
-        {"help",        no_argument,       NULL, 'h'},
-        {"jump_quirks", no_argument,       NULL, 'j'},
-        {"scale",       required_argument, NULL, 's'},
-        {NULL,          0,                 NULL,   0}
+        {"help",         no_argument,       NULL, 'h'},
+        {"jump_quirks",  no_argument,       NULL, 'j'},
+        {"shift_quirks", no_argument,       NULL, 'S'},
+        {"scale",        required_argument, NULL, 's'},
+        {NULL,           0,                 NULL,   0}
     };
 
     while (TRUE) {
@@ -123,6 +126,10 @@ parse_options(int argc, char **argv)
 
             case 'j':
                 jump_quirks = TRUE;
+                break;
+
+            case 'S':
+                shift_quirks = TRUE;
                 break;
 
             default:
