@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2024 Craig Thomas
+ * Copyright (C) 2012-2025 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      globals.h
@@ -42,5 +42,8 @@ int pitch;                     /**< The pitch for the current audio sample    */
 
 /* Event captures */
 SDL_Event event;               /**< Stores SDL events                         */
+
+/* Emulator flags */
+int jump_quirks;               /**< Stores whether jump quirks are turned on  */
 
 /* E N D   O F   F I L E ******************************************************/

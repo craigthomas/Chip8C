@@ -71,6 +71,7 @@ main() {
         CU_add_test(cpu_suite, "test_load_index", test_load_index) == NULL ||
         CU_add_test(cpu_suite, "test_load_index_integration", test_load_index_integration) == NULL ||
         CU_add_test(cpu_suite, "test_jump_index_plus_value", test_jump_index_plus_value) == NULL ||
+        CU_add_test(cpu_suite, "test_jump_index_plus_value_jump_quirks", test_jump_index_plus_value_jump_quirks) == NULL ||
         CU_add_test(cpu_suite, "test_jump_index_plus_value_integration", test_jump_index_plus_value_integration) == NULL ||
         CU_add_test(cpu_suite, "test_generate_random", test_generate_random) == NULL ||
         CU_add_test(cpu_suite, "test_load_delay_into_target", test_load_delay_into_target) == NULL ||
