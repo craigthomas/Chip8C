@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2024 Craig Thomas
+ * Copyright (C) 2012-2025 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      cpu.c
@@ -904,8 +904,14 @@ load_index_with_value(void)
 void
 jump_to_register_plus_value(void)
 {
-    cpu.pc.WORD = (cpu.v[0] & 0xFF) + (cpu.operand.WORD & 0x0FFF);
-    sprintf(cpu.opdesc, "JUMP V0 + %03X", (cpu.operand.WORD & 0x0FFF));
+    if (jump_quirks) {
+        int x = (cpu.operand.WORD & 0x0F00) >> 8;
+        cpu.pc.WORD = cpu.v[x] + (cpu.operand.WORD & 0x00FF);
+        sprintf(cpu.opdesc, "JUMP V%X + %X", x, cpu.operand.WORD & 0x00FF);
+    } else {
+        cpu.pc.WORD = (cpu.v[0] & 0xFF) + (cpu.operand.WORD & 0x0FFF);
+        sprintf(cpu.opdesc, "JUMP V0 + %03X", (cpu.operand.WORD & 0x0FFF));
+    }
 }
 
 /******************************************************************************/

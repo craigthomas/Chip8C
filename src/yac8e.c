@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Craig Thomas
+ * Copyright (C) 2012-2025 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  * 
  * @file      yac8e.c
@@ -18,6 +18,7 @@
 
 /* I N C L U D E S ***********************************************************/
 
+#include <getopt.h>
 #include <stdlib.h>
 #include "globals.h"
 
@@ -61,28 +62,21 @@ loadrom(char *romfilename, int offset)
 void 
 print_help(void) 
 {
-    printf("usage: yac8e [-h] [-s SCALE] [-d OP_DELAY] [-t] rom\n\n");
+    printf("usage: yac8e [-h] [-s] [-j] ROM\n\n");
     printf("Starts a simple Chip 8 emulator. See README.md for more ");
-    printf("information, and\n LICENSE for terms of use.\n\n");
+    printf("information, and\nLICENSE for terms of use.\n\n");
     printf("positional arguments:\n");
-    printf("  rom          the ROM file to load on startup\n\n");
+    printf("  ROM          the ROM file to load on startup\n\n");
     printf("optional arguments:\n");
-    printf("  -h           show this help message and exit\n");
-    printf("  -s SCALE     the scale factor to apply to the display ");
-    printf("(default is 5)\n");
-    printf("  -d OP_DELAY  sets the CPU operation to take at least the ");
-    printf("specified number of milliseconds to execute (default is 1)\n");
+    printf("  -h, --help         show this help message and exit\n");
+    printf("  -s, --scale N      scales the display by a factor of N\n");
+    printf("  -j, --jump_quirks  enables jump quirks\n");
 }
 
 /******************************************************************************/
 
 /**
  * Parse the command-line options. There are currently 4 recognized options:
- *
- *   -h      prints out the usage message
- *   -s      applies a scale factor to the window
- *   -d      applies an op delay to the CPU (in milliseconds)
- *   -t      starts the emulator in debug mode
  *
  * @param argc the number of arguments on the command line
  * @param argv a pointer to a pointer to the set of command line strings
@@ -91,54 +85,59 @@ print_help(void)
 char *
 parse_options(int argc, char **argv) 
 {
-    int arg;
-    char *filename = NULL;
+    jump_quirks = FALSE;
+    scale_factor = SCALE_FACTOR;
+    op_delay = 0;
 
-    for (arg = 1; arg < argc; arg++) {
-        if ((argv[arg][0] == '-') && (strlen(argv[arg]) != 2)) {
-            printf("Unrecognized option: %s\n", argv[arg]);
-            print_help();
-            exit(1);
+    int option_index = 0;
+    const char *short_options = ":hjs:";
+    static struct option long_options[] =
+    {
+        {"help",        no_argument,       NULL, 'h'},
+        {"jump_quirks", no_argument,       NULL, 'j'},
+        {"scale",       required_argument, NULL, 's'},
+        {NULL,          0,                 NULL,   0}
+    };
+
+    while (TRUE) {
+        int option = getopt_long(argc, argv, short_options, long_options, &option_index);
+
+        if (option == -1) {
+            break;
         }
-        else if ((argv[arg][0] == '-') && (strlen (argv[arg]) == 2)) {
-            switch (argv[arg][1]) {
-                case ('h'):
-                    print_help();
-                    exit(0);
-                    break;
- 
-                case ('s'):
-                    arg++; 
-                    if (arg < argc) {
-                        scale_factor = atoi(argv[arg]);
-                    }
-                    break;
- 
-                case ('d'):
-                    arg++;
-                    if (arg < argc) {
-                        op_delay = atoi(argv[arg]);
-                    }
-                    break;
 
-                default:
-                    printf("Unrecognized option: %s\n", argv[arg]);
+        switch (option) {
+            case 'h':
+                print_help();
+                exit(0);
+                break;
+
+            case 's':
+                scale_factor = atoi(optarg);
+                if (scale_factor == 0 || scale_factor < 0 || scale_factor > 20) {
+                    printf("Invalid --scale option");
                     print_help();
                     exit(1);
-                    break;
-            }
-        } 
-        else {
-            if (filename == NULL) {
-                filename = argv[arg];
-            } 
-            else {
-                printf("Unrecognized parameter: %s\n", argv[arg]);
-                print_help();
-                exit(1);
-            }
+                }
+                break;
+
+            case 'j':
+                jump_quirks = TRUE;
+                break;
+
+            default:
+                break;
         }
     }
+
+    int remaining_args = argc - optind;
+    if (remaining_args < 1) {
+        printf("Expected 1 positional argument (ROM), but found none!\n");
+        print_help();
+        exit(1);
+    }
+
+    char *filename = argv[optind];
 
     if (filename == NULL) {
         printf("ROM file not specified\n");

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2024 Craig Thomas
+ * Copyright (C) 2012-2025 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      globals.h
@@ -117,6 +117,9 @@ extern int pitch;                     /**< The pitch for the current audio sampl
 
 /* Event captures */
 extern SDL_Event event;               /**< Stores SDL events                         */
+
+/* Emulator flags */
+extern int jump_quirks;               /**< Stores whether jump quirks are turned on  */
 
 /* Test variables */
 extern word tword;
@@ -242,6 +245,7 @@ void test_shift_register_left_integration(void);
 void test_load_index(void);
 void test_load_index_integration(void);
 void test_jump_index_plus_value(void);
+void test_jump_index_plus_value_jump_quirks(void);
 void test_jump_index_plus_value_integration(void);
 void test_generate_random(void);
 void test_load_delay_into_target(void);

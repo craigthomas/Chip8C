@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2019 Craig Thomas
+ * Copyright (C) 2012-2025 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      cpu_test.c
@@ -18,6 +18,7 @@ void
 setup(void) 
 {
     CU_TEST_FATAL(memory_init(MEM_SIZE));
+    jump_quirks = FALSE;
     cpu_reset();
 }
 
@@ -783,6 +784,27 @@ test_jump_index_plus_value(void)
             CU_ASSERT_EQUAL(((index & 0xFF) + value) & 0xFFFF, cpu.pc.WORD);
         }
     }
+    teardown();
+}
+
+void
+test_jump_index_plus_value_jump_quirks(void)
+{
+    setup();
+    jump_quirks = TRUE;
+    for (int r = 0; r <= 0xF; r++) {
+        for (int index = 0; index < 0xFFF; index += 10) {
+            for (int value = 0; value < 0xFF; value += 10) {
+                cpu.v[r] = index;
+                cpu.pc.WORD = 0;
+                cpu.operand.WORD = value;
+                cpu.operand.WORD |= (r << 8);
+                jump_to_register_plus_value();
+                CU_ASSERT_EQUAL(((index & 0xFF) + value), cpu.pc.WORD);
+            }
+        }
+    }
+    teardown();
 }
 
 void
