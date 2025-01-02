@@ -64,6 +64,7 @@ print_help(void)
     printf("  -j, --jump_quirks  enables jump quirks\n");
     printf("  -i, --index_quirks enables index quirks\n");
     printf("  -S, --shift_quirks enables shift quirks\n");
+    printf("  -l, --logic_quirks enables logic quirks\n");
 }
 
 /******************************************************************************/
@@ -85,7 +86,7 @@ parse_options(int argc, char **argv)
     op_delay = 0;
 
     int option_index = 0;
-    const char *short_options = ":hjiSs:";
+    const char *short_options = ":hjiSsl:";
     static struct option long_options[] =
     {
         {"help",         no_argument,       NULL, 'h'},
@@ -93,6 +94,7 @@ parse_options(int argc, char **argv)
         {"index_quirks", no_argument,       NULL, 'i'},
         {"shift_quirks", no_argument,       NULL, 'S'},
         {"scale",        required_argument, NULL, 's'},
+        {"logic_quirks", no_argument,       NULL, 'l'},
         {NULL,           0,                 NULL,   0}
     };
 
@@ -128,6 +130,10 @@ parse_options(int argc, char **argv)
 
             case 'S':
                 shift_quirks = TRUE;
+                break;
+
+            case 'l':
+                logic_quirks = TRUE;
                 break;
 
             default:

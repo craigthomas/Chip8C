@@ -745,6 +745,9 @@ logical_or(void)
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     int y = (cpu.operand.WORD & 0x00F0) >> 4;
     cpu.v[x] |= cpu.v[y];
+    if (logic_quirks) {
+        cpu.v[0xF] = 0;
+    }
     sprintf(cpu.opdesc, "OR V%X, V%X", x, y);
 }
 
@@ -761,6 +764,9 @@ logical_and(void)
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     int y = (cpu.operand.WORD & 0x00F0) >> 4;
     cpu.v[x] &= cpu.v[y];
+    if (logic_quirks) {
+        cpu.v[0xF] = 0;
+    }
     sprintf(cpu.opdesc, "AND V%X, V%X", x, y);
 }
 
@@ -777,6 +783,9 @@ exclusive_or(void)
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     int y = (cpu.operand.WORD & 0x00F0) >> 4;
     cpu.v[x] ^= cpu.v[y];
+    if (logic_quirks) {
+        cpu.v[0xF] = 0;
+    }
     sprintf(cpu.opdesc, "XOR V%X, V%X", x, y);
 }
 

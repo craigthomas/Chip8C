@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Craig Thomas
+# Copyright (C) 2012-2025 Craig Thomas
 # This project uses an MIT style license - see LICENSE for details.
 
 NAME = yac8e
