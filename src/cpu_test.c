@@ -21,6 +21,7 @@ setup(void)
     jump_quirks = FALSE;
     shift_quirks = FALSE;
     index_quirks = FALSE;
+    logic_quirks = FALSE;
     bitplane = 1;
     cpu_reset();
 }
@@ -459,6 +460,21 @@ test_logical_or(void)
 }
 
 void
+test_logical_or_logic_quirks(void)
+{
+    setup();
+    logic_quirks = TRUE;
+    cpu.v[1] = 0;
+    cpu.v[2] = 1;
+    cpu.v[0xF] = 1;
+    cpu.operand.WORD = 0x8121;
+    logical_or();
+    CU_ASSERT_EQUAL(1, cpu.v[1]);
+    CU_ASSERT_EQUAL(0, cpu.v[0xF]);
+    teardown();
+}
+
+void
 test_logical_and(void)
 {
     setup();
@@ -478,6 +494,21 @@ test_logical_and(void)
             }
         }
     }
+    teardown();
+}
+
+void
+test_logical_and_logic_quirks(void)
+{
+    setup();
+    logic_quirks = TRUE;
+    cpu.v[1] = 0;
+    cpu.v[2] = 1;
+    cpu.v[0xF] = 1;
+    cpu.operand.WORD = 0x8122;
+    logical_and();
+    CU_ASSERT_EQUAL(0, cpu.v[1]);
+    CU_ASSERT_EQUAL(0, cpu.v[0xF]);    
     teardown();
 }
 
@@ -516,6 +547,21 @@ test_exclusive_or(void)
             }
         }
     }
+    teardown();
+}
+
+void
+test_exclusive_or_logic_quirks(void)
+{
+    setup();
+    logic_quirks = TRUE;
+    cpu.v[1] = 1;
+    cpu.v[2] = 1;
+    cpu.v[0xF] = 1;
+    cpu.operand.WORD = 0x8123;
+    exclusive_or();
+    CU_ASSERT_EQUAL(0, cpu.v[1]);
+    CU_ASSERT_EQUAL(0, cpu.v[0xF]);    
     teardown();
 }
 

@@ -125,6 +125,7 @@ extern SDL_Event event;               /**< Stores SDL events                    
 extern int jump_quirks;               /**< Stores whether jump quirks are turned on  */
 extern int shift_quirks;              /**< Stores whether shift quirks are turned on */
 extern int index_quirks;              /**< Stores whether index quirks are turned on */
+extern int logic_quirks;              /**< Stores whether logic quirks are turned on */
 
 /* Test variables */
 extern word tword;
@@ -239,10 +240,13 @@ void test_add_value_to_register_integration(void);
 void test_move_register_to_register(void);
 void test_move_register_to_register_integration(void);
 void test_logical_or(void);
+void test_logical_or_logic_quirks(void);
 void test_logical_or_integration(void);
 void test_logical_and(void);
+void test_logical_and_logic_quirks(void);
 void test_logical_and_integration(void);
 void test_exclusive_or(void);
+void test_exclusive_or_logic_quirks(void);
 void test_exclusive_or_integration(void);
 void test_add_register_to_register(void);
 void test_add_register_to_register_integration(void);
