@@ -102,8 +102,10 @@ extern int scale_factor;              /**< The scale factor applied to the scree
 extern int screen_mode;               /**< Whether the screen is in extended mode    */
 
 /* Colors */
-extern Uint32 COLOR_BLACK;            /**< Black pixel color                         */
-extern Uint32 COLOR_WHITE;            /**< White pixel color                         */
+extern Uint32 COLOR_0;                /**< Bitplane 0 color                          */
+extern Uint32 COLOR_1;                /**< Bitplane 1 color                          */
+extern Uint32 COLOR_2;                /**< Bitplane 2 color                          */
+extern Uint32 COLOR_3;                /**< Bitplane 3 color                          */
 
 /* CPU */
 extern chip8regset cpu;               /**< The main emulator CPU                     */
