@@ -347,6 +347,10 @@ cpu_execute_single(void)
 
         case 0xF:
             switch (cpu.operand.WORD & 0xFF) {
+                case 0x00:
+                    index_load_long();
+                    break;
+
                 case 0x01:
                     set_bitplane();
                     break;
@@ -571,6 +575,9 @@ skip_if_register_equal_value(void)
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     if (cpu.v[x] == (cpu.operand.WORD & 0x00FF)) {
         cpu.pc.WORD += 2;
+        if (memory_read(cpu.pc.WORD -2 ) == 0xF0 && memory_read(cpu.pc.WORD - 1) == 0x00) {
+            cpu.pc.WORD += 2;
+        }
     }
     sprintf(cpu.opdesc, "SKE V%X, %02X", x, cpu.operand.BYTE.low);
 }
@@ -589,6 +596,10 @@ skip_if_register_not_equal_value(void)
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     if (cpu.v[x] != (cpu.operand.WORD & 0x00FF)) {
         cpu.pc.WORD += 2;
+        if (memory_read(cpu.pc.WORD -2 ) == 0xF0 && memory_read(cpu.pc.WORD - 1) == 0x00) {
+            cpu.pc.WORD += 2;
+        }
+
     }
     sprintf(cpu.opdesc, "SKNE V%X, %02X", x, cpu.operand.BYTE.low);
 }
@@ -608,6 +619,9 @@ skip_if_register_equal_register(void)
     int y = (cpu.operand.WORD & 0x00F0) >> 4;
     if (cpu.v[x] == cpu.v[y]) {
         cpu.pc.WORD += 2;
+        if (memory_read(cpu.pc.WORD -2 ) == 0xF0 && memory_read(cpu.pc.WORD - 1) == 0x00) {
+            cpu.pc.WORD += 2;
+        }
     }
     sprintf(cpu.opdesc, "SKE V%X, V%X", x, y);
 }
@@ -891,6 +905,9 @@ skip_if_register_not_equal_register(void)
     int y = (cpu.operand.WORD & 0x00F0) >> 4;
     if (cpu.v[x] != cpu.v[y]) {
         cpu.pc.WORD += 2;
+        if (memory_read(cpu.pc.WORD -2 ) == 0xF0 && memory_read(cpu.pc.WORD - 1) == 0x00) {
+            cpu.pc.WORD += 2;
+        }
     }
     sprintf(cpu.opdesc, "SKNE V%X, V%X", x, y);
 }
@@ -1054,6 +1071,9 @@ skip_if_key_pressed(void)
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     if (keyboard_checkforkeypress(cpu.v[x])) {
         cpu.pc.WORD += 2;
+        if (memory_read(cpu.pc.WORD -2 ) == 0xF0 && memory_read(cpu.pc.WORD - 1) == 0x00) {
+            cpu.pc.WORD += 2;
+        }
     }
     sprintf(cpu.opdesc, "SKPR V%X", x);
 }
@@ -1073,8 +1093,27 @@ skip_if_key_not_pressed(void)
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     if (!keyboard_checkforkeypress(cpu.v[x])) {
         cpu.pc.WORD += 2;
+        if (memory_read(cpu.pc.WORD -2 ) == 0xF0 && memory_read(cpu.pc.WORD - 1) == 0x00) {
+            cpu.pc.WORD += 2;
+        }
     }
     sprintf(cpu.opdesc, "SKUP V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * F000 - LOADLONG nnnn
+ * 
+ * Loads the index register with a 16-bit value. Consumes the next two bytes 
+ * from memory and increments the PC by two bytes.
+ */
+void
+index_load_long(void)
+{
+    cpu.i.WORD = (memory_read(cpu.pc.WORD) << 8) + memory_read(cpu.pc.WORD + 1);
+    cpu.pc.WORD += 2;
+    sprintf(cpu.opdesc, "LOADLONG %X", cpu.i.WORD);
 }
 
 /******************************************************************************/
