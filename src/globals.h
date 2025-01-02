@@ -181,6 +181,7 @@ void load_pitch(void);
 void store_subset_of_registers_in_memory(void);
 void load_subset_of_registers_from_memory(void);
 void set_bitplane(void);
+void index_load_long(void);
 
 /* memory.c */
 int memory_init(int memorysize);
@@ -218,11 +219,16 @@ void test_jump_to_address_integration(void);
 void test_jump_to_subroutine(void);
 void test_jump_to_subroutine_integration(void);
 void test_skip_if_register_equal_value(void);
+void test_skip_if_register_equal_value_load_long(void);
 void test_skip_if_register_equal_value_integration(void);
+void test_skip_if_register_not_equal_value(void);
+void test_skip_if_register_not_equal_value_load_long(void);
 void test_skip_if_register_not_equal_value_integration(void);
 void test_skip_if_register_equal_register(void);
+void test_skip_if_register_equal_register_load_long(void);
 void test_skip_if_register_equal_register_integration(void);
 void test_skip_if_register_not_equal_register(void);
+void test_skip_if_register_not_equal_register_load_long(void);
 void test_skip_if_register_not_equal_register_integration(void);
 void test_move_value_to_register_integration(void);
 void test_move_value_to_register(void);
@@ -295,6 +301,8 @@ void test_cpu_scroll_down(void);
 void test_cpu_screen_blank(void);
 void test_cpu_enable_extended_mode(void);
 void test_cpu_disable_extended_mode(void);
+void test_index_load_long(void);
+void test_index_load_long_integration(void);
 
 /* screen_test.c */
 void test_set_get_pixel(void);

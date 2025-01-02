@@ -40,11 +40,16 @@ main() {
         CU_add_test(cpu_suite, "test_jump_to_subroutine", test_jump_to_subroutine) == NULL ||
         CU_add_test(cpu_suite, "test_jump_to_subroutine_integration", test_jump_to_subroutine_integration) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_value", test_skip_if_register_equal_value) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_equal_value_load_long", test_skip_if_register_equal_value_load_long) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_value_integration", test_skip_if_register_equal_value_integration) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_value", test_skip_if_register_not_equal_value) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_value_load_long", test_skip_if_register_not_equal_value_load_long) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_not_equal_value_integration", test_skip_if_register_not_equal_value_integration) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_register_integration", test_skip_if_register_equal_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_equal_register", test_skip_if_register_equal_register) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_equal_register_load_long", test_skip_if_register_equal_register_load_long) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_not_equal_register", test_skip_if_register_not_equal_register) == NULL ||
+        CU_add_test(cpu_suite, "test_skip_if_register_not_equal_register_load_long", test_skip_if_register_not_equal_register_load_long) == NULL ||
         CU_add_test(cpu_suite, "test_skip_if_register_not_equal_register_integration", test_skip_if_register_not_equal_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_move_value_to_register_integration", test_move_value_to_register_integration) == NULL ||
         CU_add_test(cpu_suite, "test_move_value_to_register", test_move_value_to_register) == NULL ||
@@ -113,6 +118,8 @@ main() {
         CU_add_test(cpu_suite, "test_return_from_subroutine", test_return_from_subroutine) == NULL ||
         CU_add_test(cpu_suite, "test_return_from_subroutine_integration", test_return_from_subroutine_integration) == NULL ||
         CU_add_test(cpu_suite, "test_exit_interpreter", test_exit_interpreter) == NULL ||
+        CU_add_test(cpu_suite, "test_index_load_long", test_index_load_long) == NULL ||
+        CU_add_test(cpu_suite, "test_index_load_long", test_index_load_long_integration) == NULL ||
         CU_add_test(cpu_suite, "test_cpu_scroll_left", test_cpu_scroll_left) == NULL ||
         CU_add_test(cpu_suite, "test_cpu_scroll_right", test_cpu_scroll_right) == NULL ||
         CU_add_test(cpu_suite, "test_cpu_scroll_down", test_cpu_scroll_down) == NULL ||

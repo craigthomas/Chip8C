@@ -130,6 +130,60 @@ test_skip_if_register_equal_value(void)
             }
         }
     }
+    teardown();
+}
+
+void
+test_skip_if_register_equal_value_load_long(void) 
+{
+    setup();
+    tword.WORD = 0x0200;
+    memory_write(tword, 0xF0);
+    tword.WORD += 1;
+    memory_write(tword, 0x00);
+    cpu.v[1] = 1;
+    cpu.operand.WORD = 0x3101;
+    skip_if_register_equal_value();
+    CU_ASSERT_EQUAL(0x0204, cpu.pc.WORD);
+    teardown();
+}
+
+void
+test_skip_if_register_not_equal_value(void)
+{
+    setup();
+    for (int r = 0; r < 0x10; r++) {
+        for (int value = 0; value < 0xFF; value += 0x10) {
+            for (int regValue = 0; regValue < 0xFF; regValue++) {
+                cpu.operand.WORD = r << 8;
+                cpu.operand.WORD += value;
+                cpu.v[r] = (short) regValue;
+                cpu.pc.WORD = 0;
+                skip_if_register_not_equal_value();
+                if (value != regValue) {
+                    CU_ASSERT_EQUAL(2, cpu.pc.WORD);
+                } else {
+                    CU_ASSERT_EQUAL(0, cpu.pc.WORD);
+                }
+            }
+        }
+    }
+    teardown();
+}
+
+void
+test_skip_if_register_not_equal_value_load_long(void)
+{
+    setup();
+    tword.WORD = 0x0200;
+    memory_write(tword, 0xF0);
+    tword.WORD += 1;
+    memory_write(tword, 0x00);
+    cpu.v[1] = 1;
+    cpu.operand.WORD = 0x4102;
+    skip_if_register_not_equal_value();
+    CU_ASSERT_EQUAL(0x0204, cpu.pc.WORD);
+    teardown();
 }
 
 void
@@ -150,6 +204,40 @@ test_skip_if_register_not_equal_value_integration(void)
     cpu.v[0x1] = 0x52;
     cpu_execute_single();
     CU_ASSERT_EQUAL(cpu.pc.WORD, 0x0002);
+    teardown();
+}
+
+void
+test_index_load_long(void)
+{
+    setup();
+    cpu.i.WORD = 0x5000;
+    tword.WORD = 0x0200;
+    memory_write(tword, 0x12);
+    tword.WORD += 1;
+    memory_write(tword, 0x34);
+    index_load_long();
+    CU_ASSERT_EQUAL(0x1234, cpu.i.WORD);
+    CU_ASSERT_EQUAL(0x0202, cpu.pc.WORD);
+    teardown();
+}
+
+void
+test_index_load_long_integration(void)
+{
+    setup();
+    cpu.i.WORD = 0x5000;
+    tword.WORD = 0x0200;
+    memory_write(tword, 0xF0);
+    tword.WORD += 1;
+    memory_write(tword, 0x00);
+    tword.WORD += 1;
+    memory_write(tword, 0x12);
+    tword.WORD += 1;
+    memory_write(tword, 0x34);
+    cpu_execute_single();
+    CU_ASSERT_EQUAL(0x1234, cpu.i.WORD);
+    CU_ASSERT_EQUAL(0x0204, cpu.pc.WORD);
     teardown();
 }
 
@@ -179,6 +267,7 @@ test_skip_if_register_equal_register_integration(void)
 void 
 test_skip_if_register_equal_register(void)
 {
+    setup();
     for (int r = 0; r < 0x10; r++) {
         cpu.v[r] = r;
     }
@@ -198,6 +287,23 @@ test_skip_if_register_equal_register(void)
             }
         }
     }
+    teardown();
+}
+
+void
+test_skip_if_register_equal_register_load_long(void)
+{
+    setup();
+    tword.WORD = 0x0200;
+    memory_write(tword, 0xF0);
+    tword.WORD += 1;
+    memory_write(tword, 0x00);
+    cpu.v[1] = 1;
+    cpu.v[2] = 1;
+    cpu.operand.WORD = 0x5120;
+    skip_if_register_equal_register();
+    CU_ASSERT_EQUAL(0x0204, cpu.pc.WORD);
+    teardown();
 }
 
 void
@@ -233,6 +339,7 @@ test_move_value_to_register(void)
         }
         cpu.v[r] = 0;
     }
+    teardown();
 }
 
 void
@@ -254,6 +361,7 @@ test_add_value_to_register(void)
             }
         }
     }
+    teardown();
 }
 
 void
@@ -309,6 +417,7 @@ test_move_register_to_register(void)
             }
         }
     }
+    teardown();
 }
 
 void
@@ -346,6 +455,7 @@ test_logical_or(void)
             }
         }
     }
+    teardown();
 }
 
 void
@@ -368,6 +478,7 @@ test_logical_and(void)
             }
         }
     }
+    teardown();
 }
 
 void
@@ -405,6 +516,7 @@ test_exclusive_or(void)
             }
         }
     }
+    teardown();
 }
 
 void
@@ -448,6 +560,7 @@ test_add_register_to_register(void)
             }
         }
     }
+    teardown();
 }
 
 void
@@ -523,6 +636,7 @@ test_sub_register_from_register(void)
             }
         }
     }
+    teardown();
 }
 
 void
@@ -650,6 +764,7 @@ test_sub_register_from_register_source_from_target(void)
             }
         }
     }
+    teardown();
 }
 
 void
@@ -768,6 +883,23 @@ test_skip_if_register_not_equal_register(void)
             }
         }
     }
+    teardown();
+}
+
+void
+test_skip_if_register_not_equal_register_load_long(void)
+{
+    setup();
+    tword.WORD = 0x0200;
+    memory_write(tword, 0xF0);
+    tword.WORD += 1;
+    memory_write(tword, 0x00);
+    cpu.v[1] = 1;
+    cpu.v[2] = 2;
+    cpu.operand.WORD = 0x9120;
+    skip_if_register_not_equal_register();
+    CU_ASSERT_EQUAL(0x0204, cpu.pc.WORD);
+    teardown();
 }
 
 void
