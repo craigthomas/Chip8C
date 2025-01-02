@@ -114,6 +114,7 @@ extern int op_delay;                  /**< Millisecond delay on the CPU         
 extern int awaiting_keypress;         /**< Whether to wait for a keypress event      */
 extern float playback_rate;           /**< The playback rate for audio samples       */
 extern int pitch;                     /**< The pitch for the current audio sample    */
+extern int bitplane;                  /**< Sets the current drawing plane            */
 
 /* Event captures */
 extern SDL_Event event;               /**< Stores SDL events                         */
@@ -179,6 +180,7 @@ void read_registers_from_rpl(void);
 void load_pitch(void);
 void store_subset_of_registers_in_memory(void);
 void load_subset_of_registers_from_memory(void);
+void set_bitplane(void);
 
 /* memory.c */
 int memory_init(int memorysize);
@@ -276,6 +278,8 @@ void test_read_registers_from_rpl(void);
 void test_read_registers_from_rpl_integration(void);
 void test_load_pitch(void);
 void test_load_pitch_integration(void);
+void test_set_bitplane(void);
+void test_set_bitplane_integration(void);
 void test_store_subset_one_two(void);
 void test_store_subset_one_one(void);
 void test_store_subset_three_one(void);

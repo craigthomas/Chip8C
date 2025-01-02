@@ -21,6 +21,7 @@ setup(void)
     jump_quirks = FALSE;
     shift_quirks = FALSE;
     index_quirks = FALSE;
+    bitplane = 1;
     cpu_reset();
 }
 
@@ -1340,6 +1341,30 @@ test_read_registers_from_rpl_integration(void)
     CU_ASSERT_EQUAL(cpu.v[13], 14);
     CU_ASSERT_EQUAL(cpu.v[14], 15);
     CU_ASSERT_EQUAL(cpu.v[15], 16);
+    teardown();
+}
+
+void 
+test_set_bitplane(void)
+{
+    setup();
+    cpu.operand.WORD = 0xF201;
+    set_bitplane();
+    CU_ASSERT_EQUAL(2, bitplane);
+    teardown();
+}
+
+void
+test_set_bitplane_integration(void)
+{
+    setup();
+    cpu.pc.WORD = 0x0000;
+    tword.WORD = 0x0000;
+    memory_write(tword, 0xF2);
+    tword.WORD++;
+    memory_write(tword, 0x01);
+    cpu_execute_single();
+    CU_ASSERT_EQUAL(2, bitplane);
     teardown();
 }
 

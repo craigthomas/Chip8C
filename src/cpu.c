@@ -118,6 +118,7 @@ cpu_reset(void)
     awaiting_keypress = FALSE;
     playback_rate = 4000.0;
     pitch = 64;
+    bitplane = 1;
 }
 
 /******************************************************************************/
@@ -346,6 +347,10 @@ cpu_execute_single(void)
 
         case 0xF:
             switch (cpu.operand.WORD & 0xFF) {
+                case 0x01:
+                    set_bitplane();
+                    break;
+
                 case 0x07:
                     move_delay_timer_into_register();
                     break;
@@ -1070,6 +1075,26 @@ skip_if_key_not_pressed(void)
         cpu.pc.WORD += 2;
     }
     sprintf(cpu.opdesc, "SKUP V%X", x);
+}
+
+/******************************************************************************/
+
+/**
+ * Fn01 - BITPLANE n
+ * 
+ * Selects the active bitplane for screen drawing operations. Bitplane selection 
+ * is as follows:
+ * 
+ *   0 - no bitplane selected
+ *   1 - first bitplane selected
+ *   2 - second bitplane selected
+ *   3 - first and second bitplane selected
+ */
+void
+set_bitplane(void)
+{
+    bitplane = (cpu.operand.WORD & 0x0F00) >> 8;
+    sprintf(cpu.opdesc, "BITPLANE %X", bitplane);
 }
 
 /******************************************************************************/
