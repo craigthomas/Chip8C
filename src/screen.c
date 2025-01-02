@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Craig Thomas
+ * Copyright (C) 2012-2025 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      screen.c
@@ -23,14 +23,16 @@
 /* F U N C T I O N S **********************************************************/
 
 /**
- * Attempts to initialize the colors WHITE and BLACK. Does so by mapping RGB
- * values based upon the screen format. 
+ * Attempts to initialize the 4 colors used by the emulator to draw to the 
+ * screen.
  */
 void 
 init_colors(SDL_Surface *surface) 
 {
-    COLOR_BLACK = SDL_MapRGB(surface->format, 0, 0, 0);
-    COLOR_WHITE = SDL_MapRGB(surface->format, 250, 250, 250);
+    COLOR_0 = SDL_MapRGB(surface->format, 0, 0, 0);
+    COLOR_1 = SDL_MapRGB(surface->format, 250, 51, 204);
+    COLOR_2 = SDL_MapRGB(surface->format, 51, 204, 250);
+    COLOR_3 = SDL_MapRGB(surface->format, 250, 250, 250);
 }
 
 /******************************************************************************/
@@ -58,7 +60,7 @@ screen_get_pixel(int x, int y)
     Uint32 pixel = pixels[(virtscreen->w * y) + x];
     SDL_GetRGB(pixel, virtscreen->format, &r, &g, &b);
     color = SDL_MapRGB(virtscreen->format, r, g, b);
-    return color == COLOR_WHITE;
+    return color == COLOR_3;
 }
 
 /******************************************************************************/
@@ -104,7 +106,7 @@ screen_blit_surface(SDL_Surface *src, SDL_Surface *dest, int x, int y)
 void 
 screen_blank(void)
 {
-    screen_clear(virtscreen, COLOR_BLACK);
+    screen_clear(virtscreen, COLOR_0);
 }
 
 /******************************************************************************/
@@ -151,7 +153,7 @@ void
 screen_draw(int x, int y, int color)
 {
     SDL_Rect pixel;
-    Uint32 pixelcolor = COLOR_BLACK;
+    Uint32 pixelcolor = COLOR_0;
 
     int mode_scale = screen_get_mode_scale();
     pixel.x = x * scale_factor * mode_scale;
@@ -159,7 +161,7 @@ screen_draw(int x, int y, int color)
     pixel.w = scale_factor * mode_scale;
     pixel.h = scale_factor * mode_scale;
     if (color) {
-        pixelcolor = COLOR_WHITE;
+        pixelcolor = COLOR_3;
     }
     SDL_FillRect(virtscreen, &pixel, pixelcolor);
 }
@@ -219,7 +221,7 @@ screen_create_surface(int width, int height, int alpha, Uint32 color_key)
         if (color_key != -1) {
             SDL_SetColorKey(newsurface, SDL_SRCCOLORKEY, color_key);
         }
-        screen_clear(newsurface, COLOR_BLACK);
+        screen_clear(newsurface, COLOR_0);
     }
 
     return newsurface;
