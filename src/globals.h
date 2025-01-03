@@ -126,6 +126,7 @@ extern int jump_quirks;               /**< Stores whether jump quirks are turned
 extern int shift_quirks;              /**< Stores whether shift quirks are turned on */
 extern int index_quirks;              /**< Stores whether index quirks are turned on */
 extern int logic_quirks;              /**< Stores whether logic quirks are turned on */
+extern int clip_quirks;               /**< Stores whether clip quirks are turned on  */
 
 /* Test variables */
 extern word tword;
@@ -194,15 +195,17 @@ void memory_destroy(void);
 int screen_init(void);
 int screen_is_extended_mode(void);
 void screen_clear(SDL_Surface *surface, Uint32 color); 
-void screen_blank(void);
-int screen_get_pixel(int x, int y);
-void screen_draw(int x, int y, int color);
-void screen_refresh(int overlay_on);
+void screen_blank(int bitplane);
+int get_pixel(int x, int y, int plane);
+void draw_pixel(int x, int y, int turn_on, int plane);
+void draw_extended_sprite(int x, int y, int plane, int active_index);
+void draw_normal_sprite(int x_pos, int y_pos, int num_bytes, int plane, int active_index);
+void screen_refresh(void);
 void screen_destroy(void);
 void screen_set_extended_mode(void);
 void screen_set_normal_mode(void);
 void screen_scroll_left(void);
-void screen_scroll_right(void);
+void screen_scroll_right(int plane);
 void screen_scroll_down(int num_pixels);
 int screen_get_height(void);
 int screen_get_width(void);
