@@ -1771,15 +1771,15 @@ test_cpu_scroll_left(void)
 {
     setup();
     setup_cpu_screen_test();
-    screen_draw(5, 1, 1);
-    CU_ASSERT_TRUE(screen_get_pixel(5, 1));
+    draw_pixel(5, 1, 1, 1);
+    CU_ASSERT_TRUE(get_pixel(5, 1, 1));
     tword.WORD = 0x00FC;
     address.WORD = 0x0000;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
     cpu_execute_single();
-    CU_ASSERT_FALSE(screen_get_pixel(5, 1));
-    CU_ASSERT_TRUE(screen_get_pixel(1, 1));
+    CU_ASSERT_FALSE(get_pixel(5, 1, 1));
+    CU_ASSERT_TRUE(get_pixel(1, 1, 1));
     teardown();
     teardown_cpu_screen_test();
 }
@@ -1789,15 +1789,15 @@ test_cpu_scroll_right(void)
 {
     setup();
     setup_cpu_screen_test();
-    screen_draw(1, 1, 1);
-    CU_ASSERT_TRUE(screen_get_pixel(1, 1));
+    draw_pixel(1, 1, 1, 1);
+    CU_ASSERT_TRUE(get_pixel(1, 1, 1));
     tword.WORD = 0x00FB;
     address.WORD = 0x0000;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
     cpu_execute_single();
-    CU_ASSERT_FALSE(screen_get_pixel(1, 1));
-    CU_ASSERT_TRUE(screen_get_pixel(5, 1));
+    CU_ASSERT_FALSE(get_pixel(1, 1, 1));
+    CU_ASSERT_TRUE(get_pixel(5, 1, 1));
     teardown();
     teardown_cpu_screen_test();
 }
@@ -1807,15 +1807,15 @@ test_cpu_scroll_down(void)
 {
     setup();
     setup_cpu_screen_test();
-    screen_draw(1, 5, 1);
-    CU_ASSERT_TRUE(screen_get_pixel(1, 5));
+    draw_pixel(1, 5, 1, 1);
+    CU_ASSERT_TRUE(get_pixel(1, 5, 1));
     tword.WORD = 0x00C4;
     address.WORD = 0x0000;
     memory_write_word(address, tword);
     cpu.pc.WORD = 0x0000;
     cpu_execute_single();
-    CU_ASSERT_FALSE(screen_get_pixel(1, 5));
-    CU_ASSERT_TRUE(screen_get_pixel(1, 9));
+    CU_ASSERT_FALSE(get_pixel(1, 5, 1));
+    CU_ASSERT_TRUE(get_pixel(1, 9, 1));
     teardown();
     teardown_cpu_screen_test();
 }
@@ -1827,13 +1827,13 @@ test_cpu_screen_blank(void)
     setup_cpu_screen_test();
     for (int x = 0; x < screen_get_width(); x++) {
         for (int y = 0; y < screen_get_height(); y++) {
-            screen_draw(x, y, 1);
+            draw_pixel(x, y, 1, 1);
         }
     }
 
     for (int x = 0; x < screen_get_width(); x++) {
         for (int y = 0; y < screen_get_height(); y++) {
-            CU_ASSERT_TRUE(screen_get_pixel(x, y));
+            CU_ASSERT_TRUE(get_pixel(x, y, 1));
         }
     }
 
@@ -1845,7 +1845,7 @@ test_cpu_screen_blank(void)
 
     for (int x = 0; x < screen_get_width(); x++) {
         for (int y = 0; y < screen_get_height(); y++) {
-            CU_ASSERT_FALSE(screen_get_pixel(x, y));
+            CU_ASSERT_FALSE(get_pixel(x, y, 1));
         }
     }
 
