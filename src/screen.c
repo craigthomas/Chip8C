@@ -565,6 +565,72 @@ screen_scroll_down(int num_pixels, int plane)
 /******************************************************************************/
 
 /**
+ * Scrolls the screen up the specified number of pixels.
+ * 
+ * @param num_pixels the number of pixels to scroll up
+ * @param plane the bitplane to scroll
+ */
+void
+screen_scroll_up(int num_pixels, int plane) 
+{
+    if (plane == 0) {
+        return;
+    }
+
+    int width = screen_get_width() * scale_factor;
+    int height = screen_get_height() * scale_factor;
+    int mode_scale = screen_is_extended_mode() ? 1 : 2;
+
+    if (plane == 3) {    
+        SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
+        SDL_Rect source_rect, dest_rect;
+
+        source_rect.x = 0;
+        source_rect.y = (num_pixels * scale_factor * mode_scale);
+        source_rect.w = width;
+        source_rect.h = height;
+
+        dest_rect.x = 0;
+        dest_rect.y = 0;
+        dest_rect.w = 0;
+        dest_rect.h = 0;
+
+        SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
+        SDL_FreeSurface(virtscreen);
+        virtscreen = tempsurface;
+        return;
+    }
+
+    int max_x = screen_get_width();
+    int max_y = screen_get_height();
+
+    // Blank out any pixels in the top numPixels that we will copy to
+    for (int x = 0; x < max_x; x++) {
+        for (int y = 0; y < num_pixels; y++) {
+            draw_pixel(x, y, FALSE, plane);
+        }
+    }
+
+    // Start copying pixels from the top to the bottom and shift up by numPixels
+    for (int x = 0; x < max_x; x++) {
+        for (int y = num_pixels; y < max_y; y++) {
+            int currentPixel = get_pixel(x, y, plane);
+            draw_pixel(x, y, FALSE, plane);
+            draw_pixel(x, y - num_pixels, currentPixel, plane);
+        }
+    }
+
+    // Blank out any piels in the bottom numPixels
+    for (int x = 0; x < max_x; x++) {
+        for (int y = max_y - num_pixels; y < max_y; y++) {
+            draw_pixel(x, y, FALSE, plane);
+        }
+    }    
+}
+
+/******************************************************************************/
+
+/**
  * Returns the height of the screen in pixels. Note does not apply scaling 
  * factor (i.e. returns the logical height of the screen).
  * 
