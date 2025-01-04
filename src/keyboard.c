@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012-2024 Craig Thomas
+ * Copyright (C) 2012-2025 Craig Thomas
  * This project uses an MIT style license - see the LICENSE file for details.
  *
  * @file      keyboard.c
@@ -11,17 +11,12 @@
  * For example, key '0' will have a hex value of 0x0. Similarly, key 'A' will
  * have a hex value of 0xA. The keyboard routines use the SDL (Simple Direct
  * Media Layer) library to read the status of the keyboard. Because we don't
- * want to expose direct SDLKey values to the CPU, there are a number of 
- * routines that convert the SDLKey values to their associated hex values. 
+ * want to expose direct SDL_KeyCode values to the CPU, there are a number of 
+ * routines that convert the SDL_KeyCode values to their associated hex values. 
  *
  * The `keyboard_def` variable controls the mapping between the emulator keys
- * 0-9 and a-f to their associated SDLKey values. Change the mapping below if
+ * 0-9 and a-f to their associated SDL_KeyCode values. Change the mapping below if
  * you want to change the emulator keyboard.
- *
- * In addition to the emulator keys, there are two special keys, the 'ESC' and
- * 'F1' keys. Pressing 'F1' will place the emulator into a debug state where 
- * each operation will be displayed on STDOUT. The 'ESC' key will immediately
- * stop the emulator.
  */
 
 /* I N C L U D E S ************************************************************/
@@ -37,7 +32,7 @@
 /*!
  * Keyboard mapping from SDL keys to key values 
  */
-SDLKey keyboard_def[] = 
+SDL_KeyCode keyboard_def[] = 
 {
     SDLK_x,
     SDLK_1,
@@ -107,7 +102,7 @@ keyboard_checkforkeypress(int keycode)
  * @return the value of the key if it is an emulator key, -1 otherwise
  */
 int
-keyboard_isemulatorkey(SDLKey key)
+keyboard_isemulatorkey(SDL_KeyCode key)
 {
     for (int x=0; x < KEY_NUMBEROFKEYS; x++) {
         if (key == keyboard_def[x]) {
@@ -126,7 +121,7 @@ keyboard_isemulatorkey(SDLKey key)
  * @param key the SDLKey to process
  */
 void
-keyboard_processkeydown(SDLKey key) 
+keyboard_processkeydown(SDL_KeyCode key) 
 {
     for (int x=0; x < KEY_NUMBEROFKEYS; x++) {
         if (key == keyboard_def[x]) {
@@ -144,7 +139,7 @@ keyboard_processkeydown(SDLKey key)
  * @param key the SDLKey to process
  */
 void
-keyboard_processkeyup(SDLKey key) 
+keyboard_processkeyup(SDL_KeyCode key) 
 {
     for (int x=0; x < KEY_NUMBEROFKEYS; x++) {
         if (key == keyboard_def[x]) {

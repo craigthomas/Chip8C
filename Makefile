@@ -6,8 +6,8 @@ TESTNAME = test
 MAINOBJS = src/cpu.o src/keyboard.o src/memory.o src/screen.o src/yac8e.o src/globals.o
 TESTOBJS = src/cpu.o src/keyboard.o src/memory.o src/screen.o src/cpu_test.o src/screen_test.o src/test.o src/keyboard_test.o src/globals.o
 
-override CFLAGS += -Wall -g $(shell sdl-config --cflags)
-LDFLAGS += $(shell sdl-config --libs) -lcunit -lm
+override CFLAGS += -Wall -g $(shell sdl2-config --cflags)
+LDFLAGS += $(shell sdl2-config --libs) -lcunit -lm
 
 .PHONY: all doc clean
 

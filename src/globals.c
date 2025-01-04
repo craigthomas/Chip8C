@@ -20,8 +20,10 @@
 byte *memory;                  /**< Pointer to emulator memory region         */
 
 /* Screen */
-SDL_Surface *screen;           /**< Stores the main screen SDL structure      */
-SDL_Surface *virtscreen;       /**< Stores the Chip 8 virtual screen          */
+SDL_Window *window;            /**< Stores the main screen SDL structure      */
+SDL_Surface *surface;          /**< Stores the Chip 8 virtual screen          */
+SDL_Renderer *renderer;        /**< Stores the screen renderer                */
+SDL_Texture *texture;          /**< The SDL texture to render                 */
 int scale;                     /**< The scale factor applied to the screen    */
 int screen_mode;               /**< Whether the screen is in extended mode    */
 int scale_factor;              /**< Stores the current scale factor           */
