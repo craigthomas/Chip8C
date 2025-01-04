@@ -107,11 +107,61 @@ test_screen_scroll_right(void)
 {
     setup_screen_test();
     screen_set_extended_mode();
-    draw_pixel(1, 1, 1, 1);
+    draw_pixel(1, 1, TRUE, 1);
+    draw_pixel(1, 1, TRUE, 2);
     CU_ASSERT_TRUE(get_pixel(1, 1, 1));
+    CU_ASSERT_TRUE(get_pixel(1, 1, 2));
     screen_scroll_right(1);
     CU_ASSERT_FALSE(get_pixel(1, 1, 1));
     CU_ASSERT_TRUE(get_pixel(5, 1, 1));
+    CU_ASSERT_TRUE(get_pixel(1, 1, 2));
+    CU_ASSERT_FALSE(get_pixel(5, 1, 2));
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_right_bitplane_0_does_nothing(void)
+{
+    setup_screen_test();
+    screen_set_extended_mode();
+    draw_pixel(0, 1, TRUE, 1);
+    draw_pixel(0, 1, TRUE, 2);
+    CU_ASSERT_TRUE(get_pixel(0, 1, 1));
+    CU_ASSERT_TRUE(get_pixel(0, 1, 2));
+    screen_scroll_right(0);
+    CU_ASSERT_TRUE(get_pixel(0, 1, 1));
+    CU_ASSERT_FALSE(get_pixel(1, 1, 1));
+    CU_ASSERT_FALSE(get_pixel(2, 1, 1));
+    CU_ASSERT_FALSE(get_pixel(3, 1, 1));
+    CU_ASSERT_FALSE(get_pixel(4, 1, 1));
+    CU_ASSERT_TRUE(get_pixel(0, 1, 2));
+    CU_ASSERT_FALSE(get_pixel(1, 1, 2));
+    CU_ASSERT_FALSE(get_pixel(2, 1, 2));
+    CU_ASSERT_FALSE(get_pixel(3, 1, 2));
+    CU_ASSERT_FALSE(get_pixel(4, 1, 2));
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_right_bitplane_3(void)
+{
+    setup_screen_test();
+    screen_set_extended_mode();
+    draw_pixel(0, 1, TRUE, 1);
+    draw_pixel(0, 1, TRUE, 2);
+    CU_ASSERT_TRUE(get_pixel(0, 1, 1));
+    CU_ASSERT_TRUE(get_pixel(0, 1, 2));
+    screen_scroll_right(3);
+    CU_ASSERT_FALSE(get_pixel(0, 1, 1));
+    CU_ASSERT_FALSE(get_pixel(1, 1, 1));
+    CU_ASSERT_FALSE(get_pixel(2, 1, 1));
+    CU_ASSERT_FALSE(get_pixel(3, 1, 1));
+    CU_ASSERT_TRUE(get_pixel(4, 1, 1));
+    CU_ASSERT_FALSE(get_pixel(0, 1, 2));
+    CU_ASSERT_FALSE(get_pixel(1, 1, 2));
+    CU_ASSERT_FALSE(get_pixel(2, 1, 2));
+    CU_ASSERT_FALSE(get_pixel(3, 1, 2));
+    CU_ASSERT_TRUE(get_pixel(4, 1, 2));
     teardown_screen_test();
 }
 
@@ -122,9 +172,55 @@ test_screen_scroll_left(void)
     screen_set_extended_mode();
     draw_pixel(5, 1, 1, 1);
     CU_ASSERT_TRUE(get_pixel(5, 1, 1));
-    screen_scroll_left();
+    screen_scroll_left(1);
     CU_ASSERT_FALSE(get_pixel(5, 1, 1));
     CU_ASSERT_TRUE(get_pixel(1, 1, 1));
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_left_bitplane_0_does_nothing(void)
+{
+    setup_screen_test();
+    screen_set_extended_mode();
+    draw_pixel(63, 0, TRUE, 1);
+    draw_pixel(63, 0, TRUE, 2);
+    CU_ASSERT_TRUE(get_pixel(63, 0, 1));
+    CU_ASSERT_TRUE(get_pixel(63, 0, 2));
+    screen_scroll_left(0);
+    CU_ASSERT_TRUE(get_pixel(63, 0, 1));
+    CU_ASSERT_FALSE(get_pixel(62, 0, 1));
+    CU_ASSERT_FALSE(get_pixel(61, 0, 1));
+    CU_ASSERT_FALSE(get_pixel(60, 0, 1));
+    CU_ASSERT_FALSE(get_pixel(59, 0, 1));
+    CU_ASSERT_TRUE(get_pixel(63, 0, 2));
+    CU_ASSERT_FALSE(get_pixel(62, 0, 2));
+    CU_ASSERT_FALSE(get_pixel(61, 0, 2));
+    CU_ASSERT_FALSE(get_pixel(60, 0, 2));
+    CU_ASSERT_FALSE(get_pixel(59, 0, 2));
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_left_bitplane_3(void)
+{
+    setup_screen_test();
+    screen_set_extended_mode();
+    draw_pixel(63, 0, TRUE, 1);
+    draw_pixel(63, 0, TRUE, 2);
+    CU_ASSERT_TRUE(get_pixel(63, 0, 1));
+    CU_ASSERT_TRUE(get_pixel(63, 0, 2));
+    screen_scroll_left(3);
+    CU_ASSERT_FALSE(get_pixel(63, 0, 1));
+    CU_ASSERT_FALSE(get_pixel(62, 0, 1));
+    CU_ASSERT_FALSE(get_pixel(61, 0, 1));
+    CU_ASSERT_FALSE(get_pixel(60, 0, 1));
+    CU_ASSERT_TRUE(get_pixel(59, 0, 1));
+    CU_ASSERT_FALSE(get_pixel(63, 0, 2));
+    CU_ASSERT_FALSE(get_pixel(62, 0, 2));
+    CU_ASSERT_FALSE(get_pixel(61, 0, 2));
+    CU_ASSERT_FALSE(get_pixel(60, 0, 2));
+    CU_ASSERT_TRUE(get_pixel(59, 0, 2));
     teardown_screen_test();
 }
 
@@ -135,9 +231,56 @@ test_screen_scroll_down(void)
     screen_set_extended_mode();
     draw_pixel(1, 5, 1, 1);
     CU_ASSERT_TRUE(get_pixel(1, 5, 1));
-    screen_scroll_down(4);
+    screen_scroll_down(4, 1);
     CU_ASSERT_FALSE(get_pixel(1, 5, 1));
     CU_ASSERT_TRUE(get_pixel(1, 9, 1));
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_down_bitplane_0_does_nothing(void)
+{
+    setup_screen_test();
+    screen_set_extended_mode();
+    draw_pixel(0, 0, TRUE, 1);
+    draw_pixel(0, 0, TRUE, 2);
+    screen_scroll_down(4, 0);
+    CU_ASSERT_TRUE(get_pixel(0, 0, 1));
+    CU_ASSERT_TRUE(get_pixel(0, 0, 2));
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_down_bitplane_1_both_pixels_active(void)
+{
+    setup_screen_test();
+    screen_set_extended_mode();
+    draw_pixel(0, 0, TRUE, 1);
+    draw_pixel(0, 0, TRUE, 2);
+    CU_ASSERT_TRUE(get_pixel(0, 0, 1));
+    CU_ASSERT_TRUE(get_pixel(0, 0, 2));
+    screen_scroll_down(1, 1);
+    CU_ASSERT_FALSE(get_pixel(0, 0, 1));
+    CU_ASSERT_TRUE(get_pixel(0, 0, 2));
+    CU_ASSERT_TRUE(get_pixel(0, 1, 1));
+    CU_ASSERT_FALSE(get_pixel(0, 1, 2));
+    teardown_screen_test();
+}
+
+void
+test_screen_scroll_down_bitplane_3_both_pixels_active(void)
+{
+    setup_screen_test();
+    screen_set_extended_mode();
+    draw_pixel(0, 0, TRUE, 1);
+    draw_pixel(0, 0, TRUE, 2);
+    CU_ASSERT_TRUE(get_pixel(0, 0, 1));
+    CU_ASSERT_TRUE(get_pixel(0, 0, 2));
+    screen_scroll_down(1, 3);
+    CU_ASSERT_FALSE(get_pixel(0, 0, 1));
+    CU_ASSERT_FALSE(get_pixel(0, 0, 2));
+    CU_ASSERT_TRUE(get_pixel(0, 1, 1));
+    CU_ASSERT_TRUE(get_pixel(0, 1, 2));
     teardown_screen_test();
 }
 

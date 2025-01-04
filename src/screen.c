@@ -368,31 +368,65 @@ screen_set_normal_mode(void)
 
 /**
  * Scrolls the screen left by 4 pixels.
+ * 
+ * @param plane the bitplane to scroll
  */
 void
-screen_scroll_left(void) 
+screen_scroll_left(int plane) 
 {
-    SDL_Rect source_rect, dest_rect;
+    if (plane == 0) {
+        return;
+    }
 
     int mode_scale = screen_get_mode_scale();
     int width = screen_get_width() * scale_factor * mode_scale;
     int height = screen_get_height() * scale_factor * mode_scale;
-    
-    SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
 
-    source_rect.x = 0;
-    source_rect.y = 0;
-    source_rect.w = width;
-    source_rect.h = height;
+    int max_x = screen_get_width();
+    int max_y = screen_get_height();
+    if (plane == 3) {    
+        SDL_Rect source_rect, dest_rect;
 
-    dest_rect.x = (-4 * (scale_factor * mode_scale));
-    dest_rect.y = 0;
-    dest_rect.w = 0;
-    dest_rect.h = 0;
+        SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
 
-    SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
-    SDL_FreeSurface(virtscreen);
-    virtscreen = tempsurface;
+        source_rect.x = 4 * (scale_factor * mode_scale);
+        source_rect.y = 0;
+        source_rect.w = width - (4 * (scale_factor * mode_scale));
+        source_rect.h = height;
+
+        dest_rect.x = 0;
+        dest_rect.y = 0;
+        dest_rect.w = 0;
+        dest_rect.h = 0;
+
+        SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
+        SDL_FreeSurface(virtscreen);
+        virtscreen = tempsurface;
+        return;
+    }
+
+    // Blank out any pixels in the left 4 vertical lines we will copy to
+    for (int x = 0; x < 4; x++) {
+        for (int y = 0; y < max_y; y++) {
+            draw_pixel(x, y, FALSE, plane);
+        }
+    }
+
+    // Start copying pixels from the right to the left and shift by 4 pixels
+    for (int x = 4; x < max_x; x++) {
+        for (int y = 0; y < max_y; y++) {
+            int current_pixel = get_pixel(x, y, plane);
+            draw_pixel(x, y, FALSE, plane);
+            draw_pixel(x - 4, y, current_pixel, plane);
+        }
+    }
+
+    // Blank out any pixels in the right 4 vertical columns
+    for (int x = max_x - 4; x < max_x; x++) {
+        for (int y = 0; y < max_y; y++) {
+            draw_pixel(x, y, FALSE, plane);
+        }
+    }
 }
 
 /******************************************************************************/
@@ -471,29 +505,61 @@ screen_scroll_right(int plane)
  * @param plane the bitplane to scroll
  */
 void
-screen_scroll_down(int num_pixels) 
+screen_scroll_down(int num_pixels, int plane) 
 {
-    SDL_Rect source_rect, dest_rect;
+    if (plane == 0) {
+        return;
+    }
 
     int width = screen_get_width() * scale_factor;
     int height = screen_get_height() * scale_factor;
     int mode_scale = screen_is_extended_mode() ? 1 : 2;
-    
-    SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
 
-    source_rect.x = 0;
-    source_rect.y = 0;
-    source_rect.w = width;
-    source_rect.h = height;
+    if (plane == 3) {    
+        SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
+        SDL_Rect source_rect, dest_rect;
 
-    dest_rect.x = 0;
-    dest_rect.y = (num_pixels * scale_factor * mode_scale);
-    dest_rect.w = 0;
-    dest_rect.h = 0;
+        source_rect.x = 0;
+        source_rect.y = 0;
+        source_rect.w = width;
+        source_rect.h = height;
 
-    SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
-    SDL_FreeSurface(virtscreen);
-    virtscreen = tempsurface;
+        dest_rect.x = 0;
+        dest_rect.y = (num_pixels * scale_factor * mode_scale);
+        dest_rect.w = 0;
+        dest_rect.h = 0;
+
+        SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
+        SDL_FreeSurface(virtscreen);
+        virtscreen = tempsurface;
+        return;
+    }
+
+    int max_x = width;
+    int max_y = height;
+
+    // Blank out any pixels in the bottom num_pixels that we will copy to
+    for (int x = 0; x < max_x; x++) {
+        for (int y = max_y - num_pixels; y < max_y; y++) {
+            draw_pixel(x, y, FALSE, plane);
+        }
+    }
+
+    // Start copying pixels from the top to the bottom and shift by num_pixels
+    for (int x = 0; x < max_x; x++) {
+        for (int y = max_y - num_pixels - 1; y > -1; y--) {
+            int current_pixel = get_pixel(x, y, plane);
+            draw_pixel(x, y, FALSE, plane);
+            draw_pixel(x, y + num_pixels, current_pixel, plane);
+        }
+    }
+
+    // Blank out any pixels in the first num_pixels horizontal lines
+    for (int x = 0; x < max_x; x++) {
+        for (int y = 0; y < num_pixels; y++) {
+            draw_pixel(x, y, FALSE, plane);
+        }
+    }
 }
 
 /******************************************************************************/

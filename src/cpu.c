@@ -424,7 +424,7 @@ void
 scroll_down(void)
 {
     int x = cpu.operand.WORD & 0xF;
-    screen_scroll_down(x);
+    screen_scroll_down(x, bitplane);
     sprintf(cpu.opdesc, "SCRD %d", x);
 }
 
@@ -484,7 +484,7 @@ scroll_right(void)
 void
 scroll_left(void)
 {
-    screen_scroll_left();
+    screen_scroll_left(bitplane);
     sprintf(cpu.opdesc, "SCRL");
 }
 
