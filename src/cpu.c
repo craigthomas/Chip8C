@@ -217,6 +217,10 @@ cpu_execute_single(void)
                             scroll_down();
                             break;
 
+                        case 0xD0:
+                            scroll_up();
+                            break;
+
                         default:
                             break;
                     }
@@ -426,6 +430,21 @@ scroll_down(void)
     int x = cpu.operand.WORD & 0xF;
     screen_scroll_down(x, bitplane);
     sprintf(cpu.opdesc, "SCRD %d", x);
+}
+
+/******************************************************************************/
+
+/**
+ * 00Dn - SCRUP n
+ * 
+ * Scrolls the screen up n pixels.
+ */
+void
+scroll_up(void)
+{
+    int x = cpu.operand.WORD & 0xF;
+    screen_scroll_up(x, bitplane);
+    sprintf(cpu.opdesc, "SCRUP %d", x);
 }
 
 /******************************************************************************/

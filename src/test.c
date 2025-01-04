@@ -151,7 +151,10 @@ main() {
         CU_add_test(screen_suite, "test_screen_scroll_down_bitplane_0_does_nothing", test_screen_scroll_down_bitplane_0_does_nothing) == NULL ||
         CU_add_test(screen_suite, "test_screen_scroll_down_bitplane_1_both_pixels_active", test_screen_scroll_down_bitplane_1_both_pixels_active) == NULL ||
         CU_add_test(screen_suite, "test_screen_scroll_down_bitplane_3_both_pixels_active", test_screen_scroll_down_bitplane_3_both_pixels_active) == NULL ||
-        CU_add_test(screen_suite, "test_screen_get_mode_scale_normal", test_screen_get_mode_scale_normal) == NULL ||
+        CU_add_test(screen_suite, "test_screen_scroll_up", test_screen_scroll_up) == NULL ||
+        CU_add_test(screen_suite, "test_screen_scroll_up_bitplane_0_does_nothing", test_screen_scroll_up_bitplane_0_does_nothing) == NULL ||
+        CU_add_test(screen_suite, "test_screen_scroll_up_bitplane_1_both_pixels_active", test_screen_scroll_up_bitplane_1_both_pixels_active) == NULL ||
+        CU_add_test(screen_suite, "test_screen_scroll_up_bitplane_3_both_pixels_active", test_screen_scroll_up_bitplane_3_both_pixels_active) == NULL ||        CU_add_test(screen_suite, "test_screen_get_mode_scale_normal", test_screen_get_mode_scale_normal) == NULL ||
         CU_add_test(screen_suite, "test_screen_get_mode_scale_extended", test_screen_get_mode_scale_extended) == NULL ||
         CU_add_test(screen_suite, "test_screen_is_mode_extended_correct", test_screen_is_mode_extended_correct) == NULL
     )
