@@ -15,7 +15,8 @@
 
 /* I N C L U D E S ************************************************************/
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_keycode.h>
 
 /* D E F I N E S **************************************************************/
 
@@ -96,8 +97,10 @@ typedef struct {
 extern byte *memory;                  /**< Pointer to emulator memory region         */
 
 /* Screen */
-extern SDL_Surface *screen;           /**< Stores the main screen SDL structure      */
-extern SDL_Surface *virtscreen;       /**< Stores the Chip 8 virtual screen          */
+extern SDL_Window *window;            /**< Stores the main screen SDL structure      */
+extern SDL_Renderer *renderer;        /**< Stores the screen renderer                */
+extern SDL_Surface *surface;          /**< Stores the Chip 8 virtual screen          */
+extern SDL_Texture *texture;          /**< The SDL texture to render                 */
 extern int scale_factor;              /**< The scale factor applied to the screen    */
 extern int screen_mode;               /**< Whether the screen is in extended mode    */
 
@@ -195,7 +198,7 @@ void memory_destroy(void);
 /* screen.c */
 int screen_init(void);
 int screen_is_extended_mode(void);
-void screen_clear(SDL_Surface *surface, Uint32 color); 
+void screen_clear(Uint32 color); 
 void screen_blank(int bitplane);
 int get_pixel(int x, int y, int plane);
 void draw_pixel(int x, int y, int turn_on, int plane);
@@ -214,10 +217,10 @@ int screen_get_width(void);
 int screen_get_mode_scale(void);
 
 /* keyboard.c */
-int keyboard_isemulatorkey(SDLKey key);
+int keyboard_isemulatorkey(SDL_KeyCode key);
 int keyboard_checkforkeypress(int keycode);
-void keyboard_processkeydown(SDLKey key);
-void keyboard_processkeyup(SDLKey key);
+void keyboard_processkeydown(SDL_KeyCode key);
+void keyboard_processkeyup(SDL_KeyCode key);
 
 /* cpu_test.c */
 void test_return_from_subroutine(void);

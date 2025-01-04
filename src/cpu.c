@@ -46,7 +46,7 @@ cpu_timerinit(void)
     SDL_InitSubSystem(SDL_INIT_TIMER);
     cpu_timer = SDL_AddTimer(17, cpu_timerinterrupt, NULL);
 
-    if (cpu_timer == NULL) {
+    if (cpu_timer == 0) {
         printf("Error: could not create timer: %s\n", SDL_GetError());
         result = FALSE;
     }
@@ -131,7 +131,7 @@ void
 cpu_process_sdl_events(void)
 {
     int emulatorkey;
-    SDLKey key;
+    SDL_KeyCode key;
 
     if (SDL_PollEvent(&event)) {
         switch (event.type) {

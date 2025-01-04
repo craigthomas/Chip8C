@@ -15,26 +15,111 @@
 
 /* I N C L U D E S ************************************************************/
 
-#include <SDL.h>
-#include <SDL_ttf.h>
+#include <SDL2/SDL.h>
 #include <stdlib.h>
 #include "globals.h"
 
 /* F U N C T I O N S **********************************************************/
 
-/**
- * Attempts to initialize the 4 colors used by the emulator to draw to the 
- * screen.
- * 
- * @param surface the SDL_Surface object to initialize
- */
-void 
-init_colors(SDL_Surface *surface) 
+SDL_Surface *
+create_surface(int width, int height)
 {
-    COLOR_0 = SDL_MapRGB(surface->format, 0, 0, 0);
-    COLOR_1 = SDL_MapRGB(surface->format, 250, 51, 204);
-    COLOR_2 = SDL_MapRGB(surface->format, 51, 204, 250);
+    Uint32 rmask, gmask, bmask, amask;
+
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        rmask = 0xff000000;
+        gmask = 0x00ff0000;
+        bmask = 0x0000ff00;
+        amask = 0x000000ff;
+    #else
+        rmask = 0x000000ff;
+        gmask = 0x0000ff00;
+        bmask = 0x00ff0000;
+        amask = 0xff000000;
+    #endif
+
+    SDL_Surface *temp_surface = SDL_CreateRGBSurface(
+        0, 
+        width, 
+        height, 
+        SCREEN_DEPTH,
+        rmask, 
+        gmask, 
+        bmask, 
+        amask
+    );
+
+    if (temp_surface == NULL) {
+        printf("Error: Unable to initialize surface:\n%s\n", SDL_GetError());
+    }
+
+    return temp_surface;
+}
+
+/**
+ * Initializes the emulator primary surface. By default, attempts to create
+ * a hardware based surface that is double buffered. To update the screen, you
+ * must call screen_refresh. Returns TRUE if the screen was created.
+ *
+ * @returns TRUE if the screen was created, FALSE otherwise
+ */
+int 
+screen_init(void)
+{
+
+    int width = SCREEN_WIDTH * scale_factor;
+    int height = SCREEN_HEIGHT * scale_factor;
+
+    window = SDL_CreateWindow(
+        "YAC8 Emulator",
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        width,
+        height,
+        SDL_WINDOW_OPENGL
+    );
+    
+    if (window == NULL) {
+        printf("Error: Unable to initialize window:\n%s\n", SDL_GetError());
+        return FALSE;
+    } 
+
+    renderer = SDL_CreateRenderer(
+        window, 
+        -1,
+        SDL_RENDERER_ACCELERATED 
+        // | SDL_RENDERER_PRESENTVSYNC
+    );
+
+    if (renderer == NULL) {
+        printf("Error: Unable to initialize renderer:\n%s\n", SDL_GetError());
+        return FALSE;
+    }
+    
+    surface = create_surface(width, height);
+
+    if (surface == NULL) {
+        return FALSE;
+    }
+
+    texture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_TEXTUREACCESS_STREAMING,
+        width, height
+    );
+
+    if (texture == NULL) {
+        printf("Error: Unable to initialize texture:\n%s\n", SDL_GetError());
+        return FALSE;
+    }
+
+    COLOR_0 = SDL_MapRGB(surface->format, 0,    0,    0);
+    COLOR_1 = SDL_MapRGB(surface->format, 250, 51,  204);
+    COLOR_2 = SDL_MapRGB(surface->format, 51,  204, 250);
     COLOR_3 = SDL_MapRGB(surface->format, 250, 250, 250);
+
+    return TRUE;
 }
 
 /******************************************************************************/
@@ -94,10 +179,10 @@ get_pixel(int x, int y, int plane)
     x = x * scale_factor * mode_scale;
     y = y * scale_factor * mode_scale;
 
-    Uint32 *pixels = (Uint32 *)virtscreen->pixels;
-    Uint32 pixel = pixels[(virtscreen->w * y) + x];
-    SDL_GetRGB(pixel, virtscreen->format, &r, &g, &b);
-    color = SDL_MapRGB(virtscreen->format, r, g, b);
+    Uint32 *pixels = (Uint32 *)surface->pixels;
+    Uint32 pixel = pixels[(surface->w * y) + x];
+    SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+    color = SDL_MapRGB(surface->format, r, g, b);
     return color == bitplane_color || color == COLOR_3;
 }
 
@@ -152,7 +237,7 @@ screen_blank(int plane)
 
     if (bitplane == 3) {
         Uint32 bitplane_color = get_bitplane_color(plane);
-        screen_clear(virtscreen, bitplane_color);
+        screen_clear(bitplane_color);
     }
 
     int max_x = screen_get_width();
@@ -169,11 +254,10 @@ screen_blank(int plane)
 /**
  * Clears the screen by setting all pixels to off (0).
  * 
- * @param surface the SDL_Surface to clear
  * @param color the color to write to the surface
  */
 void 
-screen_clear(SDL_Surface *surface, Uint32 color)
+screen_clear(Uint32 color)
 {
     SDL_Rect rect;
     rect.x = 0;
@@ -186,14 +270,15 @@ screen_clear(SDL_Surface *surface, Uint32 color)
 /******************************************************************************/
 
 /**
- * Refreshes the screen. If overlay_on is a non-zero value, then the debug 
- * overlay will be turned on and will be painted with the refresh.
+ * Refreshes the screen. 
  */
 void 
 screen_refresh(void)
 {
-    screen_blit_surface(virtscreen, screen, 0, 0);
-    SDL_UpdateRect(screen, 0, 0, 0, 0);
+    SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
+    // SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderPresent(renderer);
 }
 
 /******************************************************************************/
@@ -237,97 +322,7 @@ draw_pixel(int x, int y, int turn_on, int plane)
     pixel.y = y * scale_factor * mode_scale;
     pixel.w = scale_factor * mode_scale;
     pixel.h = scale_factor * mode_scale;
-    SDL_FillRect(virtscreen, &pixel, draw_color);
-}
-
-/******************************************************************************/
-
-/**
- * Creates a new SDL surface with the specified dimensions, per-surface alpha
- * value, and the specified color_key. If color_key is equal to -1, then color
- * keys are turned off for the surface. The new surface will be exclusively a
- * software surface. Returns NULL if there was a problem creating the surface.
- * Note that it is also up to the user to call SDL_FreeSurface when they are
- * done with the surface. 
- *
- * @param width the width of the new surface, in pixels
- * @param height the height of the new surface, in pixels
- * @param alpha the alpha blend value of the entire surface
- * @param color_key the key to use as a color key for the surface
- * @returns the newly created surface
- */
-SDL_Surface *
-screen_create_surface(int width, int height, int alpha, Uint32 color_key)
-{
-    Uint32 rmask, gmask, bmask, amask;
-    SDL_Surface *tempsurface, *newsurface;
-
-    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        rmask = 0xff000000;
-        gmask = 0x00ff0000;
-        bmask = 0x0000ff00;
-        amask = 0x000000ff;
-    #else
-        rmask = 0x000000ff;
-        gmask = 0x0000ff00;
-        bmask = 0x00ff0000;
-        amask = 0xff000000;
-    #endif
-
-    tempsurface = SDL_CreateRGBSurface(
-        SDL_SWSURFACE | SDL_SRCALPHA, 
-        SCREEN_WIDTH * scale_factor, 
-        SCREEN_HEIGHT * scale_factor, 
-        SCREEN_DEPTH,
-        rmask, 
-        gmask, 
-        bmask, 
-        amask
-    );
-    newsurface = SDL_DisplayFormat(tempsurface);
-    SDL_FreeSurface(tempsurface);
-
-    if (newsurface == NULL) {
-        printf("Error: unable to create new surface\n");
-    } 
-    else {
-        SDL_SetAlpha(newsurface, SDL_SRCALPHA, alpha);
-        if (color_key != -1) {
-            SDL_SetColorKey(newsurface, SDL_SRCCOLORKEY, color_key);
-        }
-        screen_clear(newsurface, COLOR_0);
-    }
-
-    return newsurface;
-}
-
-/******************************************************************************/
-
-/**
- * Initializes the emulator primary surface. By default, attempts to create
- * a hardware based surface that is double buffered. To update the screen, you
- * must call screen_refresh. Returns TRUE if the screen was created.
- *
- * @returns TRUE if the screen was created, FALSE otherwise
- */
-int 
-screen_init(void)
-{
-    int width = SCREEN_WIDTH * scale_factor;
-    int height = SCREEN_HEIGHT * scale_factor;
-
-    screen = SDL_SetVideoMode(width, height, SCREEN_DEPTH, SDL_SWSURFACE);
-
-    if (screen == NULL) {
-        printf("Error: Unable to set video mode: %s\n", SDL_GetError());
-        return FALSE;
-    } 
-
-    SDL_SetAlpha(screen, SDL_SRCALPHA, 255);
-    SDL_WM_SetCaption("YAC8 Emulator", NULL);
-    init_colors(screen);
-    virtscreen = screen_create_surface(width, height, 255, -1);
-    return (virtscreen != NULL);
+    SDL_FillRect(surface, &pixel, draw_color);
 }
 
 /******************************************************************************/
@@ -338,8 +333,10 @@ screen_init(void)
 void
 screen_destroy(void)
 {
-    SDL_FreeSurface(virtscreen);
-    SDL_FreeSurface(screen);
+    SDL_FreeSurface(surface);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyTexture(texture);
+    SDL_DestroyWindow(window);
 }
 
 /******************************************************************************/
@@ -387,7 +384,7 @@ screen_scroll_left(int plane)
     if (plane == 3) {    
         SDL_Rect source_rect, dest_rect;
 
-        SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
+        SDL_Surface *temp_surface = create_surface(width, height);
 
         source_rect.x = 4 * (scale_factor * mode_scale);
         source_rect.y = 0;
@@ -399,9 +396,9 @@ screen_scroll_left(int plane)
         dest_rect.w = 0;
         dest_rect.h = 0;
 
-        SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
-        SDL_FreeSurface(virtscreen);
-        virtscreen = tempsurface;
+        SDL_BlitSurface(surface, &source_rect, temp_surface, &dest_rect);
+        SDL_FreeSurface(surface);
+        surface = temp_surface;
         return;
     }
 
@@ -451,7 +448,7 @@ screen_scroll_right(int plane)
         SDL_Rect source_rect, dest_rect;
         int right = scale_factor * 4 * mode_scale;
 
-        SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
+        SDL_Surface *temp_surface = create_surface(width, height);
 
         source_rect.x = 0;
         source_rect.y = 0;
@@ -463,9 +460,9 @@ screen_scroll_right(int plane)
         dest_rect.w = 0;
         dest_rect.h = 0;
 
-        SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
-        SDL_FreeSurface(virtscreen);
-        virtscreen = tempsurface;
+        SDL_BlitSurface(surface, &source_rect, temp_surface, &dest_rect);
+        SDL_FreeSurface(surface);
+        surface = temp_surface;
         return;
     }
 
@@ -516,7 +513,7 @@ screen_scroll_down(int num_pixels, int plane)
     int mode_scale = screen_is_extended_mode() ? 1 : 2;
 
     if (plane == 3) {    
-        SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
+        SDL_Surface *temp_surface = create_surface(width, height);
         SDL_Rect source_rect, dest_rect;
 
         source_rect.x = 0;
@@ -529,9 +526,9 @@ screen_scroll_down(int num_pixels, int plane)
         dest_rect.w = 0;
         dest_rect.h = 0;
 
-        SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
-        SDL_FreeSurface(virtscreen);
-        virtscreen = tempsurface;
+        SDL_BlitSurface(surface, &source_rect, temp_surface, &dest_rect);
+        SDL_FreeSurface(surface);
+        surface = temp_surface;
         return;
     }
 
@@ -582,7 +579,7 @@ screen_scroll_up(int num_pixels, int plane)
     int mode_scale = screen_is_extended_mode() ? 1 : 2;
 
     if (plane == 3) {    
-        SDL_Surface *tempsurface = screen_create_surface(width, height, 255, -1);
+        SDL_Surface *temp_surface = create_surface(width, height);
         SDL_Rect source_rect, dest_rect;
 
         source_rect.x = 0;
@@ -595,9 +592,9 @@ screen_scroll_up(int num_pixels, int plane)
         dest_rect.w = 0;
         dest_rect.h = 0;
 
-        SDL_BlitSurface(virtscreen, &source_rect, tempsurface, &dest_rect);
-        SDL_FreeSurface(virtscreen);
-        virtscreen = tempsurface;
+        SDL_BlitSurface(surface, &source_rect, temp_surface, &dest_rect);
+        SDL_FreeSurface(surface);
+        surface = temp_surface;
         return;
     }
 

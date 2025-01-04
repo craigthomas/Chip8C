@@ -51,7 +51,7 @@ the source, you will need the following required software packages:
 
 * [GNU C Compiler](http://gcc.gnu.org/) 4.6.3 or later
 * [GNU Make](http://www.gnu.org/software/make/) 3.81 or later
-* [SDL](http://www.libsdl.org/) 1.2.14 or later
+* [SDL](http://www.libsdl.org/) 2.0.20 or later
 * [CUnit](http://cunit.sourceforge.net/doc/index.html) 2.1-3 or later
 
 Note that other C compilers make work as well. To compile the project, open a
