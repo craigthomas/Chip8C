@@ -424,7 +424,7 @@ void
 scroll_down(void)
 {
     int x = cpu.operand.WORD & 0xF;
-    screen_scroll_down(x);
+    screen_scroll_down(x, bitplane);
     sprintf(cpu.opdesc, "SCRD %d", x);
 }
 
@@ -438,7 +438,7 @@ scroll_down(void)
 void
 clear_screen(void)
 {
-    screen_blank();
+    screen_blank(bitplane);
     sprintf(cpu.opdesc, "CLS");
 }
 
@@ -470,7 +470,7 @@ return_from_subroutine(void)
 void
 scroll_right(void)
 {
-    screen_scroll_right();
+    screen_scroll_right(bitplane);
     sprintf(cpu.opdesc, "SCRR");
 }
 
@@ -484,7 +484,7 @@ scroll_right(void)
 void
 scroll_left(void)
 {
-    screen_scroll_left();
+    screen_scroll_left(bitplane);
     sprintf(cpu.opdesc, "SCRL");
 }
 
@@ -1013,56 +1013,106 @@ draw_sprite(void)
 {
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     int y = (cpu.operand.WORD & 0x00F0) >> 4;
-    byte tbyte = cpu.operand.BYTE.low & 0xF;
+    int num_bytes = (cpu.operand.WORD & 0x000F);
     cpu.v[0xF] = 0;
 
-    if (screen_is_extended_mode() && tbyte == 0) {
-        for (int i = 0; i < 16; i++) {
-            for (int k = 0; k < 2; k++) {
-                tbyte = memory_read(cpu.i.WORD + (i * 2) + k);
-                int ycor = cpu.v[y] + i;
-                ycor = ycor % screen_get_height();
-
-                for (int j = 0; j < 8; j++) {
-                    int xcor = cpu.v[x] + j + (k * 8);
-                    xcor = xcor % screen_get_width();
-
-                    int color = (tbyte & 0x80) ? 1 : 0;
-                    int currentcolor = screen_get_pixel(xcor, ycor);
-
-                    cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
-                    color = color ^ currentcolor;
-
-                    screen_draw(xcor, ycor, color);
-                    tbyte = tbyte << 1;
-                } 
-            }
+    if (num_bytes == 0) {
+        if (bitplane == 3) {
+            draw_extended_sprite(cpu.v[x], cpu.v[y], 1, cpu.i.WORD);
+            draw_extended_sprite(cpu.v[x], cpu.v[y], 2, cpu.i.WORD + 32);
+        } else {
+            draw_extended_sprite(cpu.v[x], cpu.v[y], bitplane, cpu.i.WORD);
         }
         sprintf(cpu.opdesc, "DRAWEX V%X, V%X, %X", x, y, (cpu.operand.WORD & 0xF));
     } else {
-        for (int i = 0; i < (cpu.operand.BYTE.low & 0xF); i++) {
-            tbyte = memory_read (cpu.i.WORD + i);
-            int ycor = cpu.v[y] + i;
-            ycor = ycor % screen_get_height();
-
-            for (int j = 0; j < 8; j++) {
-                int xcor = cpu.v[x] + j;
-                xcor = xcor % screen_get_width();
-
-                int color = (tbyte & 0x80) ? 1 : 0;
-                int currentcolor = screen_get_pixel(xcor, ycor);
-
-                cpu.v[0xF] = (currentcolor && color) ? 1 : cpu.v[0xF];
-                color = color ^ currentcolor;
-
-                screen_draw(xcor, ycor, color);
-                tbyte = tbyte << 1;
-            } 
-        }
+        if (bitplane == 3) {
+            draw_normal_sprite(cpu.v[x], cpu.v[y], num_bytes, 1, cpu.i.WORD);
+            draw_normal_sprite(cpu.v[x], cpu.v[y], num_bytes, 2, cpu.i.WORD + num_bytes);
+        } else {
+            draw_normal_sprite(cpu.v[x], cpu.v[y], num_bytes, bitplane, cpu.i.WORD);
+        }       
         sprintf(cpu.opdesc, "DRAW V%X, V%X, %X", x, y, (cpu.operand.WORD & 0xF));
     }
 
-    screen_refresh(FALSE);
+    screen_refresh();
+}
+
+/******************************************************************************/
+
+/**
+ * Draws the sprite on the screen based on the Super Chip 8 extensions.
+ * Sprites are considered to be 16 bytes high.
+ *
+ * @param x the x position to draw the sprite at
+ * @param y the y position to draw the sprite at
+ * @param plane the bitplane to draw to
+ * @param active_index the effective index to use when loading sprite data
+ */
+void 
+draw_extended_sprite(int x, int y, int plane, int active_index) 
+{
+    for (int y_index = 0; y_index < 16; y_index++) {
+        for (int x_byte = 0; x_byte < 2; x_byte++) {
+            int color_byte = memory_read(active_index + (y_index * 2) + x_byte);
+            int y_coord = y + y_index;
+            if (y_coord < screen_get_height()) {
+                y_coord = y_coord % screen_get_height();
+                int mask = 0x80;
+                for (int x_index = 0; x_index < 8; x_index++) {
+                    int x_coord = x + x_index + (x_byte * 8);
+                    if ((!clip_quirks) || (x_coord < screen_get_width())) {
+                        x_coord = x_coord % screen_get_width();
+
+                        int turned_on = (color_byte & mask) > 0;
+                        int current_on = get_pixel(x_coord, y_coord, plane);
+
+                        cpu.v[0xF] += (turned_on && current_on) ? (short) 1 : (short) 0;
+                        draw_pixel(x_coord, y_coord, turned_on ^ current_on, plane);
+                        mask = mask >> 1;
+                    }
+                }
+            } else {
+                cpu.v[0xF] += 1;
+            }
+        }
+    }
+}
+
+/******************************************************************************/
+
+/**
+ * Draws a sprite on the screen while in NORMAL mode.
+ *
+ * @param x the X position of the sprite
+ * @param y the Y position of the sprite
+ * @param num_bytes the number of bytes to draw
+ * @param bitplane the bitplane to draw to
+ * @param active_index the effective index to use when loading sprite data
+ */
+void
+draw_normal_sprite(int x_pos, int y_pos, int num_bytes, int plane, int active_index) 
+{
+    for (int y_index = 0; y_index < num_bytes; y_index++) {
+        int color_byte = memory_read(active_index + y_index);
+        int y_coord = y_pos + y_index;
+        if ((!clip_quirks) || (y_coord < screen_get_height())) {
+            y_coord = y_coord % screen_get_height();
+            int mask = 0x80;
+            for (int x_index = 0; x_index < 8; x_index++) {
+                int x_coord = x_pos + x_index;
+                if ((!clip_quirks) || (x_coord < screen_get_width())) {
+                    x_coord = x_coord % screen_get_width();
+
+                    int turned_on = (color_byte & mask) > 0;
+                    int current_on = get_pixel(x_coord, y_coord, plane);
+
+                    cpu.v[0xF] |= (turned_on && current_on) ? 1 : 0;
+                    draw_pixel(x_coord, y_coord, turned_on ^ current_on, plane);
+                    mask = mask >> 1;
+                }
+            }
+        }
+    }
 }
 
 /******************************************************************************/
