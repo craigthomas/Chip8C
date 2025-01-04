@@ -36,11 +36,12 @@
 #define SCREEN_VERTREFRESH 60    /**< Sets the vertical refresh (in Hz)       */
 
 /* CPU */
-#define CPU_RUNNING    1         /**< Continues CPU execution                 */
-#define CPU_PAUSED     2         /**< Pauses the CPU                          */
-#define CPU_STOP       0         /**< Halts the CPU and quits                 */
-#define CPU_OPTIME     1000      /**< CPU tick length (in nanoseconds)        */
-#define CPU_PC_START   0x200     /**< The start address of the PC             */
+#define CPU_RUNNING    1          /**< Continues CPU execution                */
+#define CPU_PAUSED     2          /**< Pauses the CPU                         */
+#define CPU_STOP       0          /**< Halts the CPU and quits                */
+#define CPU_OPTIME     1000       /**< CPU tick length (in nanoseconds)       */
+#define CPU_PC_START   0x200      /**< The start address of the PC            */
+#define AUDIO_PLAYBACK_RATE 48000 /**< The audio playback rate in Hz          */
 
 /* Keyboard */
 #define KEY_NUMBEROFKEYS 16   /**< Defines the number of keys on the keyboard */
@@ -120,6 +121,7 @@ extern int awaiting_keypress;         /**< Whether to wait for a keypress event 
 extern float playback_rate;           /**< The playback rate for audio samples       */
 extern int pitch;                     /**< The pitch for the current audio sample    */
 extern int bitplane;                  /**< Sets the current drawing plane            */
+extern byte audio_pattern_buffer[16]; /**< Stores the audio pattern buffer           */
 
 /* Event captures */
 extern SDL_Event event;               /**< Stores SDL events                         */
@@ -190,6 +192,8 @@ void store_subset_of_registers_in_memory(void);
 void load_subset_of_registers_from_memory(void);
 void set_bitplane(void);
 void index_load_long(void);
+void load_audio_pattern_buffer(void);
+void calculate_audio_waveform(void);
 
 /* memory.c */
 int memory_init(int memorysize);

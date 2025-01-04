@@ -119,6 +119,10 @@ cpu_reset(void)
     playback_rate = 4000.0;
     pitch = 64;
     bitplane = 1;
+    
+    for (int x = 0; x < 16; x++) {
+        audio_pattern_buffer[x] = 0;
+    }
 }
 
 /******************************************************************************/
@@ -357,6 +361,10 @@ cpu_execute_single(void)
 
                 case 0x01:
                     set_bitplane();
+                    break;
+
+                case 0x02:
+                    load_audio_pattern_buffer();
                     break;
 
                 case 0x07:
@@ -1212,6 +1220,54 @@ set_bitplane(void)
 {
     bitplane = (cpu.operand.WORD & 0x0F00) >> 8;
     sprintf(cpu.opdesc, "BITPLANE %X", bitplane);
+}
+
+/******************************************************************************/
+
+/**
+ * F002 - AUDIO
+ * 
+ * Loads the 16-byte audio pattern buffer with 16 bytes from memory
+ * pointed to by the index register.
+ */
+void
+load_audio_pattern_buffer(void)
+{
+    for (int x = 0; x < 16; x++) {
+        audio_pattern_buffer[x] = memory_read(cpu.i.WORD + x);
+    }
+    calculate_audio_waveform();
+    sprintf(cpu.opdesc, "AUDIO %X", cpu.i.WORD);
+}
+
+void
+calculate_audio_waveform()
+{
+    int expanded_buffer[128];
+    int ptr = 0;
+
+    // Convert the 16-byte audio pattern into a 128-bit sample buffer
+    for (int x = 0; x < 16; x++) {
+        int buffer_mask = 0x80;
+        int audio_byte = audio_pattern_buffer[x];
+        for (int y = 0; y < 8; y++) {
+            expanded_buffer[ptr] = (audio_byte & buffer_mask) > 0 ? 127 : 0;
+            buffer_mask = buffer_mask >> 1;
+            ptr++;
+        }
+    }
+
+    // Re-sample the 128-bit audio buffer at the specified rate
+    float position = 0.0f;
+    float step = playback_rate / AUDIO_PLAYBACK_RATE;
+    int new_buffer[2000];
+    ptr = 0;
+
+    while (position < 128.0f) {
+        new_buffer[ptr] = expanded_buffer[(int) position];
+        position += step;
+        ptr++;
+    }
 }
 
 /******************************************************************************/

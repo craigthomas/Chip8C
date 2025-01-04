@@ -44,6 +44,7 @@ int awaiting_keypress;         /**< Whether to wait for a keypress event      */
 float playback_rate;           /**< The playback rate for audio               */
 int pitch;                     /**< The pitch for the current audio sample    */
 int bitplane;                  /**< Sets the current drawing plane            */
+byte audio_pattern_buffer[16]; /**< Stores the audio pattern buffer           */
 
 /* Event captures */
 SDL_Event event;               /**< Stores SDL events                         */
