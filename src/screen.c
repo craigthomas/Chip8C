@@ -24,37 +24,24 @@
 SDL_Surface *
 create_surface(int width, int height)
 {
-    Uint32 rmask, gmask, bmask, amask;
-
-    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        rmask = 0xff000000;
-        gmask = 0x00ff0000;
-        bmask = 0x0000ff00;
-        amask = 0x000000ff;
-    #else
-        rmask = 0x000000ff;
-        gmask = 0x0000ff00;
-        bmask = 0x00ff0000;
-        amask = 0xff000000;
-    #endif
-
-    SDL_Surface *temp_surface = SDL_CreateRGBSurface(
+    SDL_Surface *temp_surface = SDL_CreateRGBSurfaceWithFormat(
         0, 
         width, 
         height, 
         SCREEN_DEPTH,
-        rmask, 
-        gmask, 
-        bmask, 
-        amask
+        SDL_PIXELFORMAT_ARGB8888
     );
 
     if (temp_surface == NULL) {
         printf("Error: Unable to initialize surface:\n%s\n", SDL_GetError());
     }
 
+    SDL_SetSurfaceBlendMode(temp_surface, SDL_BLENDMODE_NONE);
+
     return temp_surface;
 }
+
+/******************************************************************************/
 
 /**
  * Initializes the emulator primary surface. By default, attempts to create
@@ -88,7 +75,6 @@ screen_init(void)
         window, 
         -1,
         SDL_RENDERER_ACCELERATED 
-        // | SDL_RENDERER_PRESENTVSYNC
     );
 
     if (renderer == NULL) {
@@ -114,10 +100,10 @@ screen_init(void)
         return FALSE;
     }
 
-    COLOR_0 = SDL_MapRGB(surface->format, 0,    0,    0);
-    COLOR_1 = SDL_MapRGB(surface->format, 250, 51,  204);
-    COLOR_2 = SDL_MapRGB(surface->format, 51,  204, 250);
-    COLOR_3 = SDL_MapRGB(surface->format, 250, 250, 250);
+    COLOR_0 = SDL_MapRGBA(surface->format, 0,    0,    0, 0);
+    COLOR_1 = SDL_MapRGBA(surface->format, 250, 51,  204, 255);
+    COLOR_2 = SDL_MapRGBA(surface->format, 51,  204, 250, 0);
+    COLOR_3 = SDL_MapRGBA(surface->format, 250, 250, 250, 0);
 
     return TRUE;
 }
@@ -171,7 +157,7 @@ get_pixel(int x, int y, int plane)
         return FALSE;
     }
 
-    Uint8 r, g, b;
+    Uint8 r, g, b, a;
     Uint32 color = 0;
     Uint32 bitplane_color = get_bitplane_color(plane);
     int mode_scale = screen_mode == SCREEN_MODE_EXTENDED ? 1 : 2;
@@ -276,7 +262,6 @@ void
 screen_refresh(void)
 {
     SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
-    // SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
 }
