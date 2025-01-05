@@ -1286,7 +1286,7 @@ calculate_audio_waveform(void)
     // Re-sample the 128-bit audio buffer at the specified rate
     float position = 0.0f;
     float step = playback_rate / AUDIO_PLAYBACK_RATE;
-    byte new_buffer[2000];
+    Uint8 new_buffer[10000];
     ptr = 0;
 
     while (position < 128.0f) {
