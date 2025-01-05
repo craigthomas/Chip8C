@@ -157,7 +157,7 @@ get_pixel(int x, int y, int plane)
         return FALSE;
     }
 
-    Uint8 r, g, b, a;
+    Uint8 r, g, b;
     Uint32 color = 0;
     Uint32 bitplane_color = get_bitplane_color(plane);
     int mode_scale = screen_mode == SCREEN_MODE_EXTENDED ? 1 : 2;

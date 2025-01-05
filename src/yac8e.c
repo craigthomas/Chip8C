@@ -53,7 +53,7 @@ loadrom(char *romfilename, int offset)
 void 
 print_help(void) 
 {
-    printf("usage: yac8e [-h] [-s] [-j] [-i] [-S] ROM\n\n");
+    printf("usage: yac8e [-h] [-s] [-j] [-i] [-l] [-c] [-S] ROM\n\n");
     printf("Starts a simple Chip 8 emulator. See README.md for more ");
     printf("information, and\nLICENSE for terms of use.\n\n");
     printf("positional arguments:\n");
@@ -65,6 +65,7 @@ print_help(void)
     printf("  -i, --index_quirks enables index quirks\n");
     printf("  -S, --shift_quirks enables shift quirks\n");
     printf("  -l, --logic_quirks enables logic quirks\n");
+    printf("  -c, --clip_quirks  enables clip quirks");
 }
 
 /******************************************************************************/
@@ -82,11 +83,12 @@ parse_options(int argc, char **argv)
     jump_quirks = FALSE;
     shift_quirks = FALSE;
     index_quirks = FALSE;
+    clip_quirks = FALSE;
     scale_factor = SCALE_FACTOR;
     op_delay = 0;
 
     int option_index = 0;
-    const char *short_options = ":hjiSsl:";
+    const char *short_options = ":hjiSslc:";
     static struct option long_options[] =
     {
         {"help",         no_argument,       NULL, 'h'},
@@ -95,6 +97,7 @@ parse_options(int argc, char **argv)
         {"shift_quirks", no_argument,       NULL, 'S'},
         {"scale",        required_argument, NULL, 's'},
         {"logic_quirks", no_argument,       NULL, 'l'},
+        {"clip_quirks",  no_argument,       NULL, 'c'},
         {NULL,           0,                 NULL,   0}
     };
 
@@ -134,6 +137,10 @@ parse_options(int argc, char **argv)
 
             case 'l':
                 logic_quirks = TRUE;
+                break;
+
+            case 'c':
+                clip_quirks = TRUE;
                 break;
 
             default:
