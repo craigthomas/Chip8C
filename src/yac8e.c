@@ -177,8 +177,13 @@ main(int argc, char **argv)
 
     filename = parse_options(argc, argv);
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         printf("Fatal: Unable to initialize SDL\n%s\n", SDL_GetError());
+        exit(1);
+    }
+
+    if (Mix_OpenAudio(AUDIO_PLAYBACK_RATE, AUDIO_U8, 1, 512) < 0) {
+        printf("Fatal: Unable to initialize SDL_mixer\n%s\n", SDL_GetError());
         exit(1);
     }
 

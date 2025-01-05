@@ -7,7 +7,7 @@ MAINOBJS = src/cpu.o src/keyboard.o src/memory.o src/screen.o src/yac8e.o src/gl
 TESTOBJS = src/cpu.o src/keyboard.o src/memory.o src/screen.o src/cpu_test.o src/screen_test.o src/test.o src/keyboard_test.o src/globals.o
 
 override CFLAGS += -Wall -g $(shell sdl2-config --cflags)
-LDFLAGS += $(shell sdl2-config --libs) -lcunit -lm
+LDFLAGS += $(shell sdl2-config --libs) -lcunit -lm -lSDL2_mixer
 
 .PHONY: all doc clean
 

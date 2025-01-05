@@ -17,6 +17,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_mixer.h>
 
 /* D E F I N E S **************************************************************/
 
@@ -42,6 +43,8 @@
 #define CPU_OPTIME     1000       /**< CPU tick length (in nanoseconds)       */
 #define CPU_PC_START   0x200      /**< The start address of the PC            */
 #define AUDIO_PLAYBACK_RATE 48000 /**< The audio playback rate in Hz          */
+#define MIN_AUDIO_SAMPLES 3200    /**< The minimum number of audio samples    */
+#define AUDIO_CHANNEL  1          /**< The audio channel to play sounds on    */
 
 /* Keyboard */
 #define KEY_NUMBEROFKEYS 16   /**< Defines the number of keys on the keyboard */
@@ -122,6 +125,8 @@ extern float playback_rate;           /**< The playback rate for audio samples  
 extern int pitch;                     /**< The pitch for the current audio sample    */
 extern int bitplane;                  /**< Sets the current drawing plane            */
 extern byte audio_pattern_buffer[16]; /**< Stores the audio pattern buffer           */
+extern Mix_Chunk audio_chunk;         /**< The currently created audio chunk         */
+extern int audio_playing;             /**< Stores whether audio is playing           */
 
 /* Event captures */
 extern SDL_Event event;               /**< Stores SDL events                         */

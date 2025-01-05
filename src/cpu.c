@@ -120,9 +120,23 @@ cpu_reset(void)
     pitch = 64;
     bitplane = 1;
     
+    // Delete contents of audio pattern buffer
     for (int x = 0; x < 16; x++) {
         audio_pattern_buffer[x] = 0;
     }
+
+    // If audio is playing, stop it
+    if (audio_playing) {
+        Mix_HaltChannel(AUDIO_CHANNEL);
+    }
+    audio_playing = FALSE;
+
+    // Delete the pre-calculated audio chunk
+    if (audio_chunk.alen != 0) {
+        free(audio_chunk.abuf);
+    }
+    audio_chunk.abuf = NULL;
+    audio_chunk.alen = 0;
 }
 
 /******************************************************************************/
@@ -1240,8 +1254,20 @@ load_audio_pattern_buffer(void)
     sprintf(cpu.opdesc, "AUDIO %X", cpu.i.WORD);
 }
 
+/******************************************************************************/
+
+/**
+ * Based on a playback rate specified by the XO Chip pitch, generate
+ * an audio waveform from the 16-byte audio_pattern_buffer. It converts
+ * the 16-bytes pattern into 128 separate bits. The bits are then used to fill
+ * a sample buffer. The sample buffer is filled by resampling the 128-bit
+ * pattern at the specified frequency. The sample buffer is then repeated
+ * until it is at least MIN_AUDIO_SAMPLES long. Playback (if currently
+ * happening) is stopped, the new waveform is loaded, and then playback
+ * is starts again (if the emulator had previously been playing a sound).
+ */
 void
-calculate_audio_waveform()
+calculate_audio_waveform(void)
 {
     int expanded_buffer[128];
     int ptr = 0;
@@ -1260,13 +1286,37 @@ calculate_audio_waveform()
     // Re-sample the 128-bit audio buffer at the specified rate
     float position = 0.0f;
     float step = playback_rate / AUDIO_PLAYBACK_RATE;
-    int new_buffer[2000];
+    byte new_buffer[2000];
     ptr = 0;
 
     while (position < 128.0f) {
         new_buffer[ptr] = expanded_buffer[(int) position];
         position += step;
         ptr++;
+    }
+
+    // If an audio chunk is playing, stop it so we can unload the chunk data
+    if (audio_chunk.alen != 0) {
+        Mix_HaltChannel(AUDIO_CHANNEL);
+        free(audio_chunk.abuf);
+        audio_chunk.abuf = NULL;
+        audio_chunk.alen = 0;
+    }
+
+    // Figure out how big we need to make the audio buffer
+    int copies = (int) (MIN_AUDIO_SAMPLES / ptr);
+    audio_chunk.abuf = (Uint8 *)malloc(copies * ptr);
+    for (int x = 0; x < copies; x++) {
+        for (int y = 0; y < ptr; y++) {
+            audio_chunk.abuf[audio_chunk.alen] = new_buffer[y];
+            audio_chunk.alen++;
+        }
+    }
+    audio_chunk.volume = MIX_MAX_VOLUME;
+
+    // Play the new sound if sound should be playing
+    if (audio_playing) {
+        Mix_PlayChannel(AUDIO_CHANNEL, &audio_chunk, -1);
     }
 }
 
@@ -1529,6 +1579,20 @@ cpu_execute(void)
             }
         }
         cpu_process_sdl_events();
+
+        if (cpu.st > 0 && !audio_playing) {
+            if (audio_chunk.alen > 0) {
+                Mix_PlayChannel(AUDIO_CHANNEL, &audio_chunk, -1);
+                audio_playing = TRUE;
+            }
+        }
+
+        if (cpu.st == 0 && audio_playing) {
+            if (audio_chunk.alen > 0) {
+                Mix_HaltChannel(AUDIO_CHANNEL);
+                audio_playing = FALSE;
+            }
+        }
     }
 }
 
