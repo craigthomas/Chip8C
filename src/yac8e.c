@@ -53,7 +53,7 @@ loadrom(char *romfilename, int offset)
 void 
 print_help(void) 
 {
-    printf("usage: yac8e [-h] [-s] [-j] [-i] [-l] [-c] [-S] ROM\n\n");
+    printf("usage: yac8e [-h] [-s N] [-j] [-i] [-l] [-c] [-S] [-t N] ROM\n\n");
     printf("Starts a simple Chip 8 emulator. See README.md for more ");
     printf("information, and\nLICENSE for terms of use.\n\n");
     printf("positional arguments:\n");
@@ -66,6 +66,7 @@ print_help(void)
     printf("  -S, --shift_quirks enables shift quirks\n");
     printf("  -l, --logic_quirks enables logic quirks\n");
     printf("  -c, --clip_quirks  enables clip quirks");
+    printf("  -t, --ticks N      how many instructions per second are allowed\n");
 }
 
 /******************************************************************************/
@@ -85,10 +86,11 @@ parse_options(int argc, char **argv)
     index_quirks = FALSE;
     clip_quirks = FALSE;
     scale_factor = SCALE_FACTOR;
+    max_ticks = DEFAULT_MAX_TICKS;
     op_delay = 0;
 
     int option_index = 0;
-    const char *short_options = ":hjiSslc:";
+    const char *short_options = ":hjiSslct:";
     static struct option long_options[] =
     {
         {"help",         no_argument,       NULL, 'h'},
@@ -98,6 +100,7 @@ parse_options(int argc, char **argv)
         {"scale",        required_argument, NULL, 's'},
         {"logic_quirks", no_argument,       NULL, 'l'},
         {"clip_quirks",  no_argument,       NULL, 'c'},
+        {"ticks",        required_argument, NULL, 't'},
         {NULL,           0,                 NULL,   0}
     };
 
@@ -118,6 +121,15 @@ parse_options(int argc, char **argv)
                 scale_factor = atoi(optarg);
                 if (scale_factor == 0 || scale_factor < 0 || scale_factor > 20) {
                     printf("Invalid --scale option");
+                    print_help();
+                    exit(1);
+                }
+                break;
+
+            case 't':
+                max_ticks = atoi(optarg);
+                if (max_ticks == 0 || max_ticks < 100) {
+                    printf("Invalid --ticks option");
                     print_help();
                     exit(1);
                 }
@@ -162,6 +174,8 @@ parse_options(int argc, char **argv)
         print_help();
         exit(1);
     }
+
+    max_ticks = max_ticks / 60;
 
     return filename;
 }

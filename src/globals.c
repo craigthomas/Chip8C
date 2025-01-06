@@ -47,6 +47,7 @@ int bitplane;                  /**< Sets the current drawing plane            */
 byte audio_pattern_buffer[16]; /**< Stores the audio pattern buffer           */
 Mix_Chunk audio_chunk;         /**< The currently created audio chunk         */
 int audio_playing;             /**< Stores whether audio is playing           */
+int tick_counter;              /**< Stores how many ticks have been executed  */
 
 /* Event captures */
 SDL_Event event;               /**< Stores SDL events                         */
@@ -57,6 +58,7 @@ int shift_quirks;              /**< Stores whether shift quirks are turned on */
 int index_quirks;              /**< Stores whether index quirks are turned on */
 int logic_quirks;              /**< Stores whether logic quirks are turned on */
 int clip_quirks;               /**< Stores whether clip quirks are turned on  */
+int max_ticks;                 /**< Stores how many ticks per second allowed  */
 
 
 /* E N D   O F   F I L E ******************************************************/

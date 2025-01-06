@@ -45,6 +45,7 @@
 #define AUDIO_PLAYBACK_RATE 48000 /**< The audio playback rate in Hz          */
 #define MIN_AUDIO_SAMPLES 3200    /**< The minimum number of audio samples    */
 #define AUDIO_CHANNEL  1          /**< The audio channel to play sounds on    */
+#define DEFAULT_MAX_TICKS 1000    /**< The maximum instructions per second    */
 
 /* Keyboard */
 #define KEY_NUMBEROFKEYS 16   /**< Defines the number of keys on the keyboard */
@@ -127,6 +128,7 @@ extern int bitplane;                  /**< Sets the current drawing plane       
 extern byte audio_pattern_buffer[16]; /**< Stores the audio pattern buffer           */
 extern Mix_Chunk audio_chunk;         /**< The currently created audio chunk         */
 extern int audio_playing;             /**< Stores whether audio is playing           */
+extern int tick_counter;              /**< Stores the number of instructions executed*/
 
 /* Event captures */
 extern SDL_Event event;               /**< Stores SDL events                         */
@@ -137,6 +139,7 @@ extern int shift_quirks;              /**< Stores whether shift quirks are turne
 extern int index_quirks;              /**< Stores whether index quirks are turned on */
 extern int logic_quirks;              /**< Stores whether logic quirks are turned on */
 extern int clip_quirks;               /**< Stores whether clip quirks are turned on  */
+extern int max_ticks;                 /**< Stores how many ticks per second we allow */
 
 /* Test variables */
 extern word tword;

@@ -28,6 +28,7 @@ Uint32
 cpu_timerinterrupt(Uint32 interval, void *parameters)
 {
     decrement_timers = TRUE;
+    tick_counter = 0;
     return interval;
 }
 
@@ -137,6 +138,8 @@ cpu_reset(void)
     }
     audio_chunk.abuf = NULL;
     audio_chunk.alen = 0;
+
+    tick_counter = 0;
 }
 
 /******************************************************************************/
@@ -1571,7 +1574,10 @@ cpu_execute(void)
 {
     while (cpu.state != CPU_STOP) {
         if (awaiting_keypress != 1) {
-            cpu_execute_single();
+            if (tick_counter < max_ticks) {
+                cpu_execute_single();
+                tick_counter++;
+            }
             if (decrement_timers) {
                 cpu.dt -= (cpu.dt > 0) ? 1 : 0;
                 cpu.st -= (cpu.st > 0) ? 1 : 0;
