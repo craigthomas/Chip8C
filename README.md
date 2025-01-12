@@ -5,6 +5,8 @@
 [![Releases](https://img.shields.io/github/release/craigthomas/Chip8C?style=flat-square)](https://github.com/craigthomas/Chip8C/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
+An Octo compatible XO Chip, Super Chip, and Chip 8 emulator.
+
 ## Table of Contents
 
 1. [What is it?](#what-is-it)
@@ -271,7 +273,7 @@ with links to public domain repositories where applicable.
 | [Mastermind](https://johnearnest.github.io/chip8Archive/play.html?p=mastermind)                   |        :x:         |               |
 | [Mini Lights Out](https://johnearnest.github.io/chip8Archive/play.html?p=mini-lights-out)         | :heavy_check_mark: |               |
 | [Octo: a Chip 8 Story](https://johnearnest.github.io/chip8Archive/play.html?p=octoachip8story)    | :heavy_check_mark: |               |
-| [Octogon Trail](https://tarsi.itch.io/octogon-trail)                                              |     :question:     |               |
+| [Octogon Trail](https://tarsi.itch.io/octogon-trail)                                              | :heavy_check_mark: |               |
 | [Octojam 1 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam1title)           | :heavy_check_mark: |               |
 | [Octojam 2 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam2title)           | :heavy_check_mark: |               |
 | [Octojam 3 Title](https://johnearnest.github.io/chip8Archive/play.html?p=octojam3title)           | :heavy_check_mark: |               |
@@ -295,7 +297,7 @@ with links to public domain repositories where applicable.
 | [Super Pong](https://johnearnest.github.io/chip8Archive/play.html?p=superpong)                    | :heavy_check_mark: |               |
 | [Tank!](https://johnearnest.github.io/chip8Archive/play.html?p=tank)                              | :heavy_check_mark: |               |
 | [TOMB STON TIPP](https://johnearnest.github.io/chip8Archive/play.html?p=tombstontipp)             | :heavy_check_mark: |               |
-| [WDL](https://johnearnest.github.io/chip8Archive/play.html?p=wdl)                                 |        :x:         |               |
+| [WDL](https://johnearnest.github.io/chip8Archive/play.html?p=wdl)                                 | :heavy_check_mark: |               |
 
 ### Super Chip ROMs
 
@@ -311,7 +313,7 @@ with links to public domain repositories where applicable.
 | [DVN8](https://johnearnest.github.io/chip8Archive/play.html?p=DVN8)                          | :heavy_check_mark: |       |
 | [Eaty the Alien](https://johnearnest.github.io/chip8Archive/play.html?p=eaty)                | :heavy_check_mark: |       |
 | [Grad School Simulator 2014](https://johnearnest.github.io/chip8Archive/play.html?p=gradsim) | :heavy_check_mark: |       |
-| [Horsey Jump](https://johnearnest.github.io/chip8Archive/play.html?p=horseyJump)             |     :question:     |       |
+| [Horsey Jump](https://johnearnest.github.io/chip8Archive/play.html?p=horseyJump)             | :heavy_check_mark: |       |
 | [Knight](https://johnearnest.github.io/chip8Archive/play.html?p=knight)                      |        :x:         |       |
 | [Mondri8](https://johnearnest.github.io/chip8Archive/play.html?p=mondrian)                   | :heavy_check_mark: |       |
 | [Octopeg](https://johnearnest.github.io/chip8Archive/play.html?p=octopeg)                    | :heavy_check_mark: |       |
@@ -350,7 +352,7 @@ with links to public domain repositories where applicable.
 | [Tapeworm](https://tarsi.itch.io/tapeworm)                                                            | :heavy_check_mark: |       |
 | [Truck Simul8or](https://johnearnest.github.io/chip8Archive/play.html?p=trucksimul8or)                | :heavy_check_mark: |       |
 | [SK8 H8 1988](https://johnearnest.github.io/chip8Archive/play.html?p=sk8)                             | :heavy_check_mark: |       |
-| [Super NeatBoy](https://johnearnest.github.io/chip8Archive/play.html?p=superneatboy)                  | :heavy_check_mark: |       |
+| [Super NeatBoy](https://johnearnest.github.io/chip8Archive/play.html?p=superneatboy)                  |        :x:         |       |
 | [Wonky Pong](https://johnearnest.github.io/chip8Archive/play.html?p=wonkypong)                        | :heavy_check_mark: |       |
 
 
@@ -359,26 +361,20 @@ with links to public domain repositories where applicable.
 
 * Running `make` fails with errors regarding `SDL` functions.
 
-You will need to ensure that you have SDL 1.2.14 or later installed on your 
-computer. Additionally, you will need to make sure that the `sdl-config`
+You will need to ensure that you have SDL 2.20 or later installed on your 
+computer. Additionally, you will need to make sure that the `sdl2-config`
 binary is available on your search path. The makefile uses it exclusively to
 ensure that the correct `LDFLAGS` and `CFLAGS` are set. If you do not have the
 binary, you can try providing the correct flags and paths to the SDL library
 on the command line. For example:
 
-    CFLAGS=-I/usr/include/SDL make
+    CFLAGS=-I/usr/include/SDL2 make
 
-The above command would force the make to use `/usr/include/SDL` as a source
-of header files during the compile.
+The above command would force the make to use `/usr/include/SDL2` as a source
+of header files during the compile. Additionally, library flags need to be 
+set as well, such as:
 
-
-* Running `make` fails with errors regarding `TTF` functions.
-
-The project makes use of the `SDL_ttf` extension library. On most systems,
-SDL extensions are installed in the same location as the SDL library. However,
-if you have installed the TTF extensions in a different location, you will have
-to supply the library path and include files in the `LDFLAGS` and `CFLAGS`
-variables prior to the build. See above for an example of how to do this.
+    LDFLAGS=-lSDL2 -lSDL2_mixer make
 
 
 ## Further Documentation
