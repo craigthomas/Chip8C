@@ -117,6 +117,7 @@ cpu_reset(void)
     }
     cpu.opdesc = (char *)malloc(MAXSTRSIZE);
     awaiting_keypress = FALSE;
+    keypress_pending = -1;
     playback_rate = 4000.0;
     pitch = 64;
     bitplane = 1;
@@ -166,18 +167,22 @@ cpu_process_sdl_events(void)
                     cpu.state = CPU_STOP;
                 } 
                 keyboard_processkeydown(key);
-                if (awaiting_keypress) {
-                    emulatorkey = keyboard_isemulatorkey(key);
-                    if (emulatorkey != -1) {
-                        int x = cpu.operand.BYTE.high & 0xF;
-                        cpu.v[x] = emulatorkey;
-                        awaiting_keypress = FALSE;
-                    }
+                if (awaiting_keypress && keypress_pending == -1) {
+                    /* The original hardware moves on when the key is let go,
+                       not when it goes down, so it is only remembered here. */
+                    keypress_pending = keyboard_isemulatorkey(key);
                 }
                 break;
 
             case SDL_KEYUP:
                 keyboard_processkeyup(event.key.keysym.sym);
+                emulatorkey = keyboard_isemulatorkey(event.key.keysym.sym);
+                if (awaiting_keypress && keypress_pending != -1 && emulatorkey == keypress_pending) {
+                    int x = cpu.operand.BYTE.high & 0xF;
+                    cpu.v[x] = keypress_pending;
+                    keypress_pending = -1;
+                    awaiting_keypress = FALSE;
+                }
                 break;
 
             default:
@@ -993,8 +998,11 @@ jump_to_register_plus_value(void)
 {
     if (jump_quirks) {
         int x = (cpu.operand.WORD & 0x0F00) >> 8;
-        cpu.pc.WORD = cpu.v[x] + (cpu.operand.WORD & 0x00FF);
-        sprintf(cpu.opdesc, "JUMP V%X + %X", x, cpu.operand.WORD & 0x00FF);
+        /* The whole twelve bit address counts; its top nibble both names
+           the register and is part of the address, so BE00 with vE at 0x9C
+           jumps to 0xE9C. */
+        cpu.pc.WORD = cpu.v[x] + (cpu.operand.WORD & 0x0FFF);
+        sprintf(cpu.opdesc, "JUMP V%X + %03X", x, cpu.operand.WORD & 0x0FFF);
     } else {
         cpu.pc.WORD = (cpu.v[0] & 0xFF) + (cpu.operand.WORD & 0x0FFF);
         sprintf(cpu.opdesc, "JUMP V0 + %03X", (cpu.operand.WORD & 0x0FFF));
@@ -1095,6 +1103,10 @@ draw_sprite(void)
 void 
 draw_extended_sprite(int x, int y, int plane, int active_index) 
 {
+    /* The starting position always wraps around the screen. Clipping only
+       decides what happens to the part of the sprite past the edge. */
+    x = x % screen_get_width();
+    y = y % screen_get_height();
     for (int y_index = 0; y_index < 16; y_index++) {
         for (int x_byte = 0; x_byte < 2; x_byte++) {
             int color_byte = memory_read(active_index + (y_index * 2) + x_byte);
@@ -1136,6 +1148,9 @@ draw_extended_sprite(int x, int y, int plane, int active_index)
 void
 draw_normal_sprite(int x_pos, int y_pos, int num_bytes, int plane, int active_index) 
 {
+    /* As above: the start wraps, clipping applies to the overhang. */
+    x_pos = x_pos % screen_get_width();
+    y_pos = y_pos % screen_get_height();
     for (int y_index = 0; y_index < num_bytes; y_index++) {
         int color_byte = memory_read(active_index + y_index);
         int y_coord = y_pos + y_index;
@@ -1351,6 +1366,7 @@ void
 wait_for_keypress(void)
 {
     awaiting_keypress = TRUE;
+    keypress_pending = -1;
     int x = (cpu.operand.WORD & 0x0F00) >> 8;
     sprintf(cpu.opdesc, "KEYD V%X", x);
 }
