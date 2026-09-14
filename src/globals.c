@@ -41,6 +41,7 @@ unsigned long cpu_interrupt;   /**< The CPU interrupt routine                 */
 int decrement_timers;          /**< Flags CPU to decrement DELAY and SOUND    */
 int op_delay;                  /**< Millisecond delay on the CPU              */
 int awaiting_keypress;         /**< Whether to wait for a keypress event      */
+int keypress_pending;          /**< The key seen going down while waiting, or -1 */
 float playback_rate;           /**< The playback rate for audio               */
 int pitch;                     /**< The pitch for the current audio sample    */
 int bitplane;                  /**< Sets the current drawing plane            */

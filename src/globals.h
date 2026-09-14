@@ -122,6 +122,7 @@ extern unsigned long cpu_interrupt;   /**< The CPU interrupt routine            
 extern int decrement_timers;          /**< Flags CPU to decrement DELAY and SOUND    */
 extern int op_delay;                  /**< Millisecond delay on the CPU              */
 extern int awaiting_keypress;         /**< Whether to wait for a keypress event      */
+extern int keypress_pending;          /**< The key seen going down while waiting, or -1 */
 extern float playback_rate;           /**< The playback rate for audio samples       */
 extern int pitch;                     /**< The pitch for the current audio sample    */
 extern int bitplane;                  /**< Sets the current drawing plane            */
@@ -284,6 +285,9 @@ void test_load_index(void);
 void test_load_index_integration(void);
 void test_jump_index_plus_value(void);
 void test_jump_index_plus_value_jump_quirks(void);
+void test_jump_index_plus_value_jump_quirks_keeps_high_nibble(void);
+void test_draw_normal_sprite_start_wraps_with_clip_quirks(void);
+void test_wait_for_keypress_remembers_no_key_yet(void);
 void test_jump_index_plus_value_integration(void);
 void test_generate_random(void);
 void test_load_delay_into_target(void);

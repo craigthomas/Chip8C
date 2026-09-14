@@ -1023,10 +1023,52 @@ test_jump_index_plus_value_jump_quirks(void)
                 cpu.operand.WORD = value;
                 cpu.operand.WORD |= (r << 8);
                 jump_to_register_plus_value();
-                CU_ASSERT_EQUAL(((index & 0xFF) + value), cpu.pc.WORD);
+                /* The whole address counts, including the nibble that names
+                   the register, which the jump row of Timendus' quirks test
+                   checks. */
+                CU_ASSERT_EQUAL(((index & 0xFF) + ((r << 8) | value)), cpu.pc.WORD);
             }
         }
     }
+    teardown();
+}
+
+void
+test_jump_index_plus_value_jump_quirks_keeps_high_nibble(void)
+{
+    setup();
+    jump_quirks = TRUE;
+    cpu.v[0xE] = 0x9C;
+    cpu.operand.WORD = 0xBE00;
+    jump_to_register_plus_value();
+    CU_ASSERT_EQUAL(0xE9C, cpu.pc.WORD);
+    teardown();
+}
+
+void
+test_draw_normal_sprite_start_wraps_with_clip_quirks(void)
+{
+    setup();
+    setup_cpu_screen_test();
+    clip_quirks = TRUE;
+    /* A one byte sprite at (70, 40) on a 64 by 32 screen starts at (6, 8). */
+    tword.WORD = 0x5000;
+    memory_write(tword, 0x80);
+    draw_normal_sprite(70, 40, 1, 1, 0x5000);
+    CU_ASSERT_TRUE(get_pixel(6, 8, 1));
+    clip_quirks = FALSE;
+    teardown_cpu_screen_test();
+    teardown();
+}
+
+void
+test_wait_for_keypress_remembers_no_key_yet(void)
+{
+    setup();
+    cpu.operand.WORD = 0xF10A;
+    wait_for_keypress();
+    CU_ASSERT_TRUE(awaiting_keypress);
+    CU_ASSERT_EQUAL(-1, keypress_pending);
     teardown();
 }
 
